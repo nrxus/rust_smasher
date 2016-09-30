@@ -1,0 +1,15 @@
+[package]
+name = "rust_smasher"
+version = "0.1.0"
+authors = ["Andres <andresnrx@gmail.com>"]
+
+[[bin]]
+name = "master_smasher"
+path = "src/main.rs"
+
+[lib]
+name = "moho"
+path = "src/moho/lib.rs"
+
+[dependencies]
+sdl2 = { git = "https://github.com/AngryLawyer/rust-sdl2" }
