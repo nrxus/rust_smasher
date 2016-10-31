@@ -3,6 +3,6 @@ extern crate moho;
 use std::error::Error;
 
 pub fn run() -> Result<(), Box<Error>> {
-    try!(moho::init("Master Smasher"));
+    try!(moho::init("Master Smasher", 800, 600));
     Ok(())
 }

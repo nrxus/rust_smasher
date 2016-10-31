@@ -12,4 +12,5 @@ name = "moho"
 path = "src/moho/lib.rs"
 
 [dependencies]
-sdl2 = { git = "https://github.com/AngryLawyer/rust-sdl2" }
+sdl2 = "> 0.23.0"
+sdl2_image = "> 0.23.0"
