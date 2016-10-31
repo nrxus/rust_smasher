@@ -16,6 +16,6 @@ pub fn init(name: &str, width: u32, height: u32) -> Result<(Renderer, EventPump)
 
     renderer.clear();
     renderer.present();
-    let mut event_pump = try!(sdl_ctx.event_pump());
+    let event_pump = try!(sdl_ctx.event_pump());
     Ok((renderer, event_pump))
 }
