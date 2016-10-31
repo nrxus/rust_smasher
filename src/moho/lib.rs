@@ -1,8 +1,6 @@
 extern crate sdl2;
 
-use sdl2::event::Event;
 use sdl2::EventPump;
-use sdl2::keyboard::Keycode;
 use sdl2::render::Renderer;
 use std::error::Error;
 
@@ -19,17 +17,5 @@ pub fn init(name: &str, width: u32, height: u32) -> Result<(Renderer, EventPump)
     renderer.clear();
     renderer.present();
     let mut event_pump = try!(sdl_ctx.event_pump());
-
-    'running: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
-                _ => {}
-            }
-        }
-        // The rest of the game loop goes here...
-    }
-
     Ok((renderer, event_pump))
 }
