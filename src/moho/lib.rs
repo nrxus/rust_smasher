@@ -4,6 +4,8 @@ use sdl2::EventPump;
 use sdl2::render::Renderer;
 use std::error::Error;
 
+pub mod input_manager;
+
 pub fn init(name: &str, width: u32, height: u32) -> Result<(Renderer, EventPump), Box<Error>> {
     let sdl_ctx = try!(sdl2::init());
     let video_ctx = try!(sdl_ctx.video());
