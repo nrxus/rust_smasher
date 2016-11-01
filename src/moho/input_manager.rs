@@ -3,15 +3,13 @@ extern crate glm;
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
-pub struct InputManagerImp {
+pub struct InputManager {
     pressed_keys: HashSet<Keycode>,
 }
 
-impl InputManagerImp {
+impl InputManager {
     pub fn new() -> Self {
-        InputManagerImp {
-            pressed_keys: HashSet::new(),
-        }
+        InputManager { pressed_keys: HashSet::new() }
     }
 
     pub fn press_key(&mut self, keycode: Keycode) {
@@ -31,10 +29,10 @@ impl InputManagerImp {
 mod tests {
     use super::*;
     use sdl2::keyboard::Keycode;
-    
+
     #[test]
     fn it_adds_pressed_keys() {
-        let mut subject = InputManagerImp::new();
+        let mut subject = InputManager::new();
         assert_eq!(subject.is_key_down(Keycode::Down), false);
         subject.press_key(Keycode::Down);
         assert_eq!(subject.is_key_down(Keycode::Down), true);
@@ -42,7 +40,7 @@ mod tests {
 
     #[test]
     fn it_releases_keys() {
-        let mut subject = InputManagerImp::new();
+        let mut subject = InputManager::new();
         subject.press_key(Keycode::Down);
         subject.press_key(Keycode::Up);
         subject.release_key(Keycode::Down);

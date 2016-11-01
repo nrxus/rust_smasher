@@ -13,6 +13,7 @@ use std::path::Path;
 pub fn run() -> Result<(), Box<Error>> {
     let (mut renderer, mut event_pump) = try!(moho::init("Master Smasher", 800, 600));
     let _image_context = try!(sdl2_image::init(INIT_PNG | INIT_JPG));
+    let mut input_manager = moho::input_manager::InputManager::new();
     let background_path = Path::new("resources/background_game.png");
     let meteor_path = Path::new("resources/meteor.png");
     let background_texture = try!(renderer.load_texture(background_path));
@@ -23,23 +24,37 @@ pub fn run() -> Result<(), Box<Error>> {
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } => {
-                    dst.offset(0, 1);
+                Event::Quit { .. } => break 'running,
+                Event::KeyDown { keycode: Some(key), .. } => {
+                    input_manager.press_key(key);
                 }
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } => {
-                    dst.offset(0, -1);
-                }
-                Event::KeyDown { keycode: Some(Keycode::Left), .. } => {
-                    dst.offset(-1, 0);
-                }
-                Event::KeyDown { keycode: Some(Keycode::Right), .. } => {
-                    dst.offset(1, 0);
+                Event::KeyUp { keycode: Some(key), .. } => {
+                    input_manager.release_key(key);
                 }
                 _ => {}
             }
         }
+
+        if input_manager.is_key_down(Keycode::Escape) {
+            break;
+        }
+
+        if input_manager.is_key_down(Keycode::Down) {
+            dst.offset(0, 1);
+        }
+
+        if input_manager.is_key_down(Keycode::Up) {
+            dst.offset(0, -1);
+        }
+
+        if input_manager.is_key_down(Keycode::Left) {
+            dst.offset(-1, 0);
+        }
+
+        if input_manager.is_key_down(Keycode::Right) {
+            dst.offset(1, 0);
+        }
+
         // The rest of the game loop goes here...
         renderer.clear();
         try!(renderer.copy(&background_texture, None, None));
