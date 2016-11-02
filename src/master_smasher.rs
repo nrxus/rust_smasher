@@ -115,57 +115,73 @@ impl Meteor {
     }
 
     fn draw(&self, renderer: &mut Renderer) -> Result<(), Box<Error>> {
+        let rects = self.drawing_rectangles();
+        let results = rects.iter()
+            .filter(|r| r.is_some())
+            .map(|r| renderer.copy(&self.texture, None, *r));
+
+        for result in results {
+            try!(result)
+        }
+
+        Ok(())
+    }
+
+    fn drawing_rectangles(&self) -> [Option<rect::Rect>; 4] {
         let top = self.center.y as i32 - self.dims.y as i32 / 2;
         let bottom = self.center.y as i32 + self.dims.y as i32 / 2;
         let left = self.center.x as i32 - self.dims.x as i32 / 2;
         let right = self.center.x as i32 + self.dims.x as i32 / 2;
 
         let rect = rect::Rect::new(left, top, self.dims.x, self.dims.y);
-        try!(renderer.copy(&self.texture, None, Some(rect)));
+        let mut rects: [Option<rect::Rect>; 4] = [Some(rect), None, None, None];
+        let mut count = 1;
 
         let max_height = self.max_coords.y as i32;
         let max_width = self.max_coords.x as i32;
 
         if top < 0 {
-            let mut wrapping_rect = rect.clone();
-            wrapping_rect.set_y(top + max_height);
-            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            let mut rect = rect.clone();
+            rect.set_y(top + max_height);
+            rects[count] = Some(rect);
+            count += 1;
 
             if left < 0 {
-                wrapping_rect = wrapping_rect.clone();
-                wrapping_rect.set_x(left + max_width);
-                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+                rect.set_x(left + max_width);
+                rects[count] = Some(rect);
+                count += 1;
             } else if right > max_width {
-                wrapping_rect = wrapping_rect.clone();
-                wrapping_rect.set_right(right % max_width);
-                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+                rect.set_right(right % max_width);
+                rects[count] = Some(rect);
+                count += 1;
             }
         } else if bottom > max_height {
-            let mut wrapping_rect = rect.clone();
-            wrapping_rect.set_bottom(bottom % max_height);
-            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            let mut rect = rect.clone();
+            rect.set_bottom(bottom % max_height);
+            rects[count] = Some(rect);
+            count += 1;
 
             if left < 0 {
-                wrapping_rect = wrapping_rect.clone();
-                wrapping_rect.set_x(left + max_width);
-                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+                rect.set_x(left + max_width);
+                rects[count] = Some(rect);
+                count += 1;
             } else if right > max_width {
-                wrapping_rect = wrapping_rect.clone();
-                wrapping_rect.set_right(right % max_width);
-                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+                rect.set_right(right % max_width);
+                rects[count] = Some(rect);
+                count += 1;
             }
         }
 
         if left < 0 {
-            let mut wrapping_rect = rect.clone();
-            wrapping_rect.set_x(left + max_width);
-            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            let mut rect = rect.clone();
+            rect.set_x(left + max_width);
+            rects[count] = Some(rect);
         } else if right > max_width {
-            let mut wrapping_rect = rect.clone();
-            wrapping_rect.set_right(right % max_width);
-            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            let mut rect = rect.clone();
+            rect.set_right(right % max_width);
+            rects[count] = Some(rect);
         }
 
-        Ok(())
+        rects
     }
 }
