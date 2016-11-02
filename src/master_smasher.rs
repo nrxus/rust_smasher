@@ -69,16 +69,18 @@ impl Background {
 struct Meteor {
     texture: Texture,
     rect: rect::Rect,
-    wrapping_rect: rect::Rect,
+    max_coords: glm::Vector2<u32>,
 }
 
 impl Meteor {
     fn new(texture: Texture, max_coords: glm::Vector2<u32>) -> Self {
         let query = texture.query();
+        let rect = rect::Rect::new(0, 0, query.width, query.height);
+
         Meteor {
             texture: texture,
-            rect: rect::Rect::new(0, 0, query.width, query.height),
-            wrapping_rect: rect::Rect::new(0, 0, max_coords.x, max_coords.y),
+            rect: rect,
+            max_coords: max_coords,
         }
     }
 
@@ -102,8 +104,8 @@ impl Meteor {
             left += 1;
         }
 
-        let max_height = self.wrapping_rect.height() as i32;
-        let max_width = self.wrapping_rect.width() as i32;
+        let max_height = self.max_coords.y as i32;
+        let max_width = self.max_coords.x as i32;
 
         self.rect.set_y((top + max_height) % max_height);
         self.rect.set_x((left + max_width) % max_width);
@@ -112,13 +114,31 @@ impl Meteor {
     fn draw(&self, renderer: &mut Renderer) -> Result<(), Box<Error>> {
         try!(renderer.copy(&self.texture, None, Some(self.rect)));
 
-        let mut optional_rect: Option<rect::Rect> = None;
-        match optional_rect {
-            Some(_) => {
-                try!(renderer.copy(&self.texture, None, optional_rect));
-            }
-            None => {}
-        };
+        let max_height = self.max_coords.y as i32;
+        let max_width = self.max_coords.x as i32;
+
+        if self.rect.bottom() > max_height {
+            let mut wrapping_rect = self.rect.clone();
+            let bottom = wrapping_rect.bottom() % max_height;
+            wrapping_rect.set_bottom(bottom);
+            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+        }
+
+         if self.rect.right() > max_width {
+            let mut wrapping_rect = self.rect.clone();
+            let right = wrapping_rect.right() % max_width;
+            wrapping_rect.set_right(right);
+            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+         }
+
+         if self.rect.bottom() > max_height && self.rect.right() > max_width {
+            let mut wrapping_rect = self.rect.clone();
+            let bottom = wrapping_rect.bottom() % max_height;
+            let right = wrapping_rect.right() % max_width;
+            wrapping_rect.set_bottom(bottom);
+            wrapping_rect.set_right(right);
+            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+        }
 
         Ok(())
     }
