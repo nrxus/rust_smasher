@@ -116,27 +116,25 @@ impl Meteor {
 
         let max_height = self.max_coords.y as i32;
         let max_width = self.max_coords.x as i32;
+        let bottom = self.rect.bottom();
+        let right = self.rect.right();
 
-        if self.rect.bottom() > max_height {
+        if bottom > max_height {
             let mut wrapping_rect = self.rect.clone();
-            let bottom = wrapping_rect.bottom() % max_height;
-            wrapping_rect.set_bottom(bottom);
+            wrapping_rect.set_bottom(bottom % max_height);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
         }
 
-         if self.rect.right() > max_width {
+        if right > max_width {
             let mut wrapping_rect = self.rect.clone();
-            let right = wrapping_rect.right() % max_width;
-            wrapping_rect.set_right(right);
+            wrapping_rect.set_right(right % max_width);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
-         }
+        }
 
-         if self.rect.bottom() > max_height && self.rect.right() > max_width {
+        if bottom > max_height && right > max_width {
             let mut wrapping_rect = self.rect.clone();
-            let bottom = wrapping_rect.bottom() % max_height;
-            let right = wrapping_rect.right() % max_width;
-            wrapping_rect.set_bottom(bottom);
-            wrapping_rect.set_right(right);
+            wrapping_rect.set_bottom(bottom % max_height);
+            wrapping_rect.set_right(right % max_width);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
         }
 
