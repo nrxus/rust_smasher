@@ -11,7 +11,10 @@ use std::error::Error;
 use std::path::Path;
 
 pub fn run() -> Result<(), Box<Error>> {
-    let (mut renderer, mut event_pump) = try!(moho::init("Master Smasher", 800, 600));
+    const WINDOW_HEIGHT: u32 = 600;
+    const WINDOW_WIDTH: u32 = 800;
+    let (mut renderer, mut event_pump) =
+        try!(moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT));
     let _image_context = try!(sdl2_image::init(INIT_PNG | INIT_JPG));
     let mut input_manager = moho::input_manager::InputManager::new();
     let background_path = Path::new("resources/background_game.png");
@@ -20,6 +23,7 @@ pub fn run() -> Result<(), Box<Error>> {
     let meteor_texture = try!(renderer.load_texture(meteor_path));
     let query = meteor_texture.query();
     let mut dst = rect::Rect::new(0, 0, query.width, query.height);
+    let mut dst2 = None;
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -41,6 +45,18 @@ pub fn run() -> Result<(), Box<Error>> {
 
         if input_manager.is_key_down(Keycode::Down) {
             dst.offset(0, 1);
+
+            if (dst.top() > WINDOW_HEIGHT as i32) {
+                let top = dst.top() % WINDOW_HEIGHT as i32;
+                dst.set_y(top);
+                dst2 = None
+            }
+
+            if (dst.bottom() > WINDOW_HEIGHT as i32) {
+                let mut clone_rect = dst.clone();
+                clone_rect.set_bottom(dst.bottom() % WINDOW_HEIGHT as i32);
+                dst2 = Some(clone_rect);
+            }
         }
 
         if input_manager.is_key_down(Keycode::Up) {
@@ -59,6 +75,14 @@ pub fn run() -> Result<(), Box<Error>> {
         renderer.clear();
         try!(renderer.copy(&background_texture, None, None));
         try!(renderer.copy(&meteor_texture, None, Some(dst)));
+
+        match dst2 {
+            Some(_) => {
+                try!(renderer.copy(&meteor_texture, None, dst2));
+            }
+            None => {}
+        }
+
         renderer.present();
     }
 
