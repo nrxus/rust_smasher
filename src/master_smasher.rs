@@ -37,13 +37,18 @@ pub fn run() -> Result<(), Box<Error>> {
                 Event::KeyUp { keycode: Some(key), .. } => {
                     input_manager.release_key(key);
                 }
+                Event::MouseButtonDown { x, y, .. } => {
+                    if !meteor.launched || true {
+                        meteor.launch(glm::dvec2(x as f64, y as f64));
+                    }
+                }
                 _ => {}
             }
         }
         if input_manager.is_key_down(Keycode::Escape) {
             break;
         }
-        meteor.update(&input_manager);
+        meteor.update();
 
         renderer.clear();
         try!(background.draw(&mut renderer));
@@ -68,72 +73,95 @@ impl Background {
 
 struct Meteor {
     texture: Texture,
-    rect: rect::Rect,
+    center: glm::Vector2<f64>,
+    dims: glm::Vector2<u32>,
     max_coords: glm::Vector2<u32>,
+    velocity: glm::Vector2<f64>,
+    launched: bool,
 }
 
 impl Meteor {
     fn new(texture: Texture, max_coords: glm::Vector2<u32>) -> Self {
         let query = texture.query();
-        let rect = rect::Rect::new(0, 0, query.width, query.height);
+        let center = glm::dvec2(0., 0.);
+        let dims = glm::uvec2(query.width, query.height);
 
         Meteor {
             texture: texture,
-            rect: rect,
+            center: center,
+            dims: dims,
             max_coords: max_coords,
+            velocity: glm::dvec2(0., 0.),
+            launched: false,
         }
     }
 
-    fn update(&mut self, input_manager: &moho::input_manager::InputManager) {
-        let mut top = self.rect.y();
-        let mut left = self.rect.x();
+    fn launch(&mut self, target: glm::Vector2<f64>) {
+        const FACTOR: f64 = 85.;
+        let offset = target - self.center;
+        self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
+        self.launched = true;
+    }
 
-        if input_manager.is_key_down(Keycode::Down) {
-            top += 1;
-        }
+    fn update(&mut self) {
+        self.center.y += self.velocity.y;
+        self.center.x += self.velocity.x;
 
-        if input_manager.is_key_down(Keycode::Up) {
-            top -= 1;
-        }
+        let max_height = self.max_coords.y as f64;
+        let max_width = self.max_coords.x as f64;
 
-        if input_manager.is_key_down(Keycode::Left) {
-            left -= 1;
-        }
-
-        if input_manager.is_key_down(Keycode::Right) {
-            left += 1;
-        }
-
-        let max_height = self.max_coords.y as i32;
-        let max_width = self.max_coords.x as i32;
-
-        self.rect.set_y((top + max_height) % max_height);
-        self.rect.set_x((left + max_width) % max_width);
+        self.center.y = (self.center.y + max_height) % max_height;
+        self.center.x = (self.center.x + max_width) % max_width;
     }
 
     fn draw(&self, renderer: &mut Renderer) -> Result<(), Box<Error>> {
-        try!(renderer.copy(&self.texture, None, Some(self.rect)));
+        let top = self.center.y as i32 - self.dims.y as i32 / 2;
+        let bottom = self.center.y as i32 + self.dims.y as i32 / 2;
+        let left = self.center.x as i32 - self.dims.x as i32 / 2;
+        let right = self.center.x as i32 + self.dims.x as i32 / 2;
+
+        let rect = rect::Rect::new(left, top, self.dims.x, self.dims.y);
+        try!(renderer.copy(&self.texture, None, Some(rect)));
 
         let max_height = self.max_coords.y as i32;
         let max_width = self.max_coords.x as i32;
-        let bottom = self.rect.bottom();
-        let right = self.rect.right();
 
-        if bottom > max_height {
-            let mut wrapping_rect = self.rect.clone();
+        if top < 0 {
+            let mut wrapping_rect = rect.clone();
+            wrapping_rect.set_y(top + max_height);
+            try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+
+            if left < 0 {
+                wrapping_rect = wrapping_rect.clone();
+                wrapping_rect.set_x(left + max_width);
+                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            } else if right > max_width {
+                wrapping_rect = wrapping_rect.clone();
+                wrapping_rect.set_right(right % max_width);
+                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            }
+        } else if bottom > max_height {
+            let mut wrapping_rect = rect.clone();
             wrapping_rect.set_bottom(bottom % max_height);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+
+            if left < 0 {
+                wrapping_rect = wrapping_rect.clone();
+                wrapping_rect.set_x(left + max_width);
+                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            } else if right > max_width {
+                wrapping_rect = wrapping_rect.clone();
+                wrapping_rect.set_right(right % max_width);
+                try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
+            }
         }
 
-        if right > max_width {
-            let mut wrapping_rect = self.rect.clone();
-            wrapping_rect.set_right(right % max_width);
+        if left < 0 {
+            let mut wrapping_rect = rect.clone();
+            wrapping_rect.set_x(left + max_width);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
-        }
-
-        if bottom > max_height && right > max_width {
-            let mut wrapping_rect = self.rect.clone();
-            wrapping_rect.set_bottom(bottom % max_height);
+        } else if right > max_width {
+            let mut wrapping_rect = rect.clone();
             wrapping_rect.set_right(right % max_width);
             try!(renderer.copy(&self.texture, None, Some(wrapping_rect)));
         }
