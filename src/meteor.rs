@@ -60,60 +60,55 @@ impl Meteor {
     }
 
     fn drawing_rectangles(&self) -> [Option<rect::Rect>; 4] {
-        let top = self.center.y as i32 - self.dims.y as i32 / 2;
-        let bottom = self.center.y as i32 + self.dims.y as i32 / 2;
         let left = self.center.x as i32 - self.dims.x as i32 / 2;
-        let right = self.center.x as i32 + self.dims.x as i32 / 2;
+        let top = self.center.y as i32 - self.dims.y as i32 / 2;
 
         let rect = rect::Rect::new(left, top, self.dims.x, self.dims.y);
-        let mut rects: [Option<rect::Rect>; 4] = [Some(rect), None, None, None];
-        let mut count = 1;
+        let side_rect = self.side_rect(&rect);
+        let vert_rect = self.vert_rect(&rect);
 
+        let side_vert_rect = match vert_rect {
+            Some(unwrapped) => self.side_rect(&unwrapped),
+            None => None,
+        };
+
+        [Some(rect), vert_rect, side_rect, side_vert_rect]
+    }
+
+    fn vert_rect(&self, original: &rect::Rect) -> Option<rect::Rect> {
+        let bottom = self.center.y as i32 + self.dims.y as i32 / 2;
+        let top = self.center.y as i32 - self.dims.y as i32 / 2;
         let max_height = self.max_coords.y as i32;
-        let max_width = self.max_coords.x as i32;
+
+        let mut copy = original.clone();
 
         if top < 0 {
-            let mut rect = rect.clone();
-            rect.set_y(top + max_height);
-            rects[count] = Some(rect);
-            count += 1;
-
-            if left < 0 {
-                rect.set_x(left + max_width);
-                rects[count] = Some(rect);
-                count += 1;
-            } else if right > max_width {
-                rect.set_right(right % max_width);
-                rects[count] = Some(rect);
-                count += 1;
-            }
+            copy.set_y(top + max_height);
+            Some(copy)
         } else if bottom > max_height {
-            let mut rect = rect.clone();
-            rect.set_bottom(bottom % max_height);
-            rects[count] = Some(rect);
-            count += 1;
-
-            if left < 0 {
-                rect.set_x(left + max_width);
-                rects[count] = Some(rect);
-                count += 1;
-            } else if right > max_width {
-                rect.set_right(right % max_width);
-                rects[count] = Some(rect);
-                count += 1;
-            }
+            copy.set_bottom(bottom % max_height);
+            Some(copy)
+        } else {
+            None
         }
+
+    }
+
+    fn side_rect(&self, original: &rect::Rect) -> Option<rect::Rect> {
+        let left = self.center.x as i32 - self.dims.x as i32 / 2;
+        let right = self.center.x as i32 + self.dims.x as i32 / 2;
+        let max_width = self.max_coords.x as i32;
+
+        let mut copy = original.clone();
 
         if left < 0 {
-            let mut rect = rect.clone();
-            rect.set_x(left + max_width);
-            rects[count] = Some(rect);
+            copy.set_x(left + max_width);
+            Some(copy)
         } else if right > max_width {
-            let mut rect = rect.clone();
-            rect.set_right(right % max_width);
-            rects[count] = Some(rect);
+            copy.set_right(right % max_width);
+            Some(copy)
+        } else {
+            None
         }
-
-        rects
     }
 }
