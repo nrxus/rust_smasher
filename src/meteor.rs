@@ -1,9 +1,7 @@
 extern crate glm;
 extern crate sdl2;
 
-use std::error::Error;
 use self::sdl2::rect;
-
 use self::sdl2::render::{Renderer, Texture};
 
 pub struct Meteor {
@@ -53,17 +51,12 @@ impl Meteor {
         self.launched
     }
 
-    pub fn draw(&self, renderer: &mut Renderer) -> Result<(), Box<Error>> {
-        let rects = self.drawing_rectangles();
-        let results = rects.iter()
+    pub fn draw(&self, renderer: &mut Renderer) -> Result<(), String> {
+        self.drawing_rectangles()
+            .iter()
             .filter(|r| r.is_some())
-            .map(|r| renderer.copy(&self.texture, None, *r));
-
-        for result in results {
-            try!(result)
-        }
-
-        Ok(())
+            .map(|&r| renderer.copy(&self.texture, None, r))
+            .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
     }
 
     fn drawing_rectangles(&self) -> [Option<rect::Rect>; 4] {
