@@ -97,9 +97,8 @@ impl<'a, E> InputManager<E>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sdl2::keyboard::Keycode;
+    use sdl2::keyboard::{Keycode, NOMOD};
     use sdl2::event::Event;
-    use sdl2::keyboard::NOMOD;
 
     struct MockEventIterator {
         events: Vec<Event>,
@@ -144,29 +143,41 @@ mod tests {
 
     #[test]
     fn it_adds_pressed_keys() {
-        let down_key_down = key_event!(KeyDown, Keycode::Down);
-        let streams = vec![MockEventIterator { events: vec![down_key_down] }];
+        let streams = vec![MockEventIterator {
+                               events: vec![key_event!(KeyDown, Keycode::Down),
+                                            key_event!(KeyDown, Keycode::Up)],
+                           }];
+
         let generator = MockEventStreamGenerator { streams: streams };
         let mut subject = InputManager::new(generator);
+
+        // Nothing is set before
         assert_eq!(subject.is_key_down(Keycode::Down), false);
+        assert_eq!(subject.is_key_down(Keycode::Up), false);
+
         subject.update();
+
+        // Both keys are set after
         assert_eq!(subject.is_key_down(Keycode::Down), true);
+        assert_eq!(subject.is_key_down(Keycode::Up), true);
     }
 
     #[test]
     fn it_releases_keys() {
-        let event_key_down = key_event!(KeyDown, Keycode::Down);
-        let event_key_down_up = key_event!(KeyDown, Keycode::Up);
-        let event_key_up = key_event!(KeyUp, Keycode::Down);
+        let streams = vec![MockEventIterator { events: vec![key_event!(KeyUp, Keycode::Down)] },
+                           MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down),
+                                                            key_event!(KeyDown, Keycode::Up)] },];
 
-        let streams = vec![MockEventIterator { events: vec![event_key_up] },
-                           MockEventIterator { events: vec![event_key_down, event_key_down_up] },];
         let generator = MockEventStreamGenerator { streams: streams };
         let mut subject = InputManager::new(generator);
         subject.update();
+
+        // Both keys set after
         assert_eq!(subject.is_key_down(Keycode::Down), true);
         assert_eq!(subject.is_key_down(Keycode::Up), true);
         subject.update();
+
+        // Only the one released unset after
         assert_eq!(subject.is_key_down(Keycode::Down), false);
         assert_eq!(subject.is_key_down(Keycode::Up), true);
     }
