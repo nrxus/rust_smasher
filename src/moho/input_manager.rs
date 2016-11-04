@@ -39,6 +39,7 @@ impl<'a> EventStreamGenerator<'a> for SdlEventStreamGenerator {
 pub struct InputManager<E> {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<Mouse>,
+    prev_pressed_buttons: HashSet<Mouse>,
     mouse_coords: glm::IVec2,
     event_stream_generator: E,
 }
@@ -52,6 +53,7 @@ impl<'a, E> InputManager<E>
         InputManager {
             pressed_keys: HashSet::new(),
             pressed_buttons: HashSet::new(),
+            prev_pressed_buttons: HashSet::new(),
             mouse_coords: glm::ivec2(0, 0),
             event_stream_generator: events_generator,
         }
@@ -59,6 +61,7 @@ impl<'a, E> InputManager<E>
 
     pub fn update(&'a mut self) {
         let event_stream = self.event_stream_generator.next();
+        self.prev_pressed_buttons = self.pressed_buttons.clone();
         for event in event_stream {
             match event {
                 Event::KeyDown { keycode: Some(keycode), .. } => {
@@ -85,6 +88,14 @@ impl<'a, E> InputManager<E>
         self.pressed_keys.contains(&keycode)
     }
 
+    pub fn did_click_mouse(&self, mouse: Mouse) -> bool {
+        self.pressed_buttons.contains(&mouse) && !self.prev_pressed_buttons.contains(&mouse)
+    }
+
+    pub fn did_release_mouse(&self, mouse: Mouse) -> bool {
+        !self.pressed_buttons.contains(&mouse) && self.prev_pressed_buttons.contains(&mouse)
+    }
+
     pub fn is_mouse_down(&self, mouse: Mouse) -> bool {
         self.pressed_buttons.contains(&mouse)
     }
@@ -101,7 +112,7 @@ mod tests {
     use super::*;
     use sdl2::keyboard::{Keycode, NOMOD};
     use sdl2::event::Event;
-    use sdl2::mouse::MouseState;
+    use sdl2::mouse::{MouseState, Mouse};
 
     struct MockEventIterator {
         events: Vec<Event>,
@@ -144,8 +155,24 @@ mod tests {
         };
     }
 
+    macro_rules! mouse_event {
+        ($t:ident, $e:expr) => {
+            {
+                let event = Event::$t {
+                    mouse_btn: $e,
+                    timestamp: 0,
+                    window_id: 0,
+                    which: 0,
+                    x: 0,
+                    y: 0,
+                };
+                event
+            }
+        };
+    }
+
     #[test]
-    fn it_adds_pressed_keys() {
+    fn press_keys() {
         let streams = vec![MockEventIterator {
                                events: vec![key_event!(KeyDown, Keycode::Down),
                                             key_event!(KeyDown, Keycode::Up)],
@@ -165,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn it_releases_keys() {
+    fn release_keys() {
         let streams = vec![MockEventIterator { events: vec![key_event!(KeyUp, Keycode::Down)] },
                            MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down),
                                                             key_event!(KeyDown, Keycode::Up)] },];
@@ -184,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn it_sets_mouse_coords() {
+    fn mouse_coords() {
         let streams = vec![MockEventIterator {
                                events: vec![Event::MouseMotion {
                                                 timestamp: 0,
@@ -201,5 +228,57 @@ mod tests {
         let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
         subject.update();
         assert_eq!(subject.mouse_coords(), glm::ivec2(50 as i32, 30 as i32));
+    }
+
+    #[test]
+    fn mouse_clicks() {
+        let streams =
+            vec![MockEventIterator { events: vec![mouse_event!(MouseButtonDown, Mouse::Right)] },
+                 MockEventIterator { events: vec![mouse_event![MouseButtonDown, Mouse::Left]] }];
+
+        let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
+
+        // Nothing has been clicked
+        assert_eq!(subject.did_click_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_click_mouse(Mouse::Left), false);
+
+        // Left button is click
+        subject.update();
+        assert_eq!(subject.did_click_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_click_mouse(Mouse::Left), true);
+
+        // Right button is clicked - left button is still pressed but not a recent click
+        subject.update();
+        assert_eq!(subject.did_click_mouse(Mouse::Right), true);
+        assert_eq!(subject.did_click_mouse(Mouse::Left), false);
+    }
+
+    #[test]
+    fn mouse_releases() {
+        let streams =
+            vec![MockEventIterator { events: vec![mouse_event!(MouseButtonDown, Mouse::Right)] },
+                 MockEventIterator { events: vec![mouse_event!(MouseButtonUp, Mouse::Left)] },
+                 MockEventIterator { events: vec![mouse_event![MouseButtonDown, Mouse::Left]] }];
+
+        let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
+
+        // Nothing has been clicked
+        assert_eq!(subject.did_release_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_release_mouse(Mouse::Left), false);
+
+        // Left button is click
+        subject.update();
+        assert_eq!(subject.did_release_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_release_mouse(Mouse::Left), false);
+
+        // Left button is released
+        subject.update();
+        assert_eq!(subject.did_release_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_release_mouse(Mouse::Left), true);
+
+        // Right button is clicked; left button is not clicked and not released recently
+        subject.update();
+        assert_eq!(subject.did_release_mouse(Mouse::Right), false);
+        assert_eq!(subject.did_release_mouse(Mouse::Right), false);
     }
 }
