@@ -29,9 +29,10 @@ impl Meteor {
         }
     }
 
-    pub fn launch(&mut self, target: glm::Vector2<f64>) {
+    pub fn launch(&mut self, target: glm::Vector2<i32>) {
         const FACTOR: f64 = 85.;
-        let offset = target - self.center;
+        let offset = glm::ivec2(target.x - self.center.y as i32,
+                                target.y - self.center.y as i32);
         self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
         self.launched = true;
     }
