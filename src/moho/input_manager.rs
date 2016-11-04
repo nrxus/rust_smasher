@@ -96,9 +96,12 @@ impl<'a, E> InputManager<E>
 
 #[cfg(test)]
 mod tests {
+    extern crate glm;
+
     use super::*;
     use sdl2::keyboard::{Keycode, NOMOD};
     use sdl2::event::Event;
+    use sdl2::mouse::MouseState;
 
     struct MockEventIterator {
         events: Vec<Event>,
@@ -148,8 +151,7 @@ mod tests {
                                             key_event!(KeyDown, Keycode::Up)],
                            }];
 
-        let generator = MockEventStreamGenerator { streams: streams };
-        let mut subject = InputManager::new(generator);
+        let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
 
         // Nothing is set before
         assert_eq!(subject.is_key_down(Keycode::Down), false);
@@ -168,8 +170,7 @@ mod tests {
                            MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down),
                                                             key_event!(KeyDown, Keycode::Up)] },];
 
-        let generator = MockEventStreamGenerator { streams: streams };
-        let mut subject = InputManager::new(generator);
+        let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
         subject.update();
 
         // Both keys set after
@@ -180,5 +181,25 @@ mod tests {
         // Only the one released unset after
         assert_eq!(subject.is_key_down(Keycode::Down), false);
         assert_eq!(subject.is_key_down(Keycode::Up), true);
+    }
+
+    #[test]
+    fn it_sets_mouse_coords() {
+        let streams = vec![MockEventIterator {
+                               events: vec![Event::MouseMotion {
+                                                timestamp: 0,
+                                                window_id: 0,
+                                                which: 0,
+                                                mousestate: MouseState::from_flags(0),
+                                                x: 50,
+                                                y: 30,
+                                                xrel: 0,
+                                                yrel: 0,
+                                            }],
+                           }];
+
+        let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
+        subject.update();
+        assert_eq!(subject.mouse_coords(), glm::ivec2(50 as i32, 30 as i32));
     }
 }
