@@ -98,21 +98,89 @@ impl<'a, E> InputManager<E>
 mod tests {
     use super::*;
     use sdl2::keyboard::Keycode;
+    use sdl2::event::Event;
+    use sdl2::keyboard::NOMOD;
+
+    struct MockEventIterator {
+        events: Vec<Event>,
+    }
+
+    impl Iterator for MockEventIterator {
+        type Item = Event;
+
+        fn next(&mut self) -> Option<Event> {
+            self.events.pop()
+        }
+    }
+
+    struct MockEventStreamGenerator {
+        streams: Vec<MockEventIterator>,
+    }
+
+    impl<'a> EventStreamGenerator<'a> for MockEventStreamGenerator {
+        type I = MockEventIterator;
+
+        fn next(&'a mut self) -> EventStream<MockEventIterator> {
+            let stream = self.streams.pop().unwrap();
+            EventStream { event_iterator: stream }
+        }
+    }
 
     #[test]
     fn it_adds_pressed_keys() {
-        let mut subject = InputManager::new();
+        let event_key_down = Event::KeyDown {
+            keycode: Some(Keycode::Down),
+            timestamp: 0,
+            window_id: 0,
+            scancode: None,
+            repeat: false,
+            keymod: NOMOD,
+        };
+        let streams = vec![MockEventIterator { events: vec![event_key_down] }];
+        let generator = MockEventStreamGenerator { streams: streams };
+        let mut subject = InputManager::new(generator);
         assert_eq!(subject.is_key_down(Keycode::Down), false);
-        subject.press_key(Keycode::Down);
+        subject.update();
         assert_eq!(subject.is_key_down(Keycode::Down), true);
     }
 
     #[test]
     fn it_releases_keys() {
-        let mut subject = InputManager::new();
-        subject.press_key(Keycode::Down);
-        subject.press_key(Keycode::Up);
-        subject.release_key(Keycode::Down);
+        let event_key_down = Event::KeyDown {
+            keycode: Some(Keycode::Down),
+            timestamp: 0,
+            window_id: 0,
+            scancode: None,
+            repeat: false,
+            keymod: NOMOD,
+        };
+
+        let event_key_down_up = Event::KeyDown {
+            keycode: Some(Keycode::Up),
+            timestamp: 0,
+            window_id: 0,
+            scancode: None,
+            repeat: false,
+            keymod: NOMOD,
+        };
+
+        let event_key_up = Event::KeyUp {
+            keycode: Some(Keycode::Down),
+            timestamp: 0,
+            window_id: 0,
+            scancode: None,
+            repeat: false,
+            keymod: NOMOD,
+        };
+
+        let streams = vec![MockEventIterator { events: vec![event_key_up] },
+                           MockEventIterator { events: vec![event_key_down, event_key_down_up] },];
+        let generator = MockEventStreamGenerator { streams: streams };
+        let mut subject = InputManager::new(generator);
+        subject.update();
+        assert_eq!(subject.is_key_down(Keycode::Down), true);
+        assert_eq!(subject.is_key_down(Keycode::Up), true);
+        subject.update();
         assert_eq!(subject.is_key_down(Keycode::Down), false);
         assert_eq!(subject.is_key_down(Keycode::Up), true);
     }

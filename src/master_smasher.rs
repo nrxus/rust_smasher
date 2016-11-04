@@ -3,15 +3,18 @@ extern crate sdl2_image;
 extern crate sdl2;
 extern crate glm;
 
+use self::moho::input_manager::*;
+
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mouse::Mouse;
 use self::sdl2::render::Renderer;
 use self::sdl2_image::LoadTexture;
+
 use std::error::Error;
 use std::path::Path;
+
 use meteor::Meteor;
 use drawable::Drawable;
-use self::moho::input_manager::*;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
