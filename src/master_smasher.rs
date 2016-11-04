@@ -53,7 +53,7 @@ impl<'a> MasterSmasher<'a> {
                 break;
             }
 
-            if self.input_manager.is_mouse_down(Mouse::Left) {
+            if self.input_manager.did_click_mouse(Mouse::Left) {
                 if !self.meteor.is_launched() {
                     self.meteor.launch(self.input_manager.mouse_coords());
                 }
