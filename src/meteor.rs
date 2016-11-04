@@ -14,9 +14,9 @@ pub struct Meteor {
 }
 
 impl Meteor {
-    pub fn new(texture: Texture, max_coords: glm::Vector2<u32>) -> Self {
+    pub fn new(texture: Texture, center: glm::IVec2, max_coords: glm::Vector2<u32>) -> Self {
         let query = texture.query();
-        let center = glm::dvec2(0., 0.);
+        let center = glm::dvec2(center.x as f64, center.y as f64);
         let dims = glm::uvec2(query.width, query.height);
 
         Meteor {

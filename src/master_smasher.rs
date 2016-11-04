@@ -7,7 +7,7 @@ use self::moho::input_manager::*;
 
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mouse::Mouse;
-use self::sdl2::render::Renderer;
+use self::sdl2::render::{Renderer, Texture};
 use self::sdl2_image::LoadTexture;
 
 use std::error::Error;
@@ -18,7 +18,8 @@ use drawable::Drawable;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
-    background: Drawable,
+    planet: Drawable,
+    background: Texture,
     input_manager: InputManager<SdlEventStreamGenerator>,
     renderer: Renderer<'a>,
 }
@@ -32,13 +33,18 @@ impl<'a> MasterSmasher<'a> {
             try!(moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT));
         let background_path = Path::new("resources/background_game.png");
         let meteor_path = Path::new("resources/meteor.png");
+        let planet_path = Path::new("resources/blue_planet.png");
 
-        let background = Drawable::new(try!(renderer.load_texture(background_path)));
+        let background = try!(renderer.load_texture(background_path));
+        let planet = Drawable::new(try!(renderer.load_texture(planet_path)),
+                                   glm::ivec2(400, 300));
         let meteor = Meteor::new(try!(renderer.load_texture(meteor_path)),
+                                 glm::ivec2(50, 50),
                                  glm::uvec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
         Ok(MasterSmasher {
             meteor: meteor,
+            planet: planet,
             background: background,
             input_manager: input_manager,
             renderer: renderer,
@@ -68,8 +74,9 @@ impl<'a> MasterSmasher<'a> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        try!(self.background.draw(&mut self.renderer));
+        try!(self.renderer.copy(&self.background, None, None));
         try!(self.meteor.draw(&mut self.renderer));
+        try!(self.planet.draw(&mut self.renderer));
         self.renderer.present();
         Ok(())
     }
