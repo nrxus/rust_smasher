@@ -3,23 +3,21 @@ extern crate sdl2_image;
 extern crate sdl2;
 extern crate glm;
 
-use self::sdl2::EventPump;
-use self::sdl2::event::Event;
 use self::sdl2::keyboard::Keycode;
+use self::sdl2::mouse::Mouse;
 use self::sdl2::render::Renderer;
-
 use self::sdl2_image::LoadTexture;
 use std::error::Error;
 use std::path::Path;
 use meteor::Meteor;
 use drawable::Drawable;
+use self::moho::input_manager::*;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
     background: Drawable,
-    input_manager: moho::input_manager::InputManager,
+    input_manager: InputManager<SdlEventStreamGenerator>,
     renderer: Renderer<'a>,
-    event_pump: EventPump,
 }
 
 impl<'a> MasterSmasher<'a> {
@@ -27,9 +25,8 @@ impl<'a> MasterSmasher<'a> {
         const WINDOW_HEIGHT: u32 = 600;
         const WINDOW_WIDTH: u32 = 800;
 
-        let (renderer, event_pump) =
+        let (renderer, input_manager) =
             try!(moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT));
-        let input_manager = moho::input_manager::InputManager::new();
         let background_path = Path::new("resources/background_game.png");
         let meteor_path = Path::new("resources/meteor.png");
 
@@ -42,31 +39,21 @@ impl<'a> MasterSmasher<'a> {
             background: background,
             input_manager: input_manager,
             renderer: renderer,
-            event_pump: event_pump,
         })
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
         'running: loop {
-            for event in self.event_pump.poll_iter() {
-                match event {
-                    Event::Quit { .. } => break 'running,
-                    Event::KeyDown { keycode: Some(key), .. } => {
-                        self.input_manager.press_key(key);
-                    }
-                    Event::KeyUp { keycode: Some(key), .. } => {
-                        self.input_manager.release_key(key);
-                    }
-                    Event::MouseButtonDown { x, y, .. } => {
-                        if !self.meteor.is_launched() || true {
-                            self.meteor.launch(glm::dvec2(x as f64, y as f64));
-                        }
-                    }
-                    _ => {}
-                }
-            }
+            self.input_manager.update();
+
             if self.input_manager.is_key_down(Keycode::Escape) {
                 break;
+            }
+
+            if self.input_manager.is_mouse_down(Mouse::Left) {
+                if !self.meteor.is_launched() {
+                    self.meteor.launch(self.input_manager.mouse_coords());
+                }
             }
 
             self.meteor.update();
