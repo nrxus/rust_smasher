@@ -126,17 +126,26 @@ mod tests {
         }
     }
 
+    macro_rules! key_event {
+        ($t:ident, $e:expr) => {
+            {
+                let event = Event::$t {
+                    keycode: Some($e),
+                    timestamp: 0,
+                    window_id: 0,
+                    scancode: None,
+                    repeat: false,
+                    keymod: NOMOD,
+                };
+                event
+            }
+        };
+    }
+
     #[test]
     fn it_adds_pressed_keys() {
-        let event_key_down = Event::KeyDown {
-            keycode: Some(Keycode::Down),
-            timestamp: 0,
-            window_id: 0,
-            scancode: None,
-            repeat: false,
-            keymod: NOMOD,
-        };
-        let streams = vec![MockEventIterator { events: vec![event_key_down] }];
+        let down_key_down = key_event!(KeyDown, Keycode::Down);
+        let streams = vec![MockEventIterator { events: vec![down_key_down] }];
         let generator = MockEventStreamGenerator { streams: streams };
         let mut subject = InputManager::new(generator);
         assert_eq!(subject.is_key_down(Keycode::Down), false);
@@ -146,32 +155,9 @@ mod tests {
 
     #[test]
     fn it_releases_keys() {
-        let event_key_down = Event::KeyDown {
-            keycode: Some(Keycode::Down),
-            timestamp: 0,
-            window_id: 0,
-            scancode: None,
-            repeat: false,
-            keymod: NOMOD,
-        };
-
-        let event_key_down_up = Event::KeyDown {
-            keycode: Some(Keycode::Up),
-            timestamp: 0,
-            window_id: 0,
-            scancode: None,
-            repeat: false,
-            keymod: NOMOD,
-        };
-
-        let event_key_up = Event::KeyUp {
-            keycode: Some(Keycode::Down),
-            timestamp: 0,
-            window_id: 0,
-            scancode: None,
-            repeat: false,
-            keymod: NOMOD,
-        };
+        let event_key_down = key_event!(KeyDown, Keycode::Down);
+        let event_key_down_up = key_event!(KeyDown, Keycode::Up);
+        let event_key_up = key_event!(KeyUp, Keycode::Down);
 
         let streams = vec![MockEventIterator { events: vec![event_key_up] },
                            MockEventIterator { events: vec![event_key_down, event_key_down_up] },];
