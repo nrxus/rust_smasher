@@ -68,9 +68,14 @@ impl Meteor {
         let side_rect = self.side_rect(&rect);
         let vert_rect = self.vert_rect(&rect);
 
-        let side_vert_rect = match vert_rect {
-            Some(unwrapped) => self.side_rect(&unwrapped),
-            None => None,
+        let side_vert_rect = match (vert_rect, side_rect) {
+            (Some(vert_unwrapped), Some(side_unwrapped)) => {
+                Some(rect::Rect::new(side_unwrapped.x(),
+                                     vert_unwrapped.y(),
+                                     self.dims.x,
+                                     self.dims.y))
+            }
+            _ => None,
         };
 
         [Some(rect), vert_rect, side_rect, side_vert_rect]
@@ -92,7 +97,6 @@ impl Meteor {
         } else {
             None
         }
-
     }
 
     fn side_rect(&self, original: &rect::Rect) -> Option<rect::Rect> {
