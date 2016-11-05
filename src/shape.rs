@@ -1,4 +1,5 @@
 extern crate glm;
+use std::ops::Add;
 
 pub trait Shape {
     fn get_center(&self) -> glm::DVec2;
@@ -64,6 +65,34 @@ impl Shape for Rectangle {
 pub struct Circle {
     radius: f64,
     center: glm::DVec2,
+}
+
+impl Circle {
+    fn intersects_with_line(&self, p1: glm::DVec2, p2: glm::DVec2) -> bool {
+        let d = p2 + p1;
+        let f = p1 - self.center;
+        let a = glm::dot(d, d);
+        let b = 2_f64 * glm::dot(f, d);
+        let c = glm::dot(f, f) - self.radius * self.radius;
+        let mut discriminant = b * b - 4_f64 * a * c;
+
+        if discriminant < 0_f64 {
+            return false;
+        }
+
+        discriminant = discriminant.sqrt();
+
+        let t1 = (-b - discriminant) / (2_f64 * a);
+        let t2 = (-b + discriminant) / (2_f64 * a);
+
+        if t1 >= 0_f64 && t1 <= 1_f64 {
+            true
+        } else if t2 >= 0_f64 && t2 <= 1_f64 {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl Shape for Circle {
@@ -241,6 +270,22 @@ mod test {
         let circle = Circle {
             radius: 1 as f64,
             center: glm::dvec2(5 as f64, 3 as f64),
+        };
+
+        assert!(rectangle.intersects_with_circle(&circle));
+        assert!(circle.intersects_with_rectangle(&rectangle));
+    }
+
+    #[test]
+    fn rectangle_circle_intersect() {
+        let rectangle = Rectangle {
+            dims: glm::dvec2(2 as f64, 2 as f64),
+            center: glm::dvec2(5 as f64, 3 as f64),
+        };
+
+        let circle = Circle {
+            radius: 2 as f64,
+            center: glm::dvec2(2 as f64, 3 as f64),
         };
 
         assert!(rectangle.intersects_with_circle(&circle));
