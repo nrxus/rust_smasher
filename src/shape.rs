@@ -1,5 +1,4 @@
 extern crate glm;
-use std::ops::Add;
 
 pub trait Shape {
     fn get_center(&self) -> glm::DVec2;
@@ -69,7 +68,7 @@ pub struct Circle {
 
 impl Circle {
     fn intersects_with_line(&self, p1: glm::DVec2, p2: glm::DVec2) -> bool {
-        let d = p2 + p1;
+        let d = p2 - p1;
         let f = p1 - self.center;
         let a = glm::dot(d, d);
         let b = 2_f64 * glm::dot(f, d);
