@@ -2,11 +2,13 @@ extern crate glm;
 
 type Line = (glm::DVec2, glm::DVec2);
 
+pub trait Intersect<S> {
+    fn intersects(&self, other: &S) -> bool;
+}
+
 pub trait Shape {
     fn get_center(&self) -> glm::DVec2;
     fn contains(&self, point: &glm::DVec2) -> bool;
-    fn intersects_with_circle(&self, circle: &Circle) -> bool;
-    fn intersects_with_rectangle(&self, rectangle: &Rectangle) -> bool;
     fn distance<S>(&self, other: &S) -> f64
         where S: Shape
     {
@@ -30,59 +32,54 @@ impl Rectangle {
     }
 }
 
-impl Shape for Rectangle {
-    fn get_center(&self) -> glm::DVec2 {
-        self.center
-    }
-
-    fn contains(&self, point: &glm::DVec2) -> bool {
+impl Intersect<Rectangle> for Rectangle {
+    fn intersects(&self, other: &Rectangle) -> bool {
         let half_x = self.dims.x / 2.;
         let half_y = self.dims.y / 2.;
 
-        if self.center.x - half_x > point.x {
+        if self.center.x - half_x > other.center.x + other.dims.x / 2. {
             false
-        } else if self.center.x + half_x < point.x {
+        } else if self.center.x + half_x < other.center.x - other.dims.x / 2. {
             false
-        } else if self.center.y - half_y > point.y {
+        } else if self.center.y - half_y > other.center.y + other.dims.y / 2. {
             false
-        } else if self.center.y + half_y < point.y {
+        } else if self.center.y + half_y < other.center.y - other.dims.y / 2. {
             false
         } else {
             true
         }
     }
+}
 
-    fn intersects_with_rectangle(&self, rectangle: &Rectangle) -> bool {
-        let half_x = self.dims.x / 2.;
-        let half_y = self.dims.y / 2.;
+impl Intersect<Circle> for Rectangle {
+    fn intersects(&self, other: &Circle) -> bool {
+        other.intersects(self)
+    }
+}
 
-        if self.center.x - half_x > rectangle.center.x + rectangle.dims.x / 2. {
-            false
-        } else if self.center.x + half_x < rectangle.center.x - rectangle.dims.x / 2. {
-            false
-        } else if self.center.y - half_y > rectangle.center.y + rectangle.dims.y / 2. {
-            false
-        } else if self.center.y + half_y < rectangle.center.y - rectangle.dims.y / 2. {
-            false
-        } else {
+impl Intersect<Rectangle> for Circle {
+    fn intersects(&self, other: &Rectangle) -> bool {
+        if self.contains(&other.center) {
             true
+        } else if other.contains(&self.center) {
+            true
+        } else {
+            other.get_lines().iter().any(|l| self.intersects(l))
         }
     }
+}
 
-    fn intersects_with_circle(&self, circle: &Circle) -> bool {
-        circle.intersects_with_rectangle(&self)
+impl Intersect<Circle> for Circle {
+    fn intersects(&self, other: &Circle) -> bool {
+        let distance = glm::distance(self.center, other.center);
+        distance < (self.radius + other.radius)
     }
 }
 
-pub struct Circle {
-    radius: f64,
-    center: glm::DVec2,
-}
-
-impl Circle {
-    fn intersects_with_line(&self, line: Line) -> bool {
-        let length = line.1 - line.0;
-        let dist_center = line.0 - self.center;
+impl Intersect<Line> for Circle {
+    fn intersects(&self, other: &Line) -> bool {
+        let length = other.1 - other.0;
+        let dist_center = other.0 - self.center;
         let len_sq = glm::dot(length, length);
         let b = 2_f64 * glm::dot(dist_center, length);
         let c = glm::dot(dist_center, dist_center) - self.radius * self.radius;
@@ -107,6 +104,34 @@ impl Circle {
     }
 }
 
+impl Shape for Rectangle {
+    fn get_center(&self) -> glm::DVec2 {
+        self.center
+    }
+
+    fn contains(&self, point: &glm::DVec2) -> bool {
+        let half_x = self.dims.x / 2.;
+        let half_y = self.dims.y / 2.;
+
+        if self.center.x - half_x > point.x {
+            false
+        } else if self.center.x + half_x < point.x {
+            false
+        } else if self.center.y - half_y > point.y {
+            false
+        } else if self.center.y + half_y < point.y {
+            false
+        } else {
+            true
+        }
+    }
+}
+
+pub struct Circle {
+    radius: f64,
+    center: glm::DVec2,
+}
+
 impl Shape for Circle {
     fn get_center(&self) -> glm::DVec2 {
         self.center
@@ -115,21 +140,6 @@ impl Shape for Circle {
     fn contains(&self, point: &glm::DVec2) -> bool {
         let distance = glm::distance(self.center, *point);
         distance < self.radius
-    }
-
-    fn intersects_with_rectangle(&self, rectangle: &Rectangle) -> bool {
-        if self.contains(&rectangle.center) {
-            true
-        } else if rectangle.contains(&self.center) {
-            true
-        } else {
-            rectangle.get_lines().iter().any(|&l| self.intersects_with_line(l))
-        }
-    }
-
-    fn intersects_with_circle(&self, circle: &Circle) -> bool {
-        let distance = glm::distance(self.center, circle.center);
-        distance < (self.radius + circle.radius)
     }
 }
 
@@ -170,8 +180,8 @@ mod test {
             center: glm::dvec2(4 as f64, 7 as f64),
         };
 
-        assert!(!circle_a.intersects_with_circle(&circle_b));
-        assert!(!circle_b.intersects_with_circle(&circle_a));
+        assert!(!circle_a.intersects(&circle_b));
+        assert!(!circle_b.intersects(&circle_a));
     }
 
     #[test]
@@ -186,8 +196,8 @@ mod test {
             center: glm::dvec2(1 as f64, 5 as f64),
         };
 
-        assert!(circle_a.intersects_with_circle(&circle_b));
-        assert!(circle_b.intersects_with_circle(&circle_a));
+        assert!(circle_a.intersects(&circle_b));
+        assert!(circle_b.intersects(&circle_a));
     }
 
     #[test]
@@ -221,8 +231,8 @@ mod test {
             dims: glm::dvec2(5 as f64, 2 as f64),
             center: glm::dvec2(0 as f64, 8 as f64),
         };
-        assert!(!rectangle_a.intersects_with_rectangle(&rectangle_b));
-        assert!(!rectangle_b.intersects_with_rectangle(&rectangle_a));
+        assert!(!rectangle_a.intersects(&rectangle_b));
+        assert!(!rectangle_b.intersects(&rectangle_a));
     }
 
     #[test]
@@ -236,8 +246,8 @@ mod test {
             dims: glm::dvec2(1 as f64, 2 as f64),
             center: glm::dvec2(2.5 as f64, 1 as f64),
         };
-        assert!(rectangle_a.intersects_with_rectangle(&rectangle_b));
-        assert!(rectangle_b.intersects_with_rectangle(&rectangle_a));
+        assert!(rectangle_a.intersects(&rectangle_b));
+        assert!(rectangle_b.intersects(&rectangle_a));
     }
 
     #[test]
@@ -252,8 +262,8 @@ mod test {
             center: glm::dvec2(1 as f64, 3 as f64),
         };
 
-        assert!(!rectangle.intersects_with_circle(&circle));
-        assert!(!circle.intersects_with_rectangle(&rectangle));
+        assert!(!rectangle.intersects(&circle));
+        assert!(!circle.intersects(&rectangle));
     }
 
     #[test]
@@ -268,8 +278,8 @@ mod test {
             center: glm::dvec2(2 as f64, 3 as f64),
         };
 
-        assert!(rectangle.intersects_with_circle(&circle));
-        assert!(circle.intersects_with_rectangle(&rectangle));
+        assert!(rectangle.intersects(&circle));
+        assert!(circle.intersects(&rectangle));
     }
 
     #[test]
@@ -284,8 +294,8 @@ mod test {
             center: glm::dvec2(5 as f64, 3 as f64),
         };
 
-        assert!(rectangle.intersects_with_circle(&circle));
-        assert!(circle.intersects_with_rectangle(&rectangle));
+        assert!(rectangle.intersects(&circle));
+        assert!(circle.intersects(&rectangle));
     }
 
     #[test]
@@ -300,7 +310,7 @@ mod test {
             center: glm::dvec2(2 as f64, 3 as f64),
         };
 
-        assert!(rectangle.intersects_with_circle(&circle));
-        assert!(circle.intersects_with_rectangle(&rectangle));
+        assert!(rectangle.intersects(&circle));
+        assert!(circle.intersects(&rectangle));
     }
 }
