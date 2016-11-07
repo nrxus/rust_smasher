@@ -19,25 +19,6 @@ impl Rectangle {
     }
 }
 
-impl Intersect<Rectangle> for Rectangle {
-    fn intersects(&self, other: &Rectangle) -> bool {
-        let half_x = self.dims.x / 2.;
-        let half_y = self.dims.y / 2.;
-
-        if self.center.x - half_x > other.center.x + other.dims.x / 2. {
-            false
-        } else if self.center.x + half_x < other.center.x - other.dims.x / 2. {
-            false
-        } else if self.center.y - half_y > other.center.y + other.dims.y / 2. {
-            false
-        } else if self.center.y + half_y < other.center.y - other.dims.y / 2. {
-            false
-        } else {
-            true
-        }
-    }
-}
-
 impl Shape for Rectangle {
     fn get_center(&self) -> glm::DVec2 {
         self.center
@@ -54,6 +35,25 @@ impl Shape for Rectangle {
         } else if self.center.y - half_y > point.y {
             false
         } else if self.center.y + half_y < point.y {
+            false
+        } else {
+            true
+        }
+    }
+}
+
+impl Intersect<Rectangle> for Rectangle {
+    fn intersects(&self, other: &Rectangle) -> bool {
+        let half_x = self.dims.x / 2.;
+        let half_y = self.dims.y / 2.;
+
+        if self.center.x - half_x > other.center.x + other.dims.x / 2. {
+            false
+        } else if self.center.x + half_x < other.center.x - other.dims.x / 2. {
+            false
+        } else if self.center.y - half_y > other.center.y + other.dims.y / 2. {
+            false
+        } else if self.center.y + half_y < other.center.y - other.dims.y / 2. {
             false
         } else {
             true
