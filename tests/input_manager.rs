@@ -104,6 +104,28 @@ fn release_keys() {
 }
 
 #[test]
+fn did_press_key() {
+    let streams = vec![MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Up)] },
+                       MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down)] },];
+
+    let mut subject = InputManager::new(MockEventStreamGenerator { streams: streams });
+
+    // Nothing has been pressed
+    assert_eq!(subject.did_press_key(Keycode::Down), false);
+    assert_eq!(subject.did_press_key(Keycode::Up), false);
+
+    // Down key is pressed
+    subject.update();
+    assert_eq!(subject.did_press_key(Keycode::Down), true);
+    assert_eq!(subject.did_press_key(Keycode::Up), false);
+
+    // Up key is pressed - Down key has not been released yet
+    subject.update();
+    assert_eq!(subject.did_press_key(Keycode::Down), false);
+    assert_eq!(subject.did_press_key(Keycode::Up), true);
+}
+
+#[test]
 fn mouse_coords() {
     let streams = vec![MockEventIterator {
                            events: vec![Event::MouseMotion {

@@ -39,6 +39,7 @@ impl<'a> EventStreamGenerator<'a> for SdlEventStreamGenerator {
 pub struct InputManager<E> {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<Mouse>,
+    prev_pressed_keys: HashSet<Keycode>,
     prev_pressed_buttons: HashSet<Mouse>,
     mouse_coords: glm::IVec2,
     event_stream_generator: E,
@@ -53,6 +54,7 @@ impl<'a, E> InputManager<E>
         InputManager {
             pressed_keys: HashSet::new(),
             pressed_buttons: HashSet::new(),
+            prev_pressed_keys: HashSet::new(),
             prev_pressed_buttons: HashSet::new(),
             mouse_coords: glm::ivec2(0, 0),
             event_stream_generator: events_generator,
@@ -61,6 +63,7 @@ impl<'a, E> InputManager<E>
 
     pub fn update(&'a mut self) {
         let event_stream = self.event_stream_generator.next();
+        self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
         for event in event_stream {
             match event {
@@ -86,6 +89,10 @@ impl<'a, E> InputManager<E>
 
     pub fn is_key_down(&self, keycode: Keycode) -> bool {
         self.pressed_keys.contains(&keycode)
+    }
+
+    pub fn did_press_key(&self, keycode: Keycode) -> bool {
+        self.pressed_keys.contains(&keycode) && !self.prev_pressed_keys.contains(&keycode)
     }
 
     pub fn did_click_mouse(&self, mouse: Mouse) -> bool {
