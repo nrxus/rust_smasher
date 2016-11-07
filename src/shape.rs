@@ -1,5 +1,7 @@
 extern crate glm;
 
+type Line = (glm::DVec2, glm::DVec2);
+
 pub trait Shape {
     fn get_center(&self) -> glm::DVec2;
     fn contains(&self, point: &glm::DVec2) -> bool;
@@ -15,6 +17,17 @@ pub trait Shape {
 pub struct Rectangle {
     dims: glm::DVec2,
     center: glm::DVec2,
+}
+
+impl Rectangle {
+    fn get_lines(&self) -> [Line; 4] {
+        let tl = self.center + glm::dvec2(-self.dims.x / 2., -self.dims.y / 2.);
+        let bl = self.center + glm::dvec2(-self.dims.x / 2., self.dims.y / 2.);
+        let br = self.center + glm::dvec2(self.dims.x / 2., self.dims.y / 2.);
+        let tr = self.center + glm::dvec2(self.dims.x / 2., -self.dims.y / 2.);
+
+        [(tl, bl), (tl, tr), (bl, br), (br, tr)]
+    }
 }
 
 impl Shape for Rectangle {
@@ -67,13 +80,13 @@ pub struct Circle {
 }
 
 impl Circle {
-    fn intersects_with_line(&self, p1: glm::DVec2, p2: glm::DVec2) -> bool {
-        let d = p2 - p1;
-        let f = p1 - self.center;
-        let a = glm::dot(d, d);
-        let b = 2_f64 * glm::dot(f, d);
-        let c = glm::dot(f, f) - self.radius * self.radius;
-        let mut discriminant = b * b - 4_f64 * a * c;
+    fn intersects_with_line(&self, line: Line) -> bool {
+        let length = line.1 - line.0;
+        let dist_center = line.1 - self.center;
+        let len_sq = glm::dot(length, length);
+        let b = 2_f64 * glm::dot(dist_center, length);
+        let c = glm::dot(dist_center, dist_center) - self.radius * self.radius;
+        let mut discriminant = b * b - 4_f64 * len_sq * c;
 
         if discriminant < 0_f64 {
             return false;
@@ -81,8 +94,8 @@ impl Circle {
 
         discriminant = discriminant.sqrt();
 
-        let t1 = (-b - discriminant) / (2_f64 * a);
-        let t2 = (-b + discriminant) / (2_f64 * a);
+        let t1 = (-b - discriminant) / (2_f64 * len_sq);
+        let t2 = (-b + discriminant) / (2_f64 * len_sq);
 
         if t1 >= 0_f64 && t1 <= 1_f64 {
             true
@@ -110,7 +123,7 @@ impl Shape for Circle {
         } else if rectangle.contains(&self.center) {
             true
         } else {
-            false
+            rectangle.get_lines().iter().any(|&l| self.intersects_with_line(l))
         }
     }
 
