@@ -82,7 +82,7 @@ pub struct Circle {
 impl Circle {
     fn intersects_with_line(&self, line: Line) -> bool {
         let length = line.1 - line.0;
-        let dist_center = line.1 - self.center;
+        let dist_center = line.0 - self.center;
         let len_sq = glm::dot(length, length);
         let b = 2_f64 * glm::dot(dist_center, length);
         let c = glm::dot(dist_center, dist_center) - self.radius * self.radius;
@@ -249,7 +249,7 @@ mod test {
 
         let circle = Circle {
             radius: 3 as f64,
-            center: glm::dvec2(2 as f64, 3 as f64),
+            center: glm::dvec2(1 as f64, 3 as f64),
         };
 
         assert!(!rectangle.intersects_with_circle(&circle));
