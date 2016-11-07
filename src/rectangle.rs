@@ -1,6 +1,7 @@
 extern crate glm;
 
 use shape::*;
+use circle::*;
 
 pub struct Rectangle {
     pub dims: glm::DVec2,
@@ -69,8 +70,10 @@ impl Intersect<Circle> for Rectangle {
 #[cfg(test)]
 mod test {
     extern crate glm;
+
     use super::*;
     use shape::*;
+    use circle::*;
 
     #[test]
     fn rectangle_no_contains() {
