@@ -1,9 +1,13 @@
 extern crate sdl2;
 extern crate glm;
 
-use self::sdl2::rect;
+use std::cmp;
 use std::error::Error;
+
+use self::sdl2::rect;
 use self::sdl2::render::{Renderer, Texture};
+
+use circle::Circle;
 
 pub struct Drawable {
     texture: Texture,
@@ -31,5 +35,14 @@ impl Drawable {
 
         try!(renderer.copy(&self.texture, None, Some(rect)));
         Ok(())
+    }
+
+    pub fn collision_body(&self) -> Circle {
+        let diameter = cmp::min(self.dims.x, self.dims.x) as f64;
+
+        Circle {
+            center: self.center,
+            radius: diameter / 2.,
+        }
     }
 }

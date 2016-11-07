@@ -15,6 +15,7 @@ use std::path::Path;
 
 use meteor::Meteor;
 use drawable::Drawable;
+use shape::Intersect;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
@@ -66,6 +67,9 @@ impl<'a> MasterSmasher<'a> {
             }
 
             self.meteor.update();
+            if self.meteor.collision_body().intersects(&self.planet.collision_body()) {
+                self.meteor.restart_at(glm::ivec2(50, 50));
+            }
             try!(self.draw());
         }
 

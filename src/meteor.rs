@@ -1,8 +1,12 @@
 extern crate glm;
 extern crate sdl2;
 
+use std::cmp;
+
 use self::sdl2::rect;
 use self::sdl2::render::{Renderer, Texture};
+
+use circle::Circle;
 
 pub struct Meteor {
     texture: Texture,
@@ -29,9 +33,15 @@ impl Meteor {
         }
     }
 
+    pub fn restart_at(&mut self, center: glm::IVec2) {
+        self.center = glm::dvec2(center.x as f64, center.y as f64);
+        self.launched = false;
+        self.velocity = glm::dvec2(0., 0.);
+    }
+
     pub fn launch(&mut self, target: glm::Vector2<i32>) {
         const FACTOR: f64 = 85.;
-        let offset = glm::ivec2(target.x - self.center.y as i32,
+        let offset = glm::ivec2(target.x - self.center.x as i32,
                                 target.y - self.center.y as i32);
         self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
         self.launched = true;
@@ -58,6 +68,15 @@ impl Meteor {
             .filter(|r| r.is_some())
             .map(|&r| renderer.copy(&self.texture, None, r))
             .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
+    }
+
+    pub fn collision_body(&self) -> Circle {
+        let diameter = cmp::min(self.dims.x, self.dims.x) as f64;
+
+        Circle {
+            center: self.center,
+            radius: diameter / 2.,
+        }
     }
 
     fn drawing_rectangles(&self) -> [Option<rect::Rect>; 4] {
