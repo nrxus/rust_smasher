@@ -14,12 +14,12 @@ use std::error::Error;
 use std::path::Path;
 
 use meteor::Meteor;
-use drawable::Drawable;
+use planet::Planet;
 use shape::Intersect;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
-    planet: Drawable,
+    planet: Planet,
     background: Texture,
     input_manager: InputManager<SdlEventStreamGenerator>,
     renderer: Renderer<'a>,
@@ -37,8 +37,8 @@ impl<'a> MasterSmasher<'a> {
         let planet_path = Path::new("resources/blue_planet.png");
 
         let background = try!(renderer.load_texture(background_path));
-        let planet = Drawable::new(try!(renderer.load_texture(planet_path)),
-                                   glm::ivec2(400, 300));
+        let planet = Planet::new(try!(renderer.load_texture(planet_path)),
+                                 glm::ivec2(400, 300));
         let meteor = Meteor::new(try!(renderer.load_texture(meteor_path)),
                                  glm::ivec2(50, 50),
                                  glm::uvec2(WINDOW_WIDTH, WINDOW_HEIGHT));
