@@ -61,12 +61,15 @@ impl<'a, E> InputManager<E>
         }
     }
 
-    pub fn update(&'a mut self) {
+    pub fn update(&'a mut self) -> bool {
         let event_stream = self.event_stream_generator.next();
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
         for event in event_stream {
             match event {
+                Event::Quit { .. } => {
+                    return false;
+                }
                 Event::KeyDown { keycode: Some(keycode), .. } => {
                     self.pressed_keys.insert(keycode);
                 }
@@ -85,6 +88,7 @@ impl<'a, E> InputManager<E>
                 _ => {}
             }
         }
+        true
     }
 
     pub fn is_key_down(&self, keycode: Keycode) -> bool {

@@ -53,27 +53,37 @@ impl<'a> MasterSmasher<'a> {
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
-        'running: loop {
-            self.input_manager.update();
-
-            if self.input_manager.is_key_down(Keycode::Escape) {
+        loop {
+            if !self.update() {
                 break;
-            }
-
-            if self.input_manager.did_click_mouse(Mouse::Left) {
-                if !self.meteor.is_launched() {
-                    self.meteor.launch(self.input_manager.mouse_coords());
-                }
-            }
-
-            self.meteor.update();
-            if self.meteor.collision_body().intersects(&self.planet.collision_body()) {
-                self.meteor.restart_at(glm::ivec2(50, 50));
             }
             try!(self.draw());
         }
 
         Ok(())
+    }
+
+    fn update(&mut self) -> bool {
+        if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
+            return false;
+        }
+
+        if self.input_manager.did_click_mouse(Mouse::Left) {
+            if !self.meteor.is_launched() {
+                self.meteor.launch(self.input_manager.mouse_coords());
+            }
+        }
+
+        if self.input_manager.did_press_key(Keycode::R) {
+            self.meteor.restart_at(glm::ivec2(50, 50));
+        }
+
+        self.meteor.update();
+        if self.meteor.collision_body().intersects(&self.planet.collision_body()) {
+            self.meteor.restart_at(glm::ivec2(50, 50));
+        }
+
+        true
     }
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
