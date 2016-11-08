@@ -6,16 +6,30 @@ use std::path::Path;
 use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
+use sdl2::rect;
 
 trait ImageLoader {
     type Image;
-    fn load_from_path(&self, path: &Path) -> Result<Self::Image, String>;
+    fn load(&self, path: &Path) -> Result<Self::Image, String>;
+    fn draw(&mut self,
+            image: &Self::Image,
+            src: Option<rect::Rect>,
+            dst: Option<rect::Rect>)
+            -> Result<(), String>;
 }
 
 impl<'a> ImageLoader for Renderer<'a> {
     type Image = Texture;
-    fn load_from_path(&self, path: &Path) -> Result<Texture, String> {
+    fn load(&self, path: &Path) -> Result<Texture, String> {
         self.load_texture(path)
+    }
+
+    fn draw(&mut self,
+            image: &Texture,
+            src: Option<rect::Rect>,
+            dst: Option<rect::Rect>)
+            -> Result<(), String> {
+        self.copy(image, src, dst)
     }
 }
 
@@ -31,6 +45,7 @@ impl<'a, I: ImageLoader> ResourceManager<'a, I> {
             image_loader: image_loader,
         }
     }
+
     pub fn getTexture(&self, path: &'a str) -> Result<Rc<I::Image>, String> {
         {
             let cache = self.texture_cache.borrow();
@@ -41,7 +56,7 @@ impl<'a, I: ImageLoader> ResourceManager<'a, I> {
         }
         let mut cache = self.texture_cache.borrow_mut();
         let image_path = Path::new(path);
-        let image = Rc::new(try!(self.image_loader.load_from_path(image_path)));
+        let image = Rc::new(try!(self.image_loader.load(image_path)));
         cache.insert(path, image.clone());
         Ok(image.clone())
     }
@@ -51,6 +66,7 @@ impl<'a, I: ImageLoader> ResourceManager<'a, I> {
 mod test {
     use std::path::Path;
     use std::cell::RefCell;
+    use sdl2::rect;
     use super::ImageLoader;
     use super::ResourceManager;
 
@@ -68,7 +84,7 @@ mod test {
     impl ImageLoader for MockImageLoader {
         type Image = MockImage;
 
-        fn load_from_path(&self, path: &Path) -> Result<MockImage, String> {
+        fn load(&self, path: &Path) -> Result<MockImage, String> {
             *self.load_count.borrow_mut() += 1;
             match self.error {
                 None => {
@@ -79,6 +95,14 @@ mod test {
                 }
                 Some(ref e) => Err(e.clone()),
             }
+        }
+
+        fn draw(&mut self,
+                image: &MockImage,
+                src: Option<rect::Rect>,
+                dst: Option<rect::Rect>)
+                -> Result<(), String> {
+            Ok(())
         }
     }
 
