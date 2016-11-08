@@ -6,7 +6,7 @@ use std::cmp;
 use self::sdl2::render::{Renderer, Texture};
 
 use circle::Circle;
-use animation::SpriteStrip;
+use sprite_strip::SpriteStrip;
 
 pub struct Meteor {
     sprite: SpriteStrip,
