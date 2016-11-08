@@ -6,6 +6,7 @@ mod circle;
 mod planet;
 mod animation;
 mod sprite_strip;
+mod explosion;
 
 fn main() {
     let mut game = master_smasher::MasterSmasher::new().unwrap();
