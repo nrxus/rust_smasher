@@ -16,7 +16,7 @@ impl Drawable {
     pub fn new(texture: Texture, center: glm::IVec2) -> Self {
         let query = texture.query();
         let center = glm::dvec2(center.x as f64, center.y as f64);
-        let dims = glm::uvec2(query.width, query.width);
+        let dims = glm::uvec2(query.width, query.height);
 
         Drawable {
             texture: texture,

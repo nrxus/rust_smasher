@@ -2,43 +2,36 @@ extern crate sdl2;
 extern crate glm;
 
 use std::cmp;
-use std::error::Error;
 
-use self::sdl2::rect;
 use self::sdl2::render::{Renderer, Texture};
 
 use circle::Circle;
+use animation::SpriteStrip;
 
 pub struct Planet {
-    texture: Texture,
+    sprite: SpriteStrip,
     center: glm::Vector2<f64>,
-    dims: glm::Vector2<u32>,
 }
 
 impl Planet {
     pub fn new(texture: Texture, center: glm::IVec2) -> Self {
-        let query = texture.query();
         let center = glm::dvec2(center.x as f64, center.y as f64);
-        let dims = glm::uvec2(query.width, query.width);
+        let sprite = SpriteStrip::new(texture, 1, None);
 
         Planet {
-            texture: texture,
+            sprite: sprite,
             center: center,
-            dims: dims,
         }
     }
 
-    pub fn draw(&self, renderer: &mut Renderer) -> Result<(), Box<Error>> {
-        let left = self.center.x as i32 - self.dims.x as i32 / 2;
-        let top = self.center.y as i32 - self.dims.y as i32 / 2;
-        let rect = rect::Rect::new(left, top, self.dims.x, self.dims.y);
-
-        try!(renderer.copy(&self.texture, None, Some(rect)));
-        Ok(())
+    pub fn draw(&self, renderer: &mut Renderer) -> Result<(), String> {
+        let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
+        self.sprite.draw(renderer, center, 0)
     }
 
     pub fn collision_body(&self) -> Circle {
-        let diameter = cmp::min(self.dims.x, self.dims.x) as f64;
+        let dims = self.sprite.get_dims();
+        let diameter = cmp::min(dims.x, dims.y) as f64;
 
         Circle {
             center: self.center,

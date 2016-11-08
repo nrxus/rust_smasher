@@ -5,6 +5,7 @@ mod shape;
 mod rectangle;
 mod circle;
 mod planet;
+mod animation;
 
 fn main() {
     let mut game = master_smasher::MasterSmasher::new().unwrap();
