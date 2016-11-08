@@ -16,11 +16,13 @@ use std::path::Path;
 use meteor::Meteor;
 use planet::Planet;
 use shape::Intersect;
+use animation::Animation;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
     planet: Planet,
     background: Texture,
+    explosion: Option<Animation>,
     input_manager: InputManager<SdlEventStreamGenerator>,
     renderer: Renderer<'a>,
 }
@@ -47,6 +49,7 @@ impl<'a> MasterSmasher<'a> {
             meteor: meteor,
             planet: planet,
             background: background,
+            explosion: None,
             input_manager: input_manager,
             renderer: renderer,
         })
@@ -64,6 +67,15 @@ impl<'a> MasterSmasher<'a> {
     }
 
     fn update(&mut self) -> bool {
+        let explosion_ended = match self.explosion {
+            Some(ref mut expl) => !expl.update(),
+            None => false,
+        };
+
+        if explosion_ended {
+            self.explosion = None
+        };
+
         if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
             return false;
         }
@@ -80,6 +92,10 @@ impl<'a> MasterSmasher<'a> {
 
         self.meteor.update();
         if self.meteor.collision_body().intersects(&self.planet.collision_body()) {
+            let explosion_path = Path::new("resources/explosion_large.png");
+            let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
+            let animation = Animation::new(explosion_texture, 8, 80, None, false);
+            self.explosion = Some(animation);
             self.meteor.restart_at(glm::ivec2(50, 50));
         }
 
@@ -91,6 +107,10 @@ impl<'a> MasterSmasher<'a> {
         try!(self.renderer.copy(&self.background, None, None));
         try!(self.meteor.draw(&mut self.renderer));
         try!(self.planet.draw(&mut self.renderer));
+        match self.explosion {
+            Some(ref expl) => try!(expl.draw(&mut self.renderer, glm::ivec2(100, 100))),
+            None => {}
+        }
         self.renderer.present();
         Ok(())
     }
