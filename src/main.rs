@@ -1,6 +1,5 @@
 mod master_smasher;
 mod meteor;
-mod drawable;
 mod shape;
 mod rectangle;
 mod circle;
