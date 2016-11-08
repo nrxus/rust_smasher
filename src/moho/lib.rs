@@ -6,6 +6,7 @@ use sdl2_image::{INIT_PNG, INIT_JPG};
 use std::error::Error;
 
 pub mod input_manager;
+pub mod resource_manager;
 
 use input_manager::{InputManager, SdlEventStreamGenerator};
 
