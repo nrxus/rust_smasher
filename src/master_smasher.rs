@@ -17,6 +17,7 @@ use meteor::Meteor;
 use planet::Planet;
 use shape::Intersect;
 use animation::Animation;
+use sprite_strip::SpriteStrip;
 
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
@@ -94,7 +95,8 @@ impl<'a> MasterSmasher<'a> {
         if self.meteor.collision_body().intersects(&self.planet.collision_body()) {
             let explosion_path = Path::new("resources/explosion_large.png");
             let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
-            let animation = Animation::new(explosion_texture, 8, 80, None, false);
+            let explosion_sprite = SpriteStrip::new(explosion_texture, 8, None);
+            let animation = Animation::new(explosion_sprite, 8, false, 80);
             self.explosion = Some(animation);
             self.meteor.restart_at(glm::ivec2(50, 50));
         }

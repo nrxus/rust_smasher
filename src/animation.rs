@@ -3,7 +3,7 @@ extern crate glm;
 
 use std::time::{Instant, Duration};
 
-use self::sdl2::render::{Renderer, Texture};
+use self::sdl2::render::Renderer;
 use sprite_strip::SpriteStrip;
 
 pub struct Animation {
@@ -16,22 +16,14 @@ pub struct Animation {
 }
 
 impl Animation {
-    pub fn new(texture: Texture,
-               num_frames: u32,
-               frame_duration_ms: u16,
-               wrapping_coords: Option<glm::UVec2>,
-               repeat: bool)
-               -> Self {
-
-        let sprite = SpriteStrip::new(texture, num_frames, wrapping_coords);
-
+    pub fn new(sprite: SpriteStrip, num_frames: u32, repeat: bool, frame_duration_ms: u16) -> Self {
         Animation {
             sprite: sprite,
             num_frames: num_frames,
-            current_frame: 0,
-            frame_duration: Duration::from_millis(frame_duration_ms as u64),
-            frame_instant: None,
             repeat: repeat,
+            frame_duration: Duration::from_millis(frame_duration_ms as u64),
+            current_frame: 0,
+            frame_instant: None,
         }
     }
 
