@@ -12,10 +12,11 @@ use sdl2::rect;
 trait Renderer {
     type Texture;
     fn load_texture(&self, path: &Path) -> Result<Self::Texture, String>;
+    fn output_size(&self) -> Result<(u32, u32), String>;
 
     fn clear(&mut self);
     fn present(&mut self);
-    fn draw(&mut self,
+    fn copy(&mut self,
             texture: Rc<Self::Texture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
@@ -29,7 +30,11 @@ impl<'a> Renderer for SdlRenderer<'a> {
         LoadTexture::load_texture(self, path)
     }
 
-    fn draw(&mut self,
+    fn output_size(&self) -> Result<(u32, u32), String> {
+        self.output_size()
+    }
+
+    fn copy(&mut self,
             texture: Rc<SdlTexture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
@@ -48,14 +53,14 @@ impl<'a> Renderer for SdlRenderer<'a> {
 
 struct ResourceManager<'a, I: Renderer> {
     texture_cache: RefCell<HashMap<&'a str, Rc<I::Texture>>>,
-    image_loader: I,
+    renderer: I,
 }
 
 impl<'a, I: Renderer> ResourceManager<'a, I> {
-    pub fn new(image_loader: I) -> Self {
+    pub fn new(renderer: I) -> Self {
         ResourceManager {
             texture_cache: RefCell::new(HashMap::new()),
-            image_loader: image_loader,
+            renderer: renderer,
         }
     }
 
@@ -69,7 +74,7 @@ impl<'a, I: Renderer> ResourceManager<'a, I> {
         }
         let mut cache = self.texture_cache.borrow_mut();
         let image_path = Path::new(path);
-        let image = Rc::new(try!(self.image_loader.load_texture(image_path)));
+        let image = Rc::new(try!(self.renderer.load_texture(image_path)));
         cache.insert(path, image.clone());
         Ok(image.clone())
     }
@@ -83,75 +88,6 @@ mod test {
     use sdl2::rect;
     use super::Renderer;
     use super::ResourceManager;
-
-    #[derive(Debug)]
-    struct MockTexture {
-        path: String,
-    }
-
-    struct RendererTracker {
-        load_count: u16,
-        last_img: Rc<MockTexture>,
-        last_src: Option<rect::Rect>,
-        last_dst: Option<rect::Rect>,
-    }
-
-    impl RendererTracker {
-        fn new() -> Self {
-            RendererTracker {
-                load_count: 0,
-                last_img: Rc::new(MockTexture { path: "NULL".into() }),
-                last_dst: None,
-                last_src: None,
-            }
-        }
-    }
-
-    struct MockRenderer {
-        error: Option<String>,
-        tracker: Rc<RefCell<RendererTracker>>,
-    }
-
-    impl Renderer for MockRenderer {
-        type Texture = MockTexture;
-
-        fn load_texture(&self, path: &Path) -> Result<MockTexture, String> {
-            self.tracker.borrow_mut().load_count += 1;
-            match self.error {
-                None => Ok(MockTexture { path: path.to_str().unwrap_or("").into() }),
-                Some(ref e) => Err(e.clone()),
-            }
-        }
-
-        fn draw(&mut self,
-                image: Rc<MockTexture>,
-                src: Option<rect::Rect>,
-                dst: Option<rect::Rect>)
-                -> Result<(), String> {
-            match self.error {
-                None => {
-                    let mut tracker = self.tracker.borrow_mut();
-                    tracker.last_img = image;
-                    tracker.last_src = src;
-                    tracker.last_dst = dst;
-                    Ok(())
-                }
-                Some(ref e) => Err(e.clone()),
-            }
-        }
-    }
-
-    fn new_subject<'a>(error: Option<String>)
-                       -> (ResourceManager<'a, MockRenderer>, Rc<RefCell<RendererTracker>>) {
-        let tracker = Rc::new(RefCell::new(RendererTracker::new()));
-        let image_loader = MockRenderer {
-            error: error,
-            tracker: tracker.clone(),
-        };
-
-        let subject = ResourceManager::new(image_loader);
-        (subject, tracker)
-    }
 
     #[test]
     fn loads_image() {
@@ -193,5 +129,82 @@ mod test {
     fn draws_images() {
         let (subject, tracker) = new_subject(None);
         let image = subject.load_texture("mypath/").unwrap();
+    }
+
+    #[derive(Debug)]
+    struct MockTexture {
+        path: String,
+    }
+
+    struct RendererTracker {
+        load_count: u16,
+        last_img: Rc<MockTexture>,
+        last_src: Option<rect::Rect>,
+        last_dst: Option<rect::Rect>,
+    }
+
+    impl RendererTracker {
+        fn new() -> Self {
+            RendererTracker {
+                load_count: 0,
+                last_img: Rc::new(MockTexture { path: "NULL".into() }),
+                last_dst: None,
+                last_src: None,
+            }
+        }
+    }
+
+    struct MockRenderer {
+        error: Option<String>,
+        tracker: Rc<RefCell<RendererTracker>>,
+    }
+
+    impl Renderer for MockRenderer {
+        type Texture = MockTexture;
+
+        fn load_texture(&self, path: &Path) -> Result<MockTexture, String> {
+            self.tracker.borrow_mut().load_count += 1;
+            match self.error {
+                None => Ok(MockTexture { path: path.to_str().unwrap_or("").into() }),
+                Some(ref e) => Err(e.clone()),
+            }
+        }
+
+        fn copy(&mut self,
+                image: Rc<MockTexture>,
+                src: Option<rect::Rect>,
+                dst: Option<rect::Rect>)
+                -> Result<(), String> {
+            match self.error {
+                None => {
+                    let mut tracker = self.tracker.borrow_mut();
+                    tracker.last_img = image;
+                    tracker.last_src = src;
+                    tracker.last_dst = dst;
+                    Ok(())
+                }
+                Some(ref e) => Err(e.clone()),
+            }
+        }
+
+        fn clear(&mut self) {}
+
+        fn present(&mut self) {}
+
+        fn output_size(&self) -> Result<(u32, u32), String> {
+            Ok((0, 0))
+        }
+    }
+
+    fn new_subject<'a>(error: Option<String>)
+                       -> (ResourceManager<'a, MockRenderer>, Rc<RefCell<RendererTracker>>) {
+        let tracker = Rc::new(RefCell::new(RendererTracker::new()));
+        let renderer = MockRenderer {
+            error: error,
+            tracker: tracker.clone(),
+        };
+
+        let subject = ResourceManager::new(renderer);
+        (subject, tracker)
     }
 }
