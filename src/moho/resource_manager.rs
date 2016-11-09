@@ -12,8 +12,11 @@ use sdl2::rect;
 trait Renderer {
     type Texture;
     fn load_texture(&self, path: &Path) -> Result<Self::Texture, String>;
+
+    fn clear(&mut self);
+    fn present(&mut self);
     fn draw(&mut self,
-            image: Rc<Self::Texture>,
+            texture: Rc<Self::Texture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String>;
@@ -27,11 +30,19 @@ impl<'a> Renderer for SdlRenderer<'a> {
     }
 
     fn draw(&mut self,
-            image: Rc<SdlTexture>,
+            texture: Rc<SdlTexture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
-        self.copy(&*image, src, dst)
+        self.copy(&*texture, src, dst)
+    }
+
+    fn clear(&mut self) {
+        self.clear();
+    }
+
+    fn present(&mut self) {
+        self.present();
     }
 }
 
