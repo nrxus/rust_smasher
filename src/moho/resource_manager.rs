@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate glm;
 
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
@@ -21,6 +22,11 @@ trait Renderer {
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String>;
+}
+
+struct TextureData<T> {
+    texture: T,
+    size: glm::IVec2,
 }
 
 impl<'a> Renderer for SdlRenderer<'a> {
@@ -77,6 +83,14 @@ impl<'a, I: Renderer> ResourceManager<'a, I> {
         let image = Rc::new(try!(self.renderer.load_texture(image_path)));
         cache.insert(path, image.clone());
         Ok(image.clone())
+    }
+
+    pub fn clear(&mut self) {
+        self.renderer.clear();
+    }
+
+    pub fn present(&mut self) {
+        self.renderer.present();
     }
 }
 
