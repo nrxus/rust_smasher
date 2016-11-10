@@ -5,7 +5,7 @@ extern crate moho;
 use std::rc::Rc;
 use self::sdl2::rect;
 use self::moho::resource_manager::ResourceManager;
-use self::sdl2::render::Renderer as SdlRenderer;
+use self::moho::resource_manager::Renderer;
 use self::sdl2::render::Texture;
 use self::moho::window_wrapper::*;
 
@@ -27,11 +27,13 @@ impl SpriteStrip {
         }
     }
 
-    pub fn draw(&self,
-                renderer: &mut ResourceManager<SdlRenderer>,
-                center: glm::IVec2,
-                frame_num: u32)
-                -> Result<(), String> {
+    pub fn draw<I>(&self,
+                   renderer: &mut ResourceManager<I>,
+                   center: glm::IVec2,
+                   frame_num: u32)
+                   -> Result<(), String>
+        where I: Renderer<Texture = Texture>
+    {
 
         let source_rect = rect::Rect::new((self.dims.x * frame_num) as i32,
                                           0,

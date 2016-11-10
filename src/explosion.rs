@@ -3,7 +3,8 @@ extern crate glm;
 extern crate moho;
 
 use animation::Animation;
-use self::sdl2::render::Renderer as SdlRenderer;
+use self::sdl2::render::Texture;
+use self::moho::resource_manager::Renderer;
 use self::moho::resource_manager::ResourceManager;
 
 pub struct Explosion {
@@ -23,7 +24,9 @@ impl Explosion {
         self.animation.update()
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<SdlRenderer>) -> Result<(), String> {
+    pub fn draw<I>(&self, renderer: &mut ResourceManager<I>) -> Result<(), String>
+        where I: Renderer<Texture = Texture>
+    {
         self.animation.draw(renderer, self.center)
     }
 }

@@ -6,8 +6,8 @@ use std::cmp;
 use std::rc::Rc;
 
 use self::sdl2::render::Texture;
-use self::sdl2::render::Renderer as SdlRenderer;
 
+use self::moho::resource_manager::Renderer;
 use self::moho::resource_manager::ResourceManager;
 
 use circle::Circle;
@@ -29,7 +29,9 @@ impl Planet {
         }
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<SdlRenderer>) -> Result<(), String> {
+    pub fn draw<I>(&self, renderer: &mut ResourceManager<I>) -> Result<(), String>
+        where I: Renderer<Texture = Texture>
+    {
         let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
         self.sprite.draw(renderer, center, 0)
     }
