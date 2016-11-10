@@ -7,6 +7,7 @@ use std::error::Error;
 
 pub mod input_manager;
 pub mod resource_manager;
+pub mod window_wrapper;
 
 use input_manager::{InputManager, SdlEventStreamGenerator};
 
