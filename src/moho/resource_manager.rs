@@ -24,11 +24,6 @@ pub trait Renderer {
             -> Result<(), String>;
 }
 
-struct TextureData<T> {
-    texture: T,
-    size: glm::IVec2,
-}
-
 impl<'a> Renderer for SdlRenderer<'a> {
     type Texture = SdlTexture;
 
@@ -73,16 +68,24 @@ impl<'a, I: Renderer> ResourceManager<'a, I> {
     pub fn load_texture(&self, path: &'a str) -> Result<Rc<I::Texture>, String> {
         {
             let cache = self.texture_cache.borrow();
-            let image = cache.get(path);
-            if let Some(x) = image {
+            let texture = cache.get(path);
+            if let Some(x) = texture {
                 return Ok(x.clone());
             }
         }
         let mut cache = self.texture_cache.borrow_mut();
-        let image_path = Path::new(path);
-        let image = Rc::new(try!(self.renderer.load_texture(image_path)));
-        cache.insert(path, image.clone());
-        Ok(image.clone())
+        let texture_path = Path::new(path);
+        let texture = Rc::new(try!(self.renderer.load_texture(texture_path)));
+        cache.insert(path, texture.clone());
+        Ok(texture.clone())
+    }
+
+    pub fn draw(&mut self,
+            texture: Rc<I::Texture>,
+            src: Option<rect::Rect>,
+            dst: Option<rect::Rect>)
+            -> Result<(), String> {
+        self.renderer.copy(texture, src, dst)
     }
 
     pub fn clear(&mut self) {

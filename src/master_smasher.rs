@@ -4,14 +4,15 @@ extern crate sdl2;
 extern crate glm;
 
 use self::moho::input_manager::*;
+use self::moho::resource_manager::*;
 
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mouse::Mouse;
-use self::sdl2::render::{Renderer, Texture};
-use self::sdl2_image::LoadTexture;
+use self::sdl2::render::Renderer as SdlRenderer;
+use self::sdl2::render::Texture;
 
 use std::error::Error;
-use std::path::Path;
+use std::rc::Rc;
 
 use meteor::Meteor;
 use planet::Planet;
@@ -24,10 +25,10 @@ use shape::Shape;
 pub struct MasterSmasher<'a> {
     meteor: Meteor,
     planet: Planet,
-    background: Texture,
+    background: Rc<Texture>,
     explosion: Option<Explosion>,
     input_manager: InputManager<SdlEventStreamGenerator>,
-    renderer: Renderer<'a>,
+    renderer: ResourceManager<'a, SdlRenderer<'a>>,
 }
 
 impl<'a> MasterSmasher<'a> {
@@ -37,9 +38,9 @@ impl<'a> MasterSmasher<'a> {
 
         let (renderer, input_manager) =
             try!(moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT));
-        let background_path = Path::new("resources/background_game.png");
-        let meteor_path = Path::new("resources/meteor.png");
-        let planet_path = Path::new("resources/blue_planet.png");
+        let background_path = "resources/background_game.png";
+        let meteor_path = "resources/meteor.png";
+        let planet_path = "resources/blue_planet.png";
 
         let background = try!(renderer.load_texture(background_path));
         let planet = Planet::new(try!(renderer.load_texture(planet_path)),
@@ -97,7 +98,7 @@ impl<'a> MasterSmasher<'a> {
         let meteor_body = self.meteor.collision_body();
 
         if meteor_body.intersects(&self.planet.collision_body()) {
-            let explosion_path = Path::new("resources/explosion_large.png");
+            let explosion_path = "resources/explosion_large.png";
             let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
             let explosion_sprite = SpriteStrip::new(explosion_texture, 8, None);
             let animation = Animation::new(explosion_sprite, 8, false, 80);
@@ -112,7 +113,7 @@ impl<'a> MasterSmasher<'a> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        try!(self.renderer.copy(&self.background, None, None));
+        try!(self.renderer.draw(self.background.clone(), None, None));
         try!(self.meteor.draw(&mut self.renderer));
         try!(self.planet.draw(&mut self.renderer));
         match self.explosion {

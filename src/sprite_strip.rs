@@ -2,18 +2,21 @@ extern crate glm;
 extern crate sdl2;
 extern crate moho;
 
+use std::rc::Rc;
 use self::sdl2::rect;
-use self::sdl2::render::{Renderer, Texture};
+use self::moho::resource_manager::ResourceManager;
+use self::sdl2::render::Renderer as SdlRenderer;
+use self::sdl2::render::Texture;
 use self::moho::window_wrapper::*;
 
 pub struct SpriteStrip {
-    texture: Texture,
+    texture: Rc<Texture>,
     dims: glm::UVec2,
     wrapping_coords: Option<glm::UVec2>,
 }
 
 impl SpriteStrip {
-    pub fn new(texture: Texture, num_frames: u32, wrapping_coords: Option<glm::UVec2>) -> Self {
+    pub fn new(texture: Rc<Texture>, num_frames: u32, wrapping_coords: Option<glm::UVec2>) -> Self {
         let query = texture.query();
         let dims = glm::uvec2(query.width / num_frames, query.height);
 
@@ -25,7 +28,7 @@ impl SpriteStrip {
     }
 
     pub fn draw(&self,
-                renderer: &mut Renderer,
+                renderer: &mut ResourceManager<SdlRenderer>,
                 center: glm::IVec2,
                 frame_num: u32)
                 -> Result<(), String> {
@@ -47,7 +50,7 @@ impl SpriteStrip {
                                         self.dims.x,
                                         self.dims.y)
                     })
-                    .map(|r| renderer.copy(&self.texture, Some(source_rect), Some(r)))
+                    .map(|r| renderer.draw(self.texture.clone(), Some(source_rect), Some(r)))
                     .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
             }
             None => {
@@ -55,7 +58,7 @@ impl SpriteStrip {
                                            center.y - self.dims.y as i32 / 2,
                                            self.dims.x,
                                            self.dims.y);
-                renderer.copy(&self.texture, Some(source_rect), Some(rect))
+                renderer.draw(self.texture.clone(), Some(source_rect), Some(rect))
             }
         }
     }

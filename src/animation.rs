@@ -1,9 +1,12 @@
 extern crate sdl2;
 extern crate glm;
+extern crate moho;
 
 use std::time::{Instant, Duration};
 
-use self::sdl2::render::Renderer;
+use self::sdl2::render::Renderer as SdlRenderer;
+use self::moho::resource_manager::ResourceManager;
+
 use sprite_strip::SpriteStrip;
 
 pub struct Animation {
@@ -56,7 +59,10 @@ impl Animation {
         }
     }
 
-    pub fn draw(&self, renderer: &mut Renderer, center: glm::IVec2) -> Result<(), String> {
+    pub fn draw(&self,
+                renderer: &mut ResourceManager<SdlRenderer>,
+                center: glm::IVec2)
+                -> Result<(), String> {
         self.sprite.draw(renderer, center, self.current_frame)
     }
 }
