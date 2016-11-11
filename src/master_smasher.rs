@@ -9,6 +9,7 @@ use self::moho::resource_manager::*;
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mouse::Mouse;
 use self::sdl2::render::Renderer as SdlRenderer;
+use self::sdl2::EventPump as SdlEventPump;
 use self::sdl2::render::Texture;
 
 use std::error::Error;
@@ -27,7 +28,7 @@ pub struct MasterSmasher<'a> {
     planet: Planet,
     background: Rc<Texture>,
     explosion: Option<Explosion>,
-    input_manager: InputManager<SdlEventStreamGenerator>,
+    input_manager: InputManager<SdlEventPump>,
     renderer: ResourceManager<'a, SdlRenderer<'a>>,
 }
 

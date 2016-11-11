@@ -1,71 +1,54 @@
 extern crate glm;
 
-use sdl2::EventPump;
+use sdl2::EventPump as SdlEventPump;
 use sdl2::event::EventPollIterator;
 use sdl2::event::Event;
 use sdl2::mouse::Mouse;
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
-pub trait EventStreamGenerator<'a> {
+pub trait EventPump<'a> {
     type I: Iterator<Item = Event>;
-    fn next(&'a mut self) -> EventStream<Self::I>;
+
+    fn poll_iter(&'a mut self) -> Self::I;
 }
 
-pub struct SdlEventStreamGenerator {
-    pub event_pump: EventPump,
-}
-
-pub struct EventStream<I> {
-    pub event_iterator: I,
-}
-
-impl<I: Iterator<Item = Event>> Iterator for EventStream<I> {
-    type Item = Event;
-    fn next(&mut self) -> Option<Event> {
-        self.event_iterator.next()
-    }
-}
-
-impl<'a> EventStreamGenerator<'a> for SdlEventStreamGenerator {
+impl<'a> EventPump<'a> for SdlEventPump {
     type I = EventPollIterator<'a>;
 
-    fn next(&'a mut self) -> EventStream<EventPollIterator> {
-        let event_iterator = self.event_pump.poll_iter();
-        EventStream { event_iterator: event_iterator }
+    fn poll_iter(&'a mut self) -> EventPollIterator {
+        self.poll_iter()
     }
 }
 
-pub struct InputManager<E> {
+pub struct InputManager<P> {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<Mouse>,
     prev_pressed_keys: HashSet<Keycode>,
     prev_pressed_buttons: HashSet<Mouse>,
     mouse_coords: glm::IVec2,
-    event_stream_generator: E,
+    event_pump: P,
 }
 
-impl<'a, E> InputManager<E>
-    where E: EventStreamGenerator<'a>
+impl<'a, P> InputManager<P>
+    where P: EventPump<'a>
 {
-    pub fn new(events_generator: E) -> InputManager<E>
-        where E: EventStreamGenerator<'a>
-    {
+    pub fn new(events_generator: P) -> InputManager<P> {
         InputManager {
             pressed_keys: HashSet::new(),
             pressed_buttons: HashSet::new(),
             prev_pressed_keys: HashSet::new(),
             prev_pressed_buttons: HashSet::new(),
             mouse_coords: glm::ivec2(0, 0),
-            event_stream_generator: events_generator,
+            event_pump: events_generator,
         }
     }
 
     pub fn update(&'a mut self) -> bool {
-        let event_stream = self.event_stream_generator.next();
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
-        for event in event_stream {
+
+        for event in self.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => {
                     return false;

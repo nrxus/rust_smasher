@@ -2,6 +2,7 @@ extern crate sdl2;
 extern crate sdl2_image;
 
 use sdl2::render::Renderer as SdlRenderer;
+use sdl2::EventPump as SdlEventPump;
 use sdl2_image::{INIT_PNG, INIT_JPG};
 use std::error::Error;
 
@@ -15,7 +16,7 @@ use input_manager::*;
 pub fn init(name: &str,
             width: u32,
             height: u32)
-            -> Result<(ResourceManager<SdlRenderer>, InputManager<SdlEventStreamGenerator>), Box<Error>> {
+            -> Result<(ResourceManager<SdlRenderer>, InputManager<SdlEventPump>), Box<Error>> {
     let sdl_ctx = try!(sdl2::init());
     let video_ctx = try!(sdl_ctx.video());
     let _image_ctx = try!(sdl2_image::init(INIT_PNG | INIT_JPG));
@@ -31,8 +32,6 @@ pub fn init(name: &str,
     resource_manager.present();
 
     let event_pump = try!(sdl_ctx.event_pump());
-    let sdl_event_generator = SdlEventStreamGenerator { event_pump: event_pump };
-    let input_manager: InputManager<SdlEventStreamGenerator> =
-        InputManager::new(sdl_event_generator);
+    let input_manager = InputManager::new(event_pump);
     Ok((resource_manager, input_manager))
 }
