@@ -10,15 +10,21 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use sdl2::rect;
 
+pub struct TextureData<T> {
+    pub texture: T,
+    pub width: u32,
+    pub height: u32,
+}
+
 pub trait Renderer {
     type Texture;
-    fn load_texture(&self, path: &Path) -> Result<Self::Texture, String>;
+    fn load_texture(&self, path: &Path) -> Result<TextureData<Self::Texture>, String>;
     fn output_size(&self) -> Result<(u32, u32), String>;
 
     fn clear(&mut self);
     fn present(&mut self);
     fn copy(&mut self,
-            texture: Rc<Self::Texture>,
+            texture: &Self::Texture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String>;
@@ -27,8 +33,14 @@ pub trait Renderer {
 impl<'a> Renderer for SdlRenderer<'a> {
     type Texture = SdlTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<SdlTexture, String> {
-        LoadTexture::load_texture(self, path)
+    fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>, String> {
+        let texture = try!(LoadTexture::load_texture(self, path));
+        let query = texture.query();
+        Ok(TextureData {
+            texture: texture,
+            width: query.width,
+            height: query.height,
+        })
     }
 
     fn output_size(&self) -> Result<(u32, u32), String> {
@@ -36,11 +48,11 @@ impl<'a> Renderer for SdlRenderer<'a> {
     }
 
     fn copy(&mut self,
-            texture: Rc<SdlTexture>,
+            texture: &SdlTexture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
-        self.copy(&*texture, src, dst)
+        self.copy(texture, src, dst)
     }
 
     fn clear(&mut self) {
@@ -52,20 +64,20 @@ impl<'a> Renderer for SdlRenderer<'a> {
     }
 }
 
-pub struct ResourceManager<'a, I: Renderer> {
-    texture_cache: RefCell<HashMap<&'a str, Rc<I::Texture>>>,
-    renderer: I,
+pub struct ResourceManager<'a, R: Renderer> {
+    texture_cache: RefCell<HashMap<&'a str, Rc<TextureData<R::Texture>>>>,
+    renderer: R,
 }
 
-impl<'a, I: Renderer> ResourceManager<'a, I> {
-    pub fn new(renderer: I) -> Self {
+impl<'a, R: Renderer> ResourceManager<'a, R> {
+    pub fn new(renderer: R) -> Self {
         ResourceManager {
             texture_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
         }
     }
 
-    pub fn load_texture(&self, path: &'a str) -> Result<Rc<I::Texture>, String> {
+    pub fn load_texture(&self, path: &'a str) -> Result<Rc<TextureData<R::Texture>>, String> {
         {
             let cache = self.texture_cache.borrow();
             let texture = cache.get(path);
@@ -81,7 +93,7 @@ impl<'a, I: Renderer> ResourceManager<'a, I> {
     }
 
     pub fn draw(&mut self,
-            texture: Rc<I::Texture>,
+            texture: &R::Texture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {

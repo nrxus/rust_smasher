@@ -4,14 +4,13 @@ extern crate moho;
 
 use std::time::{Instant, Duration};
 
-use self::sdl2::render::Texture;
 use self::moho::resource_manager::ResourceManager;
 use self::moho::resource_manager::Renderer;
 
 use sprite_strip::SpriteStrip;
 
-pub struct Animation {
-    sprite: SpriteStrip,
+pub struct Animation<R: Renderer> {
+    sprite: SpriteStrip<R>,
     num_frames: u32,
     current_frame: u32,
     frame_duration: Duration,
@@ -19,8 +18,12 @@ pub struct Animation {
     repeat: bool,
 }
 
-impl Animation {
-    pub fn new(sprite: SpriteStrip, num_frames: u32, repeat: bool, frame_duration_ms: u16) -> Self {
+impl<R: Renderer> Animation<R> {
+    pub fn new(sprite: SpriteStrip<R>,
+               num_frames: u32,
+               repeat: bool,
+               frame_duration_ms: u16)
+               -> Self {
         Animation {
             sprite: sprite,
             num_frames: num_frames,
@@ -60,12 +63,10 @@ impl Animation {
         }
     }
 
-    pub fn draw<I>(&self,
-                   renderer: &mut ResourceManager<I>,
-                   center: glm::IVec2)
-                   -> Result<(), String>
-        where I: Renderer<Texture = Texture>
-    {
+    pub fn draw(&self,
+                renderer: &mut ResourceManager<R>,
+                center: glm::IVec2)
+                -> Result<(), String> {
         self.sprite.draw(renderer, center, self.current_frame)
     }
 }

@@ -4,21 +4,21 @@ extern crate moho;
 
 use std::rc::Rc;
 use self::sdl2::rect;
-use self::moho::resource_manager::ResourceManager;
-use self::moho::resource_manager::Renderer;
-use self::sdl2::render::Texture;
+use self::moho::resource_manager::*;
 use self::moho::window_wrapper::*;
 
-pub struct SpriteStrip {
-    texture: Rc<Texture>,
+pub struct SpriteStrip<R: Renderer> {
+    texture: Rc<TextureData<R::Texture>>,
     dims: glm::UVec2,
     wrapping_coords: Option<glm::UVec2>,
 }
 
-impl SpriteStrip {
-    pub fn new(texture: Rc<Texture>, num_frames: u32, wrapping_coords: Option<glm::UVec2>) -> Self {
-        let query = texture.query();
-        let dims = glm::uvec2(query.width / num_frames, query.height);
+impl<R: Renderer> SpriteStrip<R> {
+    pub fn new(texture: Rc<TextureData<R::Texture>>,
+               num_frames: u32,
+               wrapping_coords: Option<glm::UVec2>)
+               -> Self {
+        let dims = glm::uvec2(texture.width / num_frames, texture.height);
 
         SpriteStrip {
             texture: texture,
@@ -27,14 +27,11 @@ impl SpriteStrip {
         }
     }
 
-    pub fn draw<I>(&self,
-                   renderer: &mut ResourceManager<I>,
-                   center: glm::IVec2,
-                   frame_num: u32)
-                   -> Result<(), String>
-        where I: Renderer<Texture = Texture>
-    {
-
+    pub fn draw(&self,
+                renderer: &mut ResourceManager<R>,
+                center: glm::IVec2,
+                frame_num: u32)
+                -> Result<(), String> {
         let source_rect = rect::Rect::new((self.dims.x * frame_num) as i32,
                                           0,
                                           self.dims.x,
@@ -52,7 +49,7 @@ impl SpriteStrip {
                                         self.dims.x,
                                         self.dims.y)
                     })
-                    .map(|r| renderer.draw(self.texture.clone(), Some(source_rect), Some(r)))
+                    .map(|r| renderer.draw(&self.texture.texture, Some(source_rect), Some(r)))
                     .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
             }
             None => {
@@ -60,7 +57,7 @@ impl SpriteStrip {
                                            center.y - self.dims.y as i32 / 2,
                                            self.dims.x,
                                            self.dims.y);
-                renderer.draw(self.texture.clone(), Some(source_rect), Some(rect))
+                renderer.draw(&self.texture.texture, Some(source_rect), Some(rect))
             }
         }
     }

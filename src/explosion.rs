@@ -3,17 +3,16 @@ extern crate glm;
 extern crate moho;
 
 use animation::Animation;
-use self::sdl2::render::Texture;
 use self::moho::resource_manager::Renderer;
 use self::moho::resource_manager::ResourceManager;
 
-pub struct Explosion {
-    animation: Animation,
+pub struct Explosion<R: Renderer> {
+    animation: Animation<R>,
     center: glm::IVec2,
 }
 
-impl Explosion {
-    pub fn new(animation: Animation, center: glm::IVec2) -> Self {
+impl<R: Renderer> Explosion<R> {
+    pub fn new(animation: Animation<R>, center: glm::IVec2) -> Self {
         Explosion {
             animation: animation,
             center: center,
@@ -24,9 +23,7 @@ impl Explosion {
         self.animation.update()
     }
 
-    pub fn draw<I>(&self, renderer: &mut ResourceManager<I>) -> Result<(), String>
-        where I: Renderer<Texture = Texture>
-    {
+    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         self.animation.draw(renderer, self.center)
     }
 }

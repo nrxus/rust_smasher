@@ -24,10 +24,10 @@ use explosion::Explosion;
 use shape::Shape;
 
 pub struct MasterSmasher<'a> {
-    meteor: Meteor,
-    planet: Planet,
-    background: Rc<Texture>,
-    explosion: Option<Explosion>,
+    meteor: Meteor<SdlRenderer<'a>>,
+    planet: Planet<SdlRenderer<'a>>,
+    background: Rc<TextureData<Texture>>,
+    explosion: Option<Explosion<SdlRenderer<'a>>>,
     input_manager: InputManager<SdlEventPump>,
     renderer: ResourceManager<'a, SdlRenderer<'a>>,
 }
@@ -114,7 +114,7 @@ impl<'a> MasterSmasher<'a> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        try!(self.renderer.draw(self.background.clone(), None, None));
+        try!(self.renderer.draw(&self.background.texture, None, None));
         try!(self.meteor.draw(&mut self.renderer));
         try!(self.planet.draw(&mut self.renderer));
         match self.explosion {

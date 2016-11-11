@@ -5,24 +5,24 @@ extern crate moho;
 use std::cmp;
 use std::rc::Rc;
 
-use self::sdl2::render::Texture;
-
-use self::moho::resource_manager::ResourceManager;
-use self::moho::resource_manager::Renderer;
+use self::moho::resource_manager::*;
 
 use circle::Circle;
 use sprite_strip::SpriteStrip;
 
-pub struct Meteor {
-    sprite: SpriteStrip,
+pub struct Meteor<R: Renderer> {
+    sprite: SpriteStrip<R>,
     center: glm::DVec2,
     max_coords: glm::UVec2,
     velocity: glm::DVec2,
     launched: bool,
 }
 
-impl Meteor {
-    pub fn new(texture: Rc<Texture>, center: glm::IVec2, max_coords: glm::Vector2<u32>) -> Self {
+impl<R: Renderer> Meteor<R> {
+    pub fn new(texture: Rc<TextureData<R::Texture>>,
+               center: glm::IVec2,
+               max_coords: glm::Vector2<u32>)
+               -> Self {
         let center = glm::dvec2(center.x as f64, center.y as f64);
         let sprite = SpriteStrip::new(texture, 1, Some(max_coords));
 
@@ -64,9 +64,7 @@ impl Meteor {
         self.launched
     }
 
-    pub fn draw<I>(&self, renderer: &mut ResourceManager<I>) -> Result<(), String>
-        where I: Renderer<Texture = Texture>
-    {
+    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
         self.sprite.draw(renderer, center, 0)
     }
