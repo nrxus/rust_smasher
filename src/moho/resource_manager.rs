@@ -34,7 +34,7 @@ impl<'a> Renderer for SdlRenderer<'a> {
     type Texture = SdlTexture;
 
     fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>, String> {
-        let texture = try!(LoadTexture::load_texture(self, path));
+        let texture = LoadTexture::load_texture(self, path)?;
         let query = texture.query();
         Ok(TextureData {
             texture: texture,
@@ -87,16 +87,16 @@ impl<'a, R: Renderer> ResourceManager<'a, R> {
         }
         let mut cache = self.texture_cache.borrow_mut();
         let texture_path = Path::new(path);
-        let texture = Rc::new(try!(self.renderer.load_texture(texture_path)));
+        let texture = Rc::new(self.renderer.load_texture(texture_path)?);
         cache.insert(path, texture.clone());
         Ok(texture.clone())
     }
 
     pub fn draw(&mut self,
-            texture: &R::Texture,
-            src: Option<rect::Rect>,
-            dst: Option<rect::Rect>)
-            -> Result<(), String> {
+                texture: &R::Texture,
+                src: Option<rect::Rect>,
+                dst: Option<rect::Rect>)
+                -> Result<(), String> {
         self.renderer.copy(texture, src, dst)
     }
 

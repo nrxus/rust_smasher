@@ -37,16 +37,14 @@ impl<'a> MasterSmasher<'a> {
         const WINDOW_HEIGHT: u32 = 600;
         const WINDOW_WIDTH: u32 = 800;
 
-        let (renderer, input_manager) =
-            try!(moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT));
+        let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)?;
         let background_path = "resources/background_game.png";
         let meteor_path = "resources/meteor.png";
         let planet_path = "resources/blue_planet.png";
 
-        let background = try!(renderer.load_texture(background_path));
-        let planet = Planet::new(try!(renderer.load_texture(planet_path)),
-                                 glm::ivec2(400, 300));
-        let meteor = Meteor::new(try!(renderer.load_texture(meteor_path)),
+        let background = renderer.load_texture(background_path)?;
+        let planet = Planet::new(renderer.load_texture(planet_path)?, glm::ivec2(400, 300));
+        let meteor = Meteor::new(renderer.load_texture(meteor_path)?,
                                  glm::ivec2(50, 50),
                                  glm::uvec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
@@ -65,7 +63,7 @@ impl<'a> MasterSmasher<'a> {
             if !self.update() {
                 break;
             }
-            try!(self.draw());
+            self.draw()?;
         }
 
         Ok(())
@@ -114,11 +112,11 @@ impl<'a> MasterSmasher<'a> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        try!(self.renderer.draw(&self.background.texture, None, None));
-        try!(self.meteor.draw(&mut self.renderer));
-        try!(self.planet.draw(&mut self.renderer));
+        self.renderer.draw(&self.background.texture, None, None)?;
+        self.meteor.draw(&mut self.renderer)?;
+        self.planet.draw(&mut self.renderer)?;
         match self.explosion {
-            Some(ref expl) => try!(expl.draw(&mut self.renderer)),
+            Some(ref expl) => expl.draw(&mut self.renderer)?,
             None => {}
         }
         self.renderer.present();
