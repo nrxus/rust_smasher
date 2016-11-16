@@ -1,3 +1,6 @@
+extern crate moho;
+extern crate sdl2;
+
 mod master_smasher;
 mod meteor;
 mod shape;
@@ -9,6 +12,11 @@ mod sprite_strip;
 mod explosion;
 
 fn main() {
-    let mut game = master_smasher::MasterSmasher::new().unwrap();
+    const WINDOW_HEIGHT: u32 = 600;
+    const WINDOW_WIDTH: u32 = 800;
+    let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)
+        .unwrap();
+    let mut game =
+        master_smasher::MasterSmasher::<&moho::SdlMohoEngine>::new(renderer, input_manager).unwrap();
     game.run().unwrap();
 }

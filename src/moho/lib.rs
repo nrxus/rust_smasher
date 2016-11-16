@@ -13,6 +13,16 @@ pub mod window_wrapper;
 use resource_manager::*;
 use input_manager::*;
 
+pub trait MohoEngine {
+    type Renderer: Renderer;
+}
+
+pub struct SdlMohoEngine {}
+
+impl<'a> MohoEngine for &'a SdlMohoEngine {
+    type Renderer = SdlRenderer<'a>;
+}
+
 pub fn init(name: &str,
             width: u32,
             height: u32)

@@ -5,12 +5,11 @@ extern crate glm;
 
 use self::moho::input_manager::*;
 use self::moho::resource_manager::*;
+use self::moho::MohoEngine;
 
 use self::sdl2::keyboard::Keycode;
 use self::sdl2::mouse::Mouse;
-use self::sdl2::render::Renderer as SdlRenderer;
 use self::sdl2::EventPump as SdlEventPump;
-use self::sdl2::render::Texture;
 
 use std::error::Error;
 
@@ -22,21 +21,22 @@ use sprite_strip::SpriteStrip;
 use explosion::Explosion;
 use shape::Shape;
 
-pub struct MasterSmasher<'a> {
-    meteor: Meteor<SdlRenderer<'a>>,
-    planet: Planet<SdlRenderer<'a>>,
-    background: TextureData<Texture>,
-    explosion: Option<Explosion<SdlRenderer<'a>>>,
+pub struct MasterSmasher<'a, E: MohoEngine> {
+    meteor: Meteor<E::Renderer>,
+    planet: Planet<E::Renderer>,
+    background: TextureData<<E::Renderer as Renderer>::Texture>,
+    explosion: Option<Explosion<E::Renderer>>,
     input_manager: InputManager<SdlEventPump>,
-    renderer: ResourceManager<'a, SdlRenderer<'a>>,
+    renderer: ResourceManager<'a, E::Renderer>,
 }
 
-impl<'a> MasterSmasher<'a> {
-    pub fn new() -> Result<Self, Box<Error>> {
+impl<'a, E: MohoEngine> MasterSmasher<'a, E> {
+    pub fn new(renderer: ResourceManager<'a, E::Renderer>,
+               input_manager: InputManager<SdlEventPump>)
+               -> Result<Self, Box<Error>> {
         const WINDOW_HEIGHT: u32 = 600;
         const WINDOW_WIDTH: u32 = 800;
 
-        let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)?;
         let background_path = "resources/background_game.png";
         let meteor_path = "resources/meteor.png";
         let planet_path = "resources/blue_planet.png";
