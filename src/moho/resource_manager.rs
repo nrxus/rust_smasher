@@ -11,9 +11,19 @@ use std::rc::Rc;
 use sdl2::rect;
 
 pub struct TextureData<T> {
-    pub texture: T,
+    pub texture: Rc<T>,
     pub width: u32,
     pub height: u32,
+}
+
+impl<T> Clone for TextureData<T> {
+    fn clone(&self) -> TextureData<T> {
+        TextureData {
+            texture: self.texture.clone(),
+            width: self.width,
+            height: self.height,
+        }
+    }
 }
 
 pub trait Renderer {
@@ -24,7 +34,7 @@ pub trait Renderer {
     fn clear(&mut self);
     fn present(&mut self);
     fn copy(&mut self,
-            texture: &Self::Texture,
+            texture: Rc<Self::Texture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String>;
@@ -37,7 +47,7 @@ impl<'a> Renderer for SdlRenderer<'a> {
         let texture = LoadTexture::load_texture(self, path)?;
         let query = texture.query();
         Ok(TextureData {
-            texture: texture,
+            texture: Rc::new(texture),
             width: query.width,
             height: query.height,
         })
@@ -48,11 +58,11 @@ impl<'a> Renderer for SdlRenderer<'a> {
     }
 
     fn copy(&mut self,
-            texture: &SdlTexture,
+            texture: Rc<SdlTexture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
-        self.copy(texture, src, dst)
+        self.copy(&*texture, src, dst)
     }
 
     fn clear(&mut self) {
@@ -65,7 +75,7 @@ impl<'a> Renderer for SdlRenderer<'a> {
 }
 
 pub struct ResourceManager<'a, R: Renderer> {
-    texture_cache: RefCell<HashMap<&'a str, Rc<TextureData<R::Texture>>>>,
+    texture_cache: RefCell<HashMap<&'a str, TextureData<R::Texture>>>,
     renderer: R,
 }
 
@@ -77,7 +87,7 @@ impl<'a, R: Renderer> ResourceManager<'a, R> {
         }
     }
 
-    pub fn load_texture(&self, path: &'a str) -> Result<Rc<TextureData<R::Texture>>, String> {
+    pub fn load_texture(&self, path: &'a str) -> Result<TextureData<R::Texture>, String> {
         {
             let cache = self.texture_cache.borrow();
             let texture = cache.get(path);
@@ -87,13 +97,13 @@ impl<'a, R: Renderer> ResourceManager<'a, R> {
         }
         let mut cache = self.texture_cache.borrow_mut();
         let texture_path = Path::new(path);
-        let texture = Rc::new(self.renderer.load_texture(texture_path)?);
-        cache.insert(path, texture.clone());
-        Ok(texture.clone())
+        let texture_data = self.renderer.load_texture(texture_path)?;
+        cache.insert(path, texture_data.clone());
+        Ok(texture_data)
     }
 
     pub fn draw(&mut self,
-                texture: &R::Texture,
+                texture: Rc<R::Texture>,
                 src: Option<rect::Rect>,
                 dst: Option<rect::Rect>)
                 -> Result<(), String> {

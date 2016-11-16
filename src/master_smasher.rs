@@ -13,7 +13,6 @@ use self::sdl2::EventPump as SdlEventPump;
 use self::sdl2::render::Texture;
 
 use std::error::Error;
-use std::rc::Rc;
 
 use meteor::Meteor;
 use planet::Planet;
@@ -26,7 +25,7 @@ use shape::Shape;
 pub struct MasterSmasher<'a> {
     meteor: Meteor<SdlRenderer<'a>>,
     planet: Planet<SdlRenderer<'a>>,
-    background: Rc<TextureData<Texture>>,
+    background: TextureData<Texture>,
     explosion: Option<Explosion<SdlRenderer<'a>>>,
     input_manager: InputManager<SdlEventPump>,
     renderer: ResourceManager<'a, SdlRenderer<'a>>,
@@ -112,7 +111,7 @@ impl<'a> MasterSmasher<'a> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        self.renderer.draw(&self.background.texture, None, None)?;
+        self.renderer.draw(self.background.texture.clone(), None, None)?;
         self.meteor.draw(&mut self.renderer)?;
         self.planet.draw(&mut self.renderer)?;
         match self.explosion {

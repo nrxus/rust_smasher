@@ -3,7 +3,6 @@ extern crate glm;
 extern crate moho;
 
 use std::cmp;
-use std::rc::Rc;
 
 use self::moho::resource_manager::*;
 
@@ -16,7 +15,7 @@ pub struct Planet<R: Renderer> {
 }
 
 impl<R: Renderer> Planet<R> {
-    pub fn new(texture: Rc<TextureData<R::Texture>>, center: glm::IVec2) -> Self {
+    pub fn new(texture: TextureData<R::Texture>, center: glm::IVec2) -> Self {
         let center = glm::dvec2(center.x as f64, center.y as f64);
         let sprite = SpriteStrip::new(texture, 1, None);
 

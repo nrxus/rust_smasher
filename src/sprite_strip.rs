@@ -2,19 +2,19 @@ extern crate glm;
 extern crate sdl2;
 extern crate moho;
 
-use std::rc::Rc;
 use self::sdl2::rect;
+
 use self::moho::resource_manager::*;
 use self::moho::window_wrapper::*;
 
 pub struct SpriteStrip<R: Renderer> {
-    texture: Rc<TextureData<R::Texture>>,
+    texture: TextureData<R::Texture>,
     dims: glm::UVec2,
     wrapping_coords: Option<glm::UVec2>,
 }
 
 impl<R: Renderer> SpriteStrip<R> {
-    pub fn new(texture: Rc<TextureData<R::Texture>>,
+    pub fn new(texture: TextureData<R::Texture>,
                num_frames: u32,
                wrapping_coords: Option<glm::UVec2>)
                -> Self {
@@ -36,7 +36,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                           0,
                                           self.dims.x,
                                           self.dims.y);
-
+        let ref texture = self.texture.texture;
         match self.wrapping_coords {
             Some(coords) => {
                 let center = glm::uvec2(center.x as u32, center.y as u32);
@@ -49,7 +49,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                         self.dims.x,
                                         self.dims.y)
                     })
-                    .map(|r| renderer.draw(&self.texture.texture, Some(source_rect), Some(r)))
+                    .map(|r| renderer.draw(texture.clone(), Some(source_rect), Some(r)))
                     .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
             }
             None => {
@@ -57,7 +57,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                            center.y - self.dims.y as i32 / 2,
                                            self.dims.x,
                                            self.dims.y);
-                renderer.draw(&self.texture.texture, Some(source_rect), Some(rect))
+                renderer.draw(texture.clone(), Some(source_rect), Some(rect))
             }
         }
     }

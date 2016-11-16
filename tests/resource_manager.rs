@@ -8,45 +8,45 @@ use sdl2::rect;
 use moho::resource_manager::*;
 
 #[test]
-fn loads_image() {
+fn loads_texture_data() {
     let (subject, tracker) = new_subject(None);
-    let image = subject.load_texture("mypath/").unwrap();
-    assert_eq!(image.path, String::from("mypath/"));
+    let texture_data = subject.load_texture("mypath/").unwrap().texture;
+    assert_eq!(texture_data.path, String::from("mypath/"));
     assert_eq!(tracker.borrow().load_count, 1);
 }
 
 #[test]
 fn returns_error() {
     let (subject, tracker) = new_subject(Some("FAIL".into()));
-    let image = subject.load_texture("mypath/");
-    assert_eq!(image.err(), Some("FAIL".into()));
+    let texture_data = subject.load_texture("mypath/");
+    assert_eq!(texture_data.err(), Some("FAIL".into()));
     assert_eq!(tracker.borrow().load_count, 1);
 }
 
 #[test]
-fn caches_images() {
+fn caches_texture_datas() {
     let (subject, tracker) = new_subject(None);
 
-    // get a new image - number of calls is 1
-    let image1 = subject.load_texture("mypath/1").unwrap();
-    assert_eq!(image1.path, String::from("mypath/1"));
+    // get a new texture_data - number of calls is 1
+    let texture_data1 = subject.load_texture("mypath/1").unwrap().texture;
+    assert_eq!(texture_data1.path, String::from("mypath/1"));
     assert_eq!(tracker.borrow().load_count, 1);
 
-    // load the same image - number of calls should still be 1
-    let image2 = subject.load_texture("mypath/1").unwrap();
-    assert_eq!(image2.path, String::from("mypath/1"));
+    // load the same texture_data - number of calls should still be 1
+    let texture_data2 = subject.load_texture("mypath/1").unwrap().texture;
+    assert_eq!(texture_data2.path, String::from("mypath/1"));
     assert_eq!(tracker.borrow().load_count, 1);
 
-    // load a different image - number of calls should increase
-    let image3 = subject.load_texture("mypath/2").unwrap();
-    assert_eq!(image3.path, String::from("mypath/2"));
+    // load a different texture_data - number of calls should increase
+    let texture_data3 = subject.load_texture("mypath/2").unwrap().texture;
+    assert_eq!(texture_data3.path, String::from("mypath/2"));
     assert_eq!(tracker.borrow().load_count, 2);
 }
 
 #[test]
-fn draws_images() {
+fn draws_texture_datas() {
     let (subject, tracker) = new_subject(None);
-    let image = subject.load_texture("mypath/").unwrap();
+    let texture_data = subject.load_texture("mypath/").unwrap();
 }
 
 #[derive(Debug)]
@@ -56,7 +56,7 @@ struct MockTexture {
 
 struct RendererTracker {
     load_count: u16,
-    last_img: Rc<MockTexture>,
+    last_texture: Rc<MockTexture>,
     last_src: Option<rect::Rect>,
     last_dst: Option<rect::Rect>,
 }
@@ -65,7 +65,7 @@ impl RendererTracker {
     fn new() -> Self {
         RendererTracker {
             load_count: 0,
-            last_img: Rc::new(MockTexture { path: "NULL".into() }),
+            last_texture: Rc::new(MockTexture { path: "NULL".into() }),
             last_dst: None,
             last_src: None,
         }
@@ -80,23 +80,30 @@ struct MockRenderer {
 impl Renderer for MockRenderer {
     type Texture = MockTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<MockTexture, String> {
+    fn load_texture(&self, path: &Path) -> Result<TextureData<MockTexture>, String> {
         self.tracker.borrow_mut().load_count += 1;
         match self.error {
-            None => Ok(MockTexture { path: path.to_str().unwrap_or("").into() }),
+            None => {
+                let texture = MockTexture { path: path.to_str().unwrap_or("").into() };
+                Ok(TextureData {
+                    texture: Rc::new(texture),
+                    width: 48,
+                    height: 60,
+                })
+            }
             Some(ref e) => Err(e.clone()),
         }
     }
 
     fn copy(&mut self,
-            image: Rc<MockTexture>,
+            texture: Rc<MockTexture>,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
         match self.error {
             None => {
                 let mut tracker = self.tracker.borrow_mut();
-                tracker.last_img = image;
+                tracker.last_texture = texture;
                 tracker.last_src = src;
                 tracker.last_dst = dst;
                 Ok(())

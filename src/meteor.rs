@@ -3,7 +3,6 @@ extern crate sdl2;
 extern crate moho;
 
 use std::cmp;
-use std::rc::Rc;
 
 use self::moho::resource_manager::*;
 
@@ -19,7 +18,7 @@ pub struct Meteor<R: Renderer> {
 }
 
 impl<R: Renderer> Meteor<R> {
-    pub fn new(texture: Rc<TextureData<R::Texture>>,
+    pub fn new(texture: TextureData<R::Texture>,
                center: glm::IVec2,
                max_coords: glm::Vector2<u32>)
                -> Self {
