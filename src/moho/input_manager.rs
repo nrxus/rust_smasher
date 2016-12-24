@@ -25,9 +25,7 @@ pub struct InputManager<P> {
     event_pump: P,
 }
 
-impl<P> InputManager<P>
-    where P: EventPump
-{
+impl<P: EventPump> InputManager<P> {
     pub fn new(events_generator: P) -> InputManager<P> {
         InputManager {
             pressed_keys: HashSet::new(),
