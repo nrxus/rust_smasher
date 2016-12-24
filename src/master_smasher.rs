@@ -1,5 +1,4 @@
 extern crate moho;
-extern crate sdl2_image;
 extern crate sdl2;
 extern crate glm;
 
@@ -8,8 +7,7 @@ use self::moho::resource_manager::*;
 use self::moho::MohoEngine;
 
 use self::sdl2::keyboard::Keycode;
-use self::sdl2::mouse::Mouse;
-use self::sdl2::EventPump as SdlEventPump;
+use self::sdl2::mouse::MouseButton;
 
 use std::error::Error;
 
@@ -21,18 +19,18 @@ use sprite_strip::SpriteStrip;
 use explosion::Explosion;
 use shape::Shape;
 
-pub struct MasterSmasher<'a, E: MohoEngine> {
+pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planet: Planet<E::Renderer>,
     background: TextureData<<E::Renderer as Renderer>::Texture>,
     explosion: Option<Explosion<E::Renderer>>,
-    input_manager: InputManager<SdlEventPump>,
-    renderer: ResourceManager<'a, E::Renderer>,
+    input_manager: InputManager<E::EventPump>,
+    renderer: ResourceManager<E::Renderer>,
 }
 
-impl<'a, E: MohoEngine> MasterSmasher<'a, E> {
-    pub fn new(renderer: ResourceManager<'a, E::Renderer>,
-               input_manager: InputManager<SdlEventPump>)
+impl<E: MohoEngine> MasterSmasher<E> {
+    pub fn new(renderer: ResourceManager<E::Renderer>,
+               input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
         const WINDOW_HEIGHT: u32 = 600;
         const WINDOW_WIDTH: u32 = 800;
@@ -78,18 +76,20 @@ impl<'a, E: MohoEngine> MasterSmasher<'a, E> {
             self.explosion = None
         };
 
-        if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
-            return false;
-        }
-
-        if self.input_manager.did_click_mouse(Mouse::Left) {
-            if !self.meteor.is_launched() {
-                self.meteor.launch(self.input_manager.mouse_coords());
+        {
+            if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
+                return false;
             }
-        }
 
-        if self.input_manager.did_press_key(Keycode::R) {
-            self.meteor.restart_at(glm::ivec2(50, 50));
+            if self.input_manager.did_click_mouse(MouseButton::Left) {
+                if !self.meteor.is_launched() {
+                    self.meteor.launch(self.input_manager.mouse_coords());
+                }
+            }
+
+            if self.input_manager.did_press_key(Keycode::R) {
+                self.meteor.restart_at(glm::ivec2(50, 50));
+            }
         }
 
         self.meteor.update();

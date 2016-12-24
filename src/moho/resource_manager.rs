@@ -3,7 +3,7 @@ extern crate glm;
 
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
-use sdl2_image::LoadTexture;
+use sdl2::image::LoadTexture;
 use std::path::Path;
 use std::collections::HashMap;
 use std::cell::RefCell;
@@ -40,7 +40,7 @@ pub trait Renderer {
             -> Result<(), String>;
 }
 
-impl<'a> Renderer for SdlRenderer<'a> {
+impl Renderer for SdlRenderer<'static> {
     type Texture = SdlTexture;
 
     fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>, String> {
@@ -74,12 +74,12 @@ impl<'a> Renderer for SdlRenderer<'a> {
     }
 }
 
-pub struct ResourceManager<'a, R: Renderer> {
-    texture_cache: RefCell<HashMap<&'a str, TextureData<R::Texture>>>,
+pub struct ResourceManager<R: Renderer> {
+    texture_cache: RefCell<HashMap<&'static str, TextureData<R::Texture>>>,
     renderer: R,
 }
 
-impl<'a, R: Renderer> ResourceManager<'a, R> {
+impl<R: Renderer> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
             texture_cache: RefCell::new(HashMap::new()),
@@ -87,7 +87,7 @@ impl<'a, R: Renderer> ResourceManager<'a, R> {
         }
     }
 
-    pub fn load_texture(&self, path: &'a str) -> Result<TextureData<R::Texture>, String> {
+    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>, String> {
         {
             let cache = self.texture_cache.borrow();
             let texture = cache.get(path);

@@ -7,26 +7,12 @@ use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::event::Event;
 use sdl2::mouse::{MouseState, Mouse};
 
-struct MockEventIterator {
-    events: Vec<Event>,
-}
-
-impl Iterator for MockEventIterator {
-    type Item = Event;
-
-    fn next(&mut self) -> Option<Event> {
-        self.events.pop()
-    }
-}
-
 struct MockEventPump {
-    streams: Vec<MockEventIterator>,
+    streams: Vec<Option<Event>>,
 }
 
-impl<'a> EventPump<'a> for MockEventPump {
-    type I = MockEventIterator;
-
-    fn poll_iter(&'a mut self) -> MockEventIterator {
+impl EventPump for MockEventPump {
+    fn poll_event(&mut self) -> Option<Event> {
         self.streams.pop().unwrap()
     }
 }
@@ -65,10 +51,9 @@ macro_rules! mouse_event {
 
 #[test]
 fn press_keys() {
-    let streams = vec![MockEventIterator {
-                           events: vec![key_event!(KeyDown, Keycode::Down),
-                                        key_event!(KeyDown, Keycode::Up)],
-                       }];
+    let streams = vec![None,
+                       Some(key_event!(KeyDown, Keycode::Up)),
+                       Some(key_event!(KeyDown, Keycode::Down))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 
@@ -85,9 +70,11 @@ fn press_keys() {
 
 #[test]
 fn release_keys() {
-    let streams = vec![MockEventIterator { events: vec![key_event!(KeyUp, Keycode::Down)] },
-                           MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down),
-                                                            key_event!(KeyDown, Keycode::Up)] },];
+    let streams = vec![None,
+                       Some(key_event!(KeyUp, Keycode::Down)),
+                       None,
+                       Some(key_event!(KeyDown, Keycode::Down)),
+                       Some(key_event!(KeyDown, Keycode::Up))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
     subject.update();
@@ -104,8 +91,11 @@ fn release_keys() {
 
 #[test]
 fn did_press_key() {
-    let streams = vec![MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Up)] },
-                       MockEventIterator { events: vec![key_event!(KeyDown, Keycode::Down)] },];
+    let streams = vec![None,
+                       Some(key_event!(KeyUp, Keycode::Down)),
+                       Some(key_event!(KeyDown, Keycode::Up)),
+                       None,
+                       Some(key_event!(KeyDown, Keycode::Down))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 
@@ -126,18 +116,17 @@ fn did_press_key() {
 
 #[test]
 fn mouse_coords() {
-    let streams = vec![MockEventIterator {
-                           events: vec![Event::MouseMotion {
-                                            timestamp: 0,
-                                            window_id: 0,
-                                            which: 0,
-                                            mousestate: MouseState::from_flags(0),
-                                            x: 50,
-                                            y: 30,
-                                            xrel: 0,
-                                            yrel: 0,
-                                        }],
-                       }];
+    let streams = vec![None,
+                       Some(Event::MouseMotion {
+                           timestamp: 0,
+                           window_id: 0,
+                           which: 0,
+                           mousestate: MouseState::from_flags(0),
+                           x: 50,
+                           y: 30,
+                           xrel: 0,
+                           yrel: 0,
+                       })];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
     subject.update();
@@ -146,9 +135,10 @@ fn mouse_coords() {
 
 #[test]
 fn mouse_clicks() {
-    let streams =
-        vec![MockEventIterator { events: vec![mouse_event!(MouseButtonDown, Mouse::Right)] },
-             MockEventIterator { events: vec![mouse_event![MouseButtonDown, Mouse::Left]] }];
+    let streams = vec![None,
+                       Some(mouse_event!(MouseButtonDown, Mouse::Right)),
+                       None,
+                       Some(mouse_event!(MouseButtonDown, Mouse::Left))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 
@@ -169,10 +159,12 @@ fn mouse_clicks() {
 
 #[test]
 fn mouse_releases() {
-    let streams =
-        vec![MockEventIterator { events: vec![mouse_event!(MouseButtonDown, Mouse::Right)] },
-             MockEventIterator { events: vec![mouse_event!(MouseButtonUp, Mouse::Left)] },
-             MockEventIterator { events: vec![mouse_event![MouseButtonDown, Mouse::Left]] }];
+    let streams = vec![None,
+                       Some(mouse_event!(MouseButtonDown, Mouse::Right)),
+                       None,
+                       Some(mouse_event!(MouseButtonUp, Mouse::Left)),
+                       None,
+                       Some(mouse_event!(MouseButtonDown, Mouse::Left))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 

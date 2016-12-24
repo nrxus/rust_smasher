@@ -28,9 +28,7 @@ pub fn get_wrapped_centers(original: glm::UVec2,
     };
 
     let side_vert = match (side, vert) {
-        (Some(side_center), Some(vert_center)) => {
-            Some(glm::ivec2(side_center.x, vert_center.y))
-        },
+        (Some(side_center), Some(vert_center)) => Some(glm::ivec2(side_center.x, vert_center.y)),
         _ => None,
     };
 

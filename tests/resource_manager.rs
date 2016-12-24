@@ -43,12 +43,6 @@ fn caches_texture_datas() {
     assert_eq!(tracker.borrow().load_count, 2);
 }
 
-#[test]
-fn draws_texture_datas() {
-    let (subject, tracker) = new_subject(None);
-    let texture_data = subject.load_texture("mypath/").unwrap();
-}
-
 #[derive(Debug)]
 struct MockTexture {
     path: String,
@@ -121,8 +115,8 @@ impl Renderer for MockRenderer {
     }
 }
 
-fn new_subject<'a>(error: Option<String>)
-                   -> (ResourceManager<'a, MockRenderer>, Rc<RefCell<RendererTracker>>) {
+fn new_subject(error: Option<String>)
+               -> (ResourceManager<MockRenderer>, Rc<RefCell<RendererTracker>>) {
     let tracker = Rc::new(RefCell::new(RendererTracker::new()));
     let renderer = MockRenderer {
         error: error,

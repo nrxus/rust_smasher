@@ -17,6 +17,6 @@ fn main() {
     let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)
         .unwrap();
     let mut game =
-        master_smasher::MasterSmasher::<&moho::SdlMohoEngine>::new(renderer, input_manager).unwrap();
+        master_smasher::MasterSmasher::<moho::SdlMohoEngine>::new(renderer, input_manager).unwrap();
     game.run().unwrap();
 }
