@@ -50,7 +50,7 @@ impl<R: Renderer> Animation<R> {
             }
         };
 
-        if self.current_frame > self.num_frames {
+        if self.current_frame >= self.num_frames {
             if self.repeat {
                 self.current_frame -= self.num_frames;
                 true
