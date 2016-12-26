@@ -5,7 +5,7 @@ extern crate sdl2;
 use moho::input_manager::*;
 use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::event::Event;
-use sdl2::mouse::{MouseState, Mouse};
+use sdl2::mouse::{MouseState, MouseButton};
 
 struct MockEventPump {
     streams: Vec<Option<Event>>,
@@ -121,7 +121,7 @@ fn mouse_coords() {
                            timestamp: 0,
                            window_id: 0,
                            which: 0,
-                           mousestate: MouseState::from_flags(0),
+                           mousestate: MouseState::from_sdl_state(0),
                            x: 50,
                            y: 30,
                            xrel: 0,
@@ -136,54 +136,54 @@ fn mouse_coords() {
 #[test]
 fn mouse_clicks() {
     let streams = vec![None,
-                       Some(mouse_event!(MouseButtonDown, Mouse::Right)),
+                       Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
                        None,
-                       Some(mouse_event!(MouseButtonDown, Mouse::Left))];
+                       Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
-    assert_eq!(subject.did_click_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_click_mouse(Mouse::Left), false);
+    assert_eq!(subject.did_click_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_click_mouse(MouseButton::Left), false);
 
     // Left button is click
     subject.update();
-    assert_eq!(subject.did_click_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_click_mouse(Mouse::Left), true);
+    assert_eq!(subject.did_click_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_click_mouse(MouseButton::Left), true);
 
     // Right button is clicked - left button is still pressed but not a recent click
     subject.update();
-    assert_eq!(subject.did_click_mouse(Mouse::Right), true);
-    assert_eq!(subject.did_click_mouse(Mouse::Left), false);
+    assert_eq!(subject.did_click_mouse(MouseButton::Right), true);
+    assert_eq!(subject.did_click_mouse(MouseButton::Left), false);
 }
 
 #[test]
 fn mouse_releases() {
     let streams = vec![None,
-                       Some(mouse_event!(MouseButtonDown, Mouse::Right)),
+                       Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
                        None,
-                       Some(mouse_event!(MouseButtonUp, Mouse::Left)),
+                       Some(mouse_event!(MouseButtonUp, MouseButton::Left)),
                        None,
-                       Some(mouse_event!(MouseButtonDown, Mouse::Left))];
+                       Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
-    assert_eq!(subject.did_release_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_release_mouse(Mouse::Left), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Left), false);
 
     // Left button is click
     subject.update();
-    assert_eq!(subject.did_release_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_release_mouse(Mouse::Left), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Left), false);
 
     // Left button is released
     subject.update();
-    assert_eq!(subject.did_release_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_release_mouse(Mouse::Left), true);
+    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Left), true);
 
     // Right button is clicked; left button is not clicked and not released recently
     subject.update();
-    assert_eq!(subject.did_release_mouse(Mouse::Right), false);
-    assert_eq!(subject.did_release_mouse(Mouse::Right), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
+    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
 }

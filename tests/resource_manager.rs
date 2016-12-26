@@ -50,7 +50,6 @@ struct MockTexture {
 
 struct RendererTracker {
     load_count: u16,
-    last_texture: Rc<MockTexture>,
     last_src: Option<rect::Rect>,
     last_dst: Option<rect::Rect>,
 }
@@ -59,7 +58,6 @@ impl RendererTracker {
     fn new() -> Self {
         RendererTracker {
             load_count: 0,
-            last_texture: Rc::new(MockTexture { path: "NULL".into() }),
             last_dst: None,
             last_src: None,
         }
@@ -90,14 +88,13 @@ impl Renderer for MockRenderer {
     }
 
     fn copy(&mut self,
-            texture: Rc<MockTexture>,
+            texture: &MockTexture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
         match self.error {
             None => {
                 let mut tracker = self.tracker.borrow_mut();
-                tracker.last_texture = texture;
                 tracker.last_src = src;
                 tracker.last_dst = dst;
                 Ok(())
