@@ -36,7 +36,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                           0,
                                           self.dims.x,
                                           self.dims.y);
-        let ref texture = self.texture.texture;
+        let texture = &*self.texture.texture;
         match self.wrapping_coords {
             Some(coords) => {
                 let center = glm::uvec2(center.x as u32, center.y as u32);
@@ -49,7 +49,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                         self.dims.x,
                                         self.dims.y)
                     })
-                    .map(|r| renderer.draw(texture.clone(), Some(source_rect), Some(r)))
+                    .map(|r| renderer.draw(texture, Some(source_rect), Some(r)))
                     .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
             }
             None => {
@@ -57,7 +57,7 @@ impl<R: Renderer> SpriteStrip<R> {
                                            center.y - self.dims.y as i32 / 2,
                                            self.dims.x,
                                            self.dims.y);
-                renderer.draw(texture.clone(), Some(source_rect), Some(rect))
+                renderer.draw(texture, Some(source_rect), Some(rect))
             }
         }
     }

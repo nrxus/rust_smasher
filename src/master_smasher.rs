@@ -111,7 +111,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
-        self.renderer.draw(self.background.texture.clone(), None, None)?;
+        self.renderer.draw(&*self.background.texture, None, None)?;
         self.meteor.draw(&mut self.renderer)?;
         self.planet.draw(&mut self.renderer)?;
         match self.explosion {

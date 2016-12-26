@@ -34,7 +34,7 @@ pub trait Renderer {
     fn clear(&mut self);
     fn present(&mut self);
     fn copy(&mut self,
-            texture: Rc<Self::Texture>,
+            texture: &Self::Texture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String>;
@@ -58,11 +58,11 @@ impl Renderer for SdlRenderer<'static> {
     }
 
     fn copy(&mut self,
-            texture: Rc<SdlTexture>,
+            texture: &SdlTexture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<(), String> {
-        self.copy(&*texture, src, dst)
+        self.copy(texture, src, dst)
     }
 
     fn clear(&mut self) {
@@ -95,7 +95,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn draw(&mut self,
-                texture: Rc<R::Texture>,
+                texture: &R::Texture,
                 src: Option<rect::Rect>,
                 dst: Option<rect::Rect>)
                 -> Result<(), String> {
