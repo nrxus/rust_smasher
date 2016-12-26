@@ -56,8 +56,6 @@ mod test {
     extern crate glm;
 
     use super::*;
-    use shape::*;
-    use circle::*;
 
     #[test]
     fn rectangle_no_contains() {
