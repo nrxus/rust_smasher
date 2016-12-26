@@ -21,13 +21,8 @@ impl Shape for Circle {
 
 impl Intersect<Rectangle> for Circle {
     fn intersects(&self, other: &Rectangle) -> bool {
-        if self.contains(&other.get_center()) {
-            true
-        } else if other.contains(&self.center) {
-            true
-        } else {
-            other.get_lines().iter().any(|l| self.intersects(l))
-        }
+        self.contains(&other.get_center()) || other.contains(&self.center) ||
+        other.get_lines().iter().any(|l| self.intersects(l))
     }
 }
 
@@ -56,13 +51,7 @@ impl Intersect<Line> for Circle {
         let t1 = (-b - discriminant) / (2_f64 * len_sq);
         let t2 = (-b + discriminant) / (2_f64 * len_sq);
 
-        if t1 >= 0_f64 && t1 <= 1_f64 {
-            true
-        } else if t2 >= 0_f64 && t2 <= 1_f64 {
-            true
-        } else {
-            false
-        }
+        t1 >= 0_f64 && t1 <= 1_f64 || t2 >= 0_f64 && t2 <= 1_f64
     }
 }
 

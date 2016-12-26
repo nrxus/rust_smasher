@@ -28,17 +28,8 @@ impl Shape for Rectangle {
         let half_x = self.dims.x / 2.;
         let half_y = self.dims.y / 2.;
 
-        if self.center.x - half_x > point.x {
-            false
-        } else if self.center.x + half_x < point.x {
-            false
-        } else if self.center.y - half_y > point.y {
-            false
-        } else if self.center.y + half_y < point.y {
-            false
-        } else {
-            true
-        }
+        !(self.center.x - half_x > point.x) && !(self.center.x + half_x < point.x) &&
+        !(self.center.y - half_y > point.y) && !(self.center.y + half_y < point.y)
     }
 }
 
@@ -47,17 +38,10 @@ impl Intersect<Rectangle> for Rectangle {
         let half_x = self.dims.x / 2.;
         let half_y = self.dims.y / 2.;
 
-        if self.center.x - half_x > other.center.x + other.dims.x / 2. {
-            false
-        } else if self.center.x + half_x < other.center.x - other.dims.x / 2. {
-            false
-        } else if self.center.y - half_y > other.center.y + other.dims.y / 2. {
-            false
-        } else if self.center.y + half_y < other.center.y - other.dims.y / 2. {
-            false
-        } else {
-            true
-        }
+        !(self.center.x - half_x > other.center.x + other.dims.x / 2.) &&
+        !(self.center.x + half_x < other.center.x - other.dims.x / 2.) &&
+        !(self.center.y - half_y > other.center.y + other.dims.y / 2.) &&
+        !(self.center.y + half_y < other.center.y - other.dims.y / 2.)
     }
 }
 

@@ -82,10 +82,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
                 return false;
             }
 
-            if self.input_manager.did_click_mouse(MouseButton::Left) {
-                if !self.meteor.is_launched() {
-                    self.meteor.launch(self.input_manager.mouse_coords());
-                }
+            if self.input_manager.did_click_mouse(MouseButton::Left) && !self.meteor.is_launched() {
+                self.meteor.launch(self.input_manager.mouse_coords());
             }
 
             if self.input_manager.did_press_key(Keycode::R) {
@@ -115,9 +113,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
         self.renderer.draw(&*self.background.texture, None, None, None)?;
         self.meteor.draw(&mut self.renderer)?;
         self.planet.draw(&mut self.renderer)?;
-        match self.explosion {
-            Some(ref expl) => expl.draw(&mut self.renderer)?,
-            None => {}
+        if let Some(ref expl) = self.explosion {
+            expl.draw(&mut self.renderer)?
         }
         self.renderer.present();
         Ok(())

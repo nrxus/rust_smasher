@@ -20,15 +20,14 @@ impl EventPump for MockEventPump {
 macro_rules! key_event {
     ($t:ident, $e:expr) => {
         {
-            let event = Event::$t {
+            Event::$t {
                 keycode: Some($e),
                 timestamp: 0,
                 window_id: 0,
                 scancode: None,
                 repeat: false,
                 keymod: NOMOD,
-            };
-            event
+            }
         }
     };
 }
@@ -36,15 +35,14 @@ macro_rules! key_event {
 macro_rules! mouse_event {
     ($t:ident, $e:expr) => {
         {
-            let event = Event::$t {
+            Event::$t {
                 mouse_btn: $e,
                 timestamp: 0,
                 window_id: 0,
                 which: 0,
                 x: 0,
                 y: 0,
-            };
-            event
+            }
         }
     };
 }
