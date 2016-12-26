@@ -10,6 +10,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use sdl2::rect;
 
+use window_wrapper::*;
+
 pub struct TextureData<T> {
     pub texture: Rc<T>,
     pub width: u32,
@@ -97,9 +99,29 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn draw(&mut self,
                 texture: &R::Texture,
                 src: Option<rect::Rect>,
-                dst: Option<rect::Rect>)
+                dst: Option<rect::Rect>,
+                wrapping_coords: Option<glm::UVec2>)
                 -> Result<(), String> {
-        self.renderer.copy(texture, src, dst)
+        match (wrapping_coords, dst) {
+            (Some(coords), Some(rect)) => {
+                let dims = glm::uvec2(rect.width(), rect.height());
+                let center = rect.center();
+                let center = glm::uvec2(center.x() as u32, center.y() as u32);
+
+                get_wrapped_centers(center, dims, coords)
+                    .iter()
+                    .filter_map(|&c| c)
+                    .map(|c| {
+                        rect::Rect::new(c.x - dims.x as i32 / 2,
+                                        c.y - dims.y as i32 / 2,
+                                        dims.x,
+                                        dims.y)
+                    })
+                    .map(|r| self.renderer.copy(texture, src, Some(r)))
+                    .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
+            }
+            _ => self.renderer.copy(texture, src, dst),
+        }
     }
 
     pub fn clear(&mut self) {

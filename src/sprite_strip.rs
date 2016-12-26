@@ -5,7 +5,6 @@ extern crate moho;
 use self::sdl2::rect;
 
 use self::moho::resource_manager::*;
-use self::moho::window_wrapper::*;
 
 pub struct SpriteStrip<R: Renderer> {
     texture: TextureData<R::Texture>,
@@ -32,34 +31,20 @@ impl<R: Renderer> SpriteStrip<R> {
                 center: glm::IVec2,
                 frame_num: u32)
                 -> Result<(), String> {
-        let source_rect = rect::Rect::new((self.dims.x * frame_num) as i32,
-                                          0,
-                                          self.dims.x,
-                                          self.dims.y);
-        let texture = &*self.texture.texture;
-        match self.wrapping_coords {
-            Some(coords) => {
-                let center = glm::uvec2(center.x as u32, center.y as u32);
-                get_wrapped_centers(center, self.dims, coords)
-                    .iter()
-                    .filter_map(|&c| c)
-                    .map(|c| {
-                        rect::Rect::new(c.x - self.dims.x as i32 / 2,
-                                        c.y - self.dims.y as i32 / 2,
-                                        self.dims.x,
-                                        self.dims.y)
-                    })
-                    .map(|r| renderer.draw(texture, Some(source_rect), Some(r)))
-                    .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
-            }
-            None => {
-                let rect = rect::Rect::new(center.x - self.dims.x as i32 / 2,
-                                           center.y - self.dims.y as i32 / 2,
-                                           self.dims.x,
-                                           self.dims.y);
-                renderer.draw(texture, Some(source_rect), Some(rect))
-            }
-        }
+        let src_rect = rect::Rect::new((self.dims.x * frame_num) as i32,
+                                       0,
+                                       self.dims.x,
+                                       self.dims.y);
+
+        let dst_rect = rect::Rect::new(center.x - self.dims.x as i32 / 2,
+                                       center.y - self.dims.y as i32 / 2,
+                                       self.dims.x,
+                                       self.dims.y);
+
+        renderer.draw(&*self.texture.texture,
+                      Some(src_rect),
+                      Some(dst_rect),
+                      self.wrapping_coords)
     }
 
     pub fn get_dims(&self) -> glm::UVec2 {
