@@ -95,11 +95,7 @@ impl<R: Renderer> ResourceManager<R> {
                 return Ok(x.clone());
             }
         }
-        let mut cache = self.texture_cache.borrow_mut();
-        let texture_path = Path::new(path);
-        let texture_data = self.renderer.load_texture(texture_path)?;
-        cache.insert(path, texture_data.clone());
-        Ok(texture_data)
+        self.load_new_texture(path)
     }
 
     pub fn draw(&mut self,
@@ -116,5 +112,13 @@ impl<R: Renderer> ResourceManager<R> {
 
     pub fn present(&mut self) {
         self.renderer.present();
+    }
+
+    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>, String> {
+        let mut cache = self.texture_cache.borrow_mut();
+        let texture_path = Path::new(path);
+        let texture_data = self.renderer.load_texture(texture_path)?;
+        cache.insert(path, texture_data.clone());
+        Ok(texture_data)
     }
 }
