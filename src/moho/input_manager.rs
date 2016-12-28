@@ -6,6 +6,32 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
+struct EventGenerator<E: EventPump> {
+    event_pump: E,
+}
+
+impl<E: EventPump> EventGenerator<E> {
+    fn new(event_pump: E) -> Self {
+        EventGenerator { event_pump: event_pump }
+    }
+
+    fn iter(&mut self) -> EventIterator<E> {
+        EventIterator { event_pump: &mut self.event_pump }
+    }
+}
+
+struct EventIterator<'a, E: EventPump + 'a> {
+    event_pump: &'a mut E,
+}
+
+impl<'a, E: EventPump> Iterator for EventIterator<'a, E> {
+    type Item = Event;
+
+    fn next(&mut self) -> Option<Event> {
+        self.event_pump.poll_event()
+    }
+}
+
 pub trait EventPump {
     fn poll_event(&mut self) -> Option<Event>;
 }
@@ -16,24 +42,24 @@ impl EventPump for SdlEventPump {
     }
 }
 
-pub struct InputManager<P> {
+pub struct InputManager<P: EventPump> {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<MouseButton>,
     prev_pressed_keys: HashSet<Keycode>,
     prev_pressed_buttons: HashSet<MouseButton>,
     mouse_coords: glm::IVec2,
-    event_pump: P,
+    event_generator: EventGenerator<P>,
 }
 
 impl<P: EventPump> InputManager<P> {
-    pub fn new(events_generator: P) -> InputManager<P> {
+    pub fn new(event_pump: P) -> InputManager<P> {
         InputManager {
             pressed_keys: HashSet::new(),
             pressed_buttons: HashSet::new(),
             prev_pressed_keys: HashSet::new(),
             prev_pressed_buttons: HashSet::new(),
             mouse_coords: glm::ivec2(0, 0),
-            event_pump: events_generator,
+            event_generator: EventGenerator::new(event_pump),
         }
     }
 
@@ -41,12 +67,28 @@ impl<P: EventPump> InputManager<P> {
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
 
-        while let Some(event) = self.event_pump.poll_event() {
-            if let Event::Quit { .. } = event {
-                return false;
+        for event in self.event_generator.iter() {
+            match event {
+                Event::Quit { .. } => return false,
+                Event::KeyDown { keycode: Some(keycode), .. } => {
+                    self.pressed_keys.insert(keycode);
+                }
+                Event::KeyUp { keycode: Some(keycode), .. } => {
+                    self.pressed_keys.remove(&keycode);
+                }
+                Event::MouseMotion { x, y, .. } => {
+                    self.mouse_coords = glm::ivec2(x, y);
+                }
+                Event::MouseButtonDown { mouse_btn, .. } => {
+                    self.pressed_buttons.insert(mouse_btn);
+                }
+                Event::MouseButtonUp { mouse_btn, .. } => {
+                    self.pressed_buttons.remove(&mouse_btn);
+                }
+                _ => {}
             }
-            self.process_event(event)
         }
+
         true
     }
 
@@ -74,26 +116,5 @@ impl<P: EventPump> InputManager<P> {
 
     pub fn mouse_coords(&self) -> glm::IVec2 {
         self.mouse_coords
-    }
-
-    fn process_event(&mut self, event: Event) {
-        match event {
-            Event::KeyDown { keycode: Some(keycode), .. } => {
-                self.pressed_keys.insert(keycode);
-            }
-            Event::KeyUp { keycode: Some(keycode), .. } => {
-                self.pressed_keys.remove(&keycode);
-            }
-            Event::MouseMotion { x, y, .. } => {
-                self.mouse_coords = glm::ivec2(x, y);
-            }
-            Event::MouseButtonDown { mouse_btn, .. } => {
-                self.pressed_buttons.insert(mouse_btn);
-            }
-            Event::MouseButtonUp { mouse_btn, .. } => {
-                self.pressed_buttons.remove(&mouse_btn);
-            }
-            _ => {}
-        }
     }
 }
