@@ -7,7 +7,10 @@ use self::moho::resource_manager::*;
 use self::moho::MohoEngine;
 
 use self::sdl2::keyboard::Keycode;
+use self::sdl2::rect;
 use self::sdl2::mouse::MouseButton;
+
+use self::glm::ext::normalize_to;
 
 use std::error::Error;
 
@@ -26,6 +29,7 @@ pub struct MasterSmasher<E: MohoEngine> {
     explosion: Option<Explosion<E::Renderer>>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
+    rects: [rect::Rect; 10],
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
@@ -52,18 +56,14 @@ impl<E: MohoEngine> MasterSmasher<E> {
             explosion: None,
             input_manager: input_manager,
             renderer: renderer,
+            rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
-        // TODO: do not use 'loop'
-        loop {
-            if !self.update() {
-                break;
-            }
+        while self.update() {
             self.draw()?;
         }
-
         Ok(())
     }
 
@@ -79,6 +79,22 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
         if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
             return false;
+        }
+
+        if !self.meteor.is_launched() {
+            let mouse_coords = self.input_manager.mouse_coords();
+            let mouse_coords = glm::dvec2(mouse_coords.x as f64, mouse_coords.y as f64);
+            let meteor = self.meteor.collision_body();
+            let distance = mouse_coords - meteor.center;
+            let offset = meteor.radius + 10.;
+            let offset_vector = normalize_to(distance, offset);
+            let distance = mouse_coords - (meteor.center + offset_vector);
+            let step = distance / 10.;
+
+            for (i, rect) in self.rects.iter_mut().enumerate() {
+                rect.set_x((meteor.center.x + offset_vector.x + (step.x * i as f64)) as i32);
+                rect.set_y((meteor.center.y + offset_vector.y + (step.y * i as f64)) as i32);
+            }
         }
 
         if self.input_manager.did_click_mouse(MouseButton::Left) && !self.meteor.is_launched() {
@@ -111,6 +127,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
         self.renderer.draw(&*self.background.texture, None, None, None)?;
         self.meteor.draw(&mut self.renderer)?;
         self.planet.draw(&mut self.renderer)?;
+        if !self.meteor.is_launched() {
+            self.renderer.fill_rects(&self.rects)?;
+        }
         if let Some(ref expl) = self.explosion {
             expl.draw(&mut self.renderer)?
         }

@@ -37,7 +37,7 @@ pub trait Renderer {
     // Drawing methods
     fn clear(&mut self);
     fn present(&mut self);
-    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String>;
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String>;
     fn copy(&mut self,
             texture: &Self::Texture,
             src: Option<rect::Rect>,
@@ -78,8 +78,8 @@ impl Renderer for SdlRenderer<'static> {
         self.present();
     }
 
-    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
-        self.draw_rects(rects)
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+        self.fill_rects(rects)
     }
 }
 
@@ -128,6 +128,10 @@ impl<R: Renderer> ResourceManager<R> {
             }
             _ => self.renderer.copy(texture, src, dst),
         }
+    }
+
+    pub fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+        self.renderer.fill_rects(rects)
     }
 
     pub fn clear(&mut self) {
