@@ -30,11 +30,14 @@ impl<T> Clone for TextureData<T> {
 
 pub trait Renderer {
     type Texture;
+
     fn load_texture(&self, path: &Path) -> Result<TextureData<Self::Texture>, String>;
     fn output_size(&self) -> Result<(u32, u32), String>;
 
+    // Drawing methods
     fn clear(&mut self);
     fn present(&mut self);
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String>;
     fn copy(&mut self,
             texture: &Self::Texture,
             src: Option<rect::Rect>,
@@ -74,6 +77,10 @@ impl Renderer for SdlRenderer<'static> {
     fn present(&mut self) {
         self.present();
     }
+
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+        self.draw_rects(rects)
+    }
 }
 
 pub struct ResourceManager<R: Renderer> {
@@ -112,10 +119,9 @@ impl<R: Renderer> ResourceManager<R> {
                     .iter()
                     .filter_map(|&c| c)
                     .map(|c| {
-                        rect::Rect::new(c.x - dims.x as i32 / 2,
-                                        c.y - dims.y as i32 / 2,
-                                        dims.x,
-                                        dims.y)
+                        let left = c.x - dims.x as i32 / 2;
+                        let top = c.y - dims.y as i32 / 2;
+                        rect::Rect::new(left, top, dims.x, dims.y)
                     })
                     .map(|r| self.renderer.copy(texture, src, Some(r)))
                     .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })

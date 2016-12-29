@@ -77,18 +77,16 @@ impl<E: MohoEngine> MasterSmasher<E> {
             self.explosion = None
         };
 
-        {
-            if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
-                return false;
-            }
+        if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
+            return false;
+        }
 
-            if self.input_manager.did_click_mouse(MouseButton::Left) && !self.meteor.is_launched() {
-                self.meteor.launch(self.input_manager.mouse_coords());
-            }
+        if self.input_manager.did_click_mouse(MouseButton::Left) && !self.meteor.is_launched() {
+            self.meteor.launch(self.input_manager.mouse_coords());
+        }
 
-            if self.input_manager.did_press_key(Keycode::R) {
-                self.meteor.restart_at(glm::ivec2(50, 50));
-            }
+        if self.input_manager.did_press_key(Keycode::R) {
+            self.meteor.restart_at(glm::ivec2(50, 50));
         }
 
         self.meteor.update();
