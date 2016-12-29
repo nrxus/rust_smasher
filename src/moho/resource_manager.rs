@@ -142,6 +142,10 @@ impl<R: Renderer> ResourceManager<R> {
         self.renderer.present();
     }
 
+    pub fn output_size(&self) -> Result<(u32, u32), String> {
+        self.renderer.output_size()
+    }
+
     fn load_cached_texture(&self, path: &'static str) -> Option<TextureData<R::Texture>> {
         let cache = self.texture_cache.borrow();
         match cache.get(path) {

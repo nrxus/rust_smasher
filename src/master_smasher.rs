@@ -36,18 +36,16 @@ impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
-        const WINDOW_HEIGHT: u32 = 600;
-        const WINDOW_WIDTH: u32 = 800;
-
         let background_path = "resources/background_game.png";
         let meteor_path = "resources/meteor.png";
         let planet_path = "resources/blue_planet.png";
 
+        let (window_width, window_height) = renderer.output_size()?;
         let background = renderer.load_texture(background_path)?;
         let planet = Planet::new(renderer.load_texture(planet_path)?, glm::ivec2(400, 300));
         let meteor = Meteor::new(renderer.load_texture(meteor_path)?,
                                  glm::ivec2(50, 50),
-                                 glm::uvec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+                                 glm::uvec2(window_width, window_height));
 
         Ok(MasterSmasher {
             meteor: meteor,
