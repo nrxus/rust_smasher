@@ -12,8 +12,8 @@ mod sprite_strip;
 mod explosion;
 
 fn main() {
-    const WINDOW_HEIGHT: u32 = 600;
-    const WINDOW_WIDTH: u32 = 800;
+    const WINDOW_WIDTH: u32 = 1280;
+    const WINDOW_HEIGHT: u32 = 720;
     let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)
         .unwrap();
     let mut game =
