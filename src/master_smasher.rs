@@ -88,12 +88,12 @@ impl<E: MohoEngine> MasterSmasher<E> {
             let distance = mouse_coords - meteor.center;
             let offset = meteor.radius + 10.;
             let offset_vector = normalize_to(distance, offset);
-            let distance = mouse_coords - (meteor.center + offset_vector);
-            let step = distance / 10.;
+            let anchor_point = meteor.center + offset_vector;
+            let step = (mouse_coords - anchor_point) / (self.rects.len() as f64);
 
             for (i, rect) in self.rects.iter_mut().enumerate() {
-                rect.set_x((meteor.center.x + offset_vector.x + (step.x * i as f64)) as i32);
-                rect.set_y((meteor.center.y + offset_vector.y + (step.y * i as f64)) as i32);
+                let point = anchor_point + (step * i as f64);
+                rect.center_on((point.x as i32, point.y as i32));
             }
         }
 
