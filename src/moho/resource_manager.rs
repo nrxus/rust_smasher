@@ -105,29 +105,25 @@ impl<R: Renderer> ResourceManager<R> {
 
     pub fn draw(&mut self,
                 texture: &R::Texture,
-                src: Option<rect::Rect>,
-                dst: Option<rect::Rect>,
+                src: Option<glm::IVec4>,
+                dst: Option<glm::IVec4>,
                 wrapping_coords: Option<glm::UVec2>)
                 -> Result<(), String> {
-        match (wrapping_coords, dst) {
-            (Some(coords), Some(rect)) => {
-                let dims = glm::uvec2(rect.width(), rect.height());
-                let center = rect.center();
-                let center = glm::uvec2(center.x() as u32, center.y() as u32);
+        let src = Self::get_rect(src);
+        let dst = Self::get_rect(dst);
+        self.private_draw(texture, src, dst, wrapping_coords)
+    }
 
-                get_wrapped_centers(center, dims, coords)
-                    .iter()
-                    .filter_map(|&c| c)
-                    .map(|c| {
-                        let left = c.x - dims.x as i32 / 2;
-                        let top = c.y - dims.y as i32 / 2;
-                        rect::Rect::new(left, top, dims.x, dims.y)
-                    })
-                    .map(|r| self.renderer.copy(texture, src, Some(r)))
-                    .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
-            }
-            _ => self.renderer.copy(texture, src, dst),
-        }
+    pub fn draw_from_center(&mut self,
+                            texture: &R::Texture,
+                            src: Option<glm::IVec4>,
+                            center: glm::IVec2,
+                            dims: glm::UVec2,
+                            wrapping_coords: Option<glm::UVec2>)
+                            -> Result<(), String> {
+        let dst = rect::Rect::from_center((center.x, center.y), dims.x, dims.y);
+        let src = Self::get_rect(src);
+        self.private_draw(texture, src, Some(dst), wrapping_coords)
     }
 
     pub fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
@@ -160,5 +156,40 @@ impl<R: Renderer> ResourceManager<R> {
         let texture_data = self.renderer.load_texture(texture_path)?;
         cache.insert(path, texture_data.clone());
         Ok(texture_data)
+    }
+
+    fn private_draw(&mut self,
+                    texture: &R::Texture,
+                    src: Option<rect::Rect>,
+                    dst: Option<rect::Rect>,
+                    wrapping_coords: Option<glm::UVec2>)
+                    -> Result<(), String> {
+        match (wrapping_coords, dst) {
+            (Some(coords), Some(rect)) => {
+                let dims = glm::uvec2(rect.width(), rect.height());
+                let center = rect.center();
+                let center = glm::uvec2(center.x() as u32, center.y() as u32);
+
+                get_wrapped_centers(center, dims, coords)
+                    .iter()
+                    .filter_map(|&c| c)
+                    .map(|c| {
+                        let left = c.x - dims.x as i32 / 2;
+                        let top = c.y - dims.y as i32 / 2;
+                        rect::Rect::new(left, top, dims.x, dims.y)
+                    })
+                    .map(|r| self.renderer.copy(texture, src, Some(r)))
+                    .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
+            }
+            _ => self.renderer.copy(texture, src, dst),
+        }
+    }
+
+    fn get_rect(rect: Option<glm::IVec4>) -> Option<rect::Rect> {
+        if let Some(dims) = rect {
+            Some(rect::Rect::new(dims.x, dims.y, dims.z as u32, dims.w as u32))
+        } else {
+            None
+        }
     }
 }

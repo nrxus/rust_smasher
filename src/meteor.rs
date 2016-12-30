@@ -3,7 +3,6 @@ extern crate sdl2;
 extern crate moho;
 
 use self::moho::resource_manager::*;
-use sdl2::rect;
 
 use std::rc::Rc;
 
@@ -67,11 +66,10 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+        let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
         let diameter = (self.radius * 2.) as u32;
-        let dst = rect::Rect::from_center((self.center.x as i32, self.center.y as i32),
-                                          diameter,
-                                          diameter);
-        renderer.draw(&*self.texture, None, Some(dst), Some(self.max_coords))
+        let dims = glm::uvec2(diameter, diameter);
+        renderer.draw_from_center(&*self.texture, None, center, dims, Some(self.max_coords))
     }
 
     pub fn collides_with(&self, planets: &[Planet<R>]) -> bool {

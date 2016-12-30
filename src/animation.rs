@@ -7,7 +7,6 @@ use std::time::{Instant, Duration};
 use self::moho::resource_manager::ResourceManager;
 use self::moho::resource_manager::Renderer;
 use self::moho::resource_manager::TextureData;
-use sdl2::rect;
 
 pub struct Animation<R: Renderer> {
     texture: TextureData<R::Texture>,
@@ -68,12 +67,11 @@ impl<R: Renderer> Animation<R> {
                 center: glm::IVec2,
                 dims: glm::UVec2)
                 -> Result<(), String> {
-        let texture_width = self.texture.width / self.num_frames;
-        let src = rect::Rect::new((texture_width * self.current_frame) as i32,
-                                  0,
-                                  texture_width,
-                                  self.texture.height);
-        let dst = rect::Rect::from_center((center.x, center.y), dims.x, dims.y);
-        renderer.draw(&*self.texture.texture, Some(src), Some(dst), None)
+        let texture_width = (self.texture.width / self.num_frames) as i32;
+        let src = glm::ivec4(texture_width * self.current_frame as i32,
+                             0,
+                             texture_width,
+                             self.texture.height as i32);
+        renderer.draw_from_center(&*self.texture.texture, Some(src), center, dims, None)
     }
 }

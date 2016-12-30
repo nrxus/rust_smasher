@@ -4,8 +4,6 @@ extern crate moho;
 
 use self::moho::resource_manager::*;
 
-use sdl2::rect;
-
 use std::rc::Rc;
 
 use circle::Circle;
@@ -38,14 +36,14 @@ impl<R: Renderer> Planet<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        let center = (self.center.x as i32, self.center.y as i32);
+        let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
         let planet_diameter = (self.planet_radius * 2.) as u32;
         let gravity_diameter = (self.gravity_radius * 2.) as u32;
-        let gravity_dst = rect::Rect::from_center(center, gravity_diameter, gravity_diameter);
-        let planet_dst = rect::Rect::from_center(center, planet_diameter, planet_diameter);
+        let planet_dims = glm::uvec2(planet_diameter, planet_diameter);
+        let gravity_dims = glm::uvec2(gravity_diameter, gravity_diameter);
 
-        renderer.draw(&*self.gravity_texture, None, Some(gravity_dst), None)?;
-        renderer.draw(&*self.planet_texture, None, Some(planet_dst), None)
+        renderer.draw_from_center(&*self.gravity_texture, None, center, gravity_dims, None)?;
+        renderer.draw_from_center(&*self.planet_texture, None, center, planet_dims, None)
     }
 
     pub fn collides_with<S: Intersect<Circle>>(&self, shape: &S) -> bool {
