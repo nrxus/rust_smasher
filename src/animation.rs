@@ -65,8 +65,9 @@ impl<R: Renderer> Animation<R> {
 
     pub fn draw(&self,
                 renderer: &mut ResourceManager<R>,
-                center: glm::IVec2)
+                center: glm::IVec2,
+                dims: glm::UVec2)
                 -> Result<(), String> {
-        self.sprite.draw(renderer, center, self.current_frame)
+        self.sprite.draw(center, dims, self.current_frame, renderer)
     }
 }

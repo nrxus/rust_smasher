@@ -2,8 +2,6 @@ extern crate glm;
 extern crate sdl2;
 extern crate moho;
 
-use std::cmp;
-
 use self::moho::resource_manager::*;
 
 use circle::Circle;
@@ -11,27 +9,30 @@ use sprite_strip::SpriteStrip;
 use planet::Planet;
 
 pub struct Meteor<R: Renderer> {
-    sprite: SpriteStrip<R>,
     center: glm::DVec2,
+    radius: f64,
     max_coords: glm::UVec2,
     velocity: glm::DVec2,
     launched: bool,
+    sprite: SpriteStrip<R>,
 }
 
 impl<R: Renderer> Meteor<R> {
-    pub fn new(texture: TextureData<R::Texture>,
-               center: glm::IVec2,
-               max_coords: glm::Vector2<u32>)
+    pub fn new(center: glm::UVec2,
+               radius: f64,
+               max_coords: glm::UVec2,
+               texture: TextureData<R::Texture>)
                -> Self {
         let center = glm::dvec2(center.x as f64, center.y as f64);
-        let sprite = SpriteStrip::new(texture, 1, Some(max_coords));
+        let sprite = SpriteStrip::new(texture, Some(max_coords));
 
         Meteor {
-            sprite: sprite,
             center: center,
+            radius: radius,
             max_coords: max_coords,
             velocity: glm::dvec2(0., 0.),
             launched: false,
+            sprite: sprite,
         }
     }
 
@@ -66,7 +67,8 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
-        self.sprite.draw(renderer, center, 0)
+        let diameter = (self.radius * 2.) as u32;
+        self.sprite.draw(center, glm::uvec2(diameter, diameter), 0, renderer)
     }
 
     pub fn collides_with(&self, planets: &[Planet<R>]) -> bool {
@@ -75,8 +77,7 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn radius(&self) -> f64 {
-        let dims = self.sprite.get_dims();
-        (cmp::min(dims.x, dims.y) as f64) / 2.
+        self.radius
     }
 
     pub fn center(&self) -> glm::DVec2 {
@@ -86,7 +87,7 @@ impl<R: Renderer> Meteor<R> {
     fn collision_body(&self) -> Circle {
         Circle {
             center: self.center,
-            radius: self.radius(),
+            radius: self.radius as f64,
         }
     }
 }

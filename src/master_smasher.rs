@@ -13,6 +13,7 @@ use self::sdl2::mouse::MouseButton;
 use self::glm::ext::normalize_to;
 
 use std::error::Error;
+use std::cmp;
 
 use meteor::Meteor;
 use planet::Planet;
@@ -41,18 +42,23 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let red_ring_texture = renderer.load_texture("resources/red_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
 
+        let blue_planet = Planet::new(glm::uvec2(400, 300),
+                                      300.,
+                                      Self::texture_radius(&blue_planet_texture),
+                                      blue_planet_texture,
+                                      blue_ring_texture);
+
+        let red_planet = Planet::new(glm::uvec2(700, 500),
+                                     424.,
+                                     Self::texture_radius(&red_planet_texture),
+                                     red_planet_texture,
+                                     red_ring_texture);
+
         let (window_width, window_height) = renderer.output_size()?;
-        let blue_planet = Planet::new(blue_planet_texture,
-                                      blue_ring_texture,
-                                      glm::ivec2(400, 300),
-                                      300);
-        let red_planet = Planet::new(red_planet_texture,
-                                     red_ring_texture,
-                                     glm::ivec2(700, 500),
-                                     424);
-        let meteor = Meteor::new(meteor_texture,
-                                 glm::ivec2(50, 50),
-                                 glm::uvec2(window_width, window_height));
+        let meteor = Meteor::new(glm::uvec2(50, 50),
+                                 Self::texture_radius(&meteor_texture),
+                                 glm::uvec2(window_width, window_height),
+                                 meteor_texture);
 
         Ok(MasterSmasher {
             meteor: meteor,
@@ -63,6 +69,10 @@ impl<E: MohoEngine> MasterSmasher<E> {
             renderer: renderer,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
+    }
+
+    fn texture_radius(texture_data: &TextureData<<E::Renderer as Renderer>::Texture>) -> f64 {
+        cmp::min(texture_data.width, texture_data.height) as f64 / 2.
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
@@ -117,10 +127,11 @@ impl<E: MohoEngine> MasterSmasher<E> {
         if self.meteor.collides_with(&self.planets) {
             let explosion_path = "resources/explosion_large.png";
             let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
-            let explosion_sprite = SpriteStrip::new(explosion_texture, 8, None);
+            let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
+            let explosion_sprite = SpriteStrip::new(explosion_texture, None);
             let animation = Animation::new(explosion_sprite, 8, false, 80);
             let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-            self.explosions.push(Explosion::new(animation, center));
+            self.explosions.push(Explosion::new(animation, center, dims));
             self.meteor.restart_at(glm::ivec2(50, 50));
         }
     }
@@ -130,7 +141,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let mouse_coords = glm::dvec2(mouse_coords.x as f64, mouse_coords.y as f64);
         let distance = mouse_coords - self.meteor.center();
         let offset = self.meteor.radius() + 10.;
-        let offset_vector = normalize_to(distance, offset);
+        let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = self.meteor.center() + offset_vector;
         let step = (mouse_coords - anchor_point) / (self.rects.len() as f64);
 
