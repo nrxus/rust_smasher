@@ -24,7 +24,7 @@ pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planets: Vec<Planet<E::Renderer>>,
     background: TextureData<<E::Renderer as Renderer>::Texture>,
-    explosion: Option<Explosion<E::Renderer>>,
+    explosions: Vec<Explosion<E::Renderer>>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
     rects: [rect::Rect; 10],
@@ -53,7 +53,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             meteor: meteor,
             planets: vec![blue_planet, red_planet],
             background: background,
-            explosion: None,
+            explosions: vec![],
             input_manager: input_manager,
             renderer: renderer,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
@@ -84,14 +84,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             self.update_launch_vector();
         }
 
-        let explosion_ended = match self.explosion {
-            Some(ref mut expl) => !expl.update(),
-            None => false,
-        };
-
-        if explosion_ended {
-            self.explosion = None
-        };
+        self.retain_mut(|ref mut e| e.update());
 
         true
     }
@@ -106,8 +99,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
         if !self.meteor.is_launched() {
             self.renderer.fill_rects(&self.rects)?;
         }
-        if let Some(ref expl) = self.explosion {
-            expl.draw(&mut self.renderer)?
+        for explosion in &self.explosions {
+            explosion.draw(&mut self.renderer)?
         }
         self.renderer.present();
         Ok(())
@@ -122,7 +115,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             let explosion_sprite = SpriteStrip::new(explosion_texture, 8, None);
             let animation = Animation::new(explosion_sprite, 8, false, 80);
             let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-            self.explosion = Some(Explosion::new(animation, center));
+            self.explosions.push(Explosion::new(animation, center));
             self.meteor.restart_at(glm::ivec2(50, 50));
         }
     }
@@ -139,6 +132,28 @@ impl<E: MohoEngine> MasterSmasher<E> {
         for (i, rect) in self.rects.iter_mut().enumerate() {
             let point = anchor_point + (step * i as f64);
             rect.center_on((point.x as i32, point.y as i32));
+        }
+    }
+
+    pub fn retain_mut<F>(&mut self, mut f: F)
+        where F: FnMut(&mut Explosion<E::Renderer>) -> bool
+    {
+        let vector = &mut self.explosions;
+        let len = vector.len();
+        let mut del = 0;
+        {
+            let v = &mut **vector;
+
+            for i in 0..len {
+                if !f(&mut v[i]) {
+                    del += 1;
+                } else if del > 0 {
+                    v.swap(i - del, i);
+                }
+            }
+        }
+        if del > 0 {
+            vector.truncate(len - del);
         }
     }
 }
