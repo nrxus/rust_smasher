@@ -34,18 +34,23 @@ impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
-        let background_path = "resources/background_game.png";
-        let meteor_path = "resources/meteor.png";
-        let blue_planet_path = "resources/blue_planet.png";
-        let red_planet_path = "resources/red_planet.png";
+        let meteor_texture = renderer.load_texture("resources/meteor.png")?;
+        let blue_planet_texture = renderer.load_texture("resources/blue_planet.png")?;
+        let red_planet_texture = renderer.load_texture("resources/red_planet.png")?;
+        let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
+        let red_ring_texture = renderer.load_texture("resources/red_ring.png")?;
+        let background = renderer.load_texture("resources/background_game.png")?;
 
         let (window_width, window_height) = renderer.output_size()?;
-        let background = renderer.load_texture(background_path)?;
-        let blue_planet = Planet::new(renderer.load_texture(blue_planet_path)?,
-                                      glm::ivec2(400, 300));
-        let red_planet = Planet::new(renderer.load_texture(red_planet_path)?,
-                                     glm::ivec2(700, 500));
-        let meteor = Meteor::new(renderer.load_texture(meteor_path)?,
+        let blue_planet = Planet::new(blue_planet_texture,
+                                      blue_ring_texture,
+                                      glm::ivec2(400, 300),
+                                      300);
+        let red_planet = Planet::new(red_planet_texture,
+                                     red_ring_texture,
+                                     glm::ivec2(700, 500),
+                                     424);
+        let meteor = Meteor::new(meteor_texture,
                                  glm::ivec2(50, 50),
                                  glm::uvec2(window_width, window_height));
 
