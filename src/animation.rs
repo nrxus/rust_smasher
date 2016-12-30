@@ -6,11 +6,11 @@ use std::time::{Instant, Duration};
 
 use self::moho::resource_manager::ResourceManager;
 use self::moho::resource_manager::Renderer;
-
-use sprite_strip::SpriteStrip;
+use self::moho::resource_manager::TextureData;
+use sdl2::rect;
 
 pub struct Animation<R: Renderer> {
-    sprite: SpriteStrip<R>,
+    texture: TextureData<R::Texture>,
     num_frames: u32,
     current_frame: u32,
     frame_duration: Duration,
@@ -19,13 +19,13 @@ pub struct Animation<R: Renderer> {
 }
 
 impl<R: Renderer> Animation<R> {
-    pub fn new(sprite: SpriteStrip<R>,
+    pub fn new(texture: TextureData<R::Texture>,
                num_frames: u32,
                repeat: bool,
                frame_duration_ms: u16)
                -> Self {
         Animation {
-            sprite: sprite,
+            texture: texture,
             num_frames: num_frames,
             repeat: repeat,
             frame_duration: Duration::from_millis(frame_duration_ms as u64),
@@ -68,6 +68,12 @@ impl<R: Renderer> Animation<R> {
                 center: glm::IVec2,
                 dims: glm::UVec2)
                 -> Result<(), String> {
-        self.sprite.draw(center, dims, self.current_frame, renderer)
+        let texture_width = self.texture.width / self.num_frames;
+        let src = rect::Rect::new((texture_width * self.current_frame) as i32,
+                                  0,
+                                  texture_width,
+                                  self.texture.height);
+        let dst = rect::Rect::from_center((center.x, center.y), dims.x, dims.y);
+        renderer.draw(&*self.texture.texture, Some(src), Some(dst), None)
     }
 }

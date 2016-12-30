@@ -18,7 +18,6 @@ use std::cmp;
 use meteor::Meteor;
 use planet::Planet;
 use animation::Animation;
-use sprite_strip::SpriteStrip;
 use explosion::Explosion;
 
 pub struct MasterSmasher<E: MohoEngine> {
@@ -45,20 +44,20 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let blue_planet = Planet::new(glm::uvec2(400, 300),
                                       300.,
                                       Self::texture_radius(&blue_planet_texture),
-                                      blue_planet_texture,
-                                      blue_ring_texture);
+                                      blue_planet_texture.texture,
+                                      blue_ring_texture.texture);
 
         let red_planet = Planet::new(glm::uvec2(700, 500),
                                      424.,
                                      Self::texture_radius(&red_planet_texture),
-                                     red_planet_texture,
-                                     red_ring_texture);
+                                     red_planet_texture.texture,
+                                     red_ring_texture.texture);
 
         let (window_width, window_height) = renderer.output_size()?;
         let meteor = Meteor::new(glm::uvec2(50, 50),
                                  Self::texture_radius(&meteor_texture),
                                  glm::uvec2(window_width, window_height),
-                                 meteor_texture);
+                                 meteor_texture.texture);
 
         Ok(MasterSmasher {
             meteor: meteor,
@@ -128,8 +127,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             let explosion_path = "resources/explosion_large.png";
             let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
             let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
-            let explosion_sprite = SpriteStrip::new(explosion_texture, None);
-            let animation = Animation::new(explosion_sprite, 8, false, 80);
+            let animation = Animation::new(explosion_texture, 8, false, 80);
             let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
             self.explosions.push(Explosion::new(animation, center, dims));
             self.meteor.restart_at(glm::ivec2(50, 50));

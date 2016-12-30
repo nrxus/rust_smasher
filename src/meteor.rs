@@ -3,9 +3,11 @@ extern crate sdl2;
 extern crate moho;
 
 use self::moho::resource_manager::*;
+use sdl2::rect;
+
+use std::rc::Rc;
 
 use circle::Circle;
-use sprite_strip::SpriteStrip;
 use planet::Planet;
 
 pub struct Meteor<R: Renderer> {
@@ -14,17 +16,16 @@ pub struct Meteor<R: Renderer> {
     max_coords: glm::UVec2,
     velocity: glm::DVec2,
     launched: bool,
-    sprite: SpriteStrip<R>,
+    texture: Rc<R::Texture>,
 }
 
 impl<R: Renderer> Meteor<R> {
     pub fn new(center: glm::UVec2,
                radius: f64,
                max_coords: glm::UVec2,
-               texture: TextureData<R::Texture>)
+               texture: Rc<R::Texture>)
                -> Self {
         let center = glm::dvec2(center.x as f64, center.y as f64);
-        let sprite = SpriteStrip::new(texture, Some(max_coords));
 
         Meteor {
             center: center,
@@ -32,7 +33,7 @@ impl<R: Renderer> Meteor<R> {
             max_coords: max_coords,
             velocity: glm::dvec2(0., 0.),
             launched: false,
-            sprite: sprite,
+            texture: texture,
         }
     }
 
@@ -66,9 +67,11 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
         let diameter = (self.radius * 2.) as u32;
-        self.sprite.draw(center, glm::uvec2(diameter, diameter), 0, renderer)
+        let dst = rect::Rect::from_center((self.center.x as i32, self.center.y as i32),
+                                          diameter,
+                                          diameter);
+        renderer.draw(&*self.texture, None, Some(dst), Some(self.max_coords))
     }
 
     pub fn collides_with(&self, planets: &[Planet<R>]) -> bool {
