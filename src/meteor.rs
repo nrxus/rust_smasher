@@ -8,6 +8,8 @@ use self::moho::resource_manager::*;
 
 use circle::Circle;
 use sprite_strip::SpriteStrip;
+use planet::Planet;
+use shape::Intersect;
 
 pub struct Meteor<R: Renderer> {
     sprite: SpriteStrip<R>,
@@ -68,13 +70,24 @@ impl<R: Renderer> Meteor<R> {
         self.sprite.draw(renderer, center, 0)
     }
 
-    pub fn collision_body(&self) -> Circle {
-        let dims = self.sprite.get_dims();
-        let diameter = cmp::min(dims.x, dims.y) as f64;
+    pub fn collides_with(&self, planets: &Vec<Planet<R>>) -> bool {
+        let body = self.collision_body();
+        planets.iter().any(|p| body.intersects(&p.collision_body()))
+    }
 
+    pub fn radius(&self) -> f64 {
+        let dims = self.sprite.get_dims();
+        (cmp::min(dims.x, dims.y) as f64) / 2.
+    }
+
+    pub fn center(&self) -> glm::DVec2 {
+        self.center
+    }
+
+    fn collision_body(&self) -> Circle {
         Circle {
             center: self.center,
-            radius: diameter / 2.,
+            radius: self.radius(),
         }
     }
 }
