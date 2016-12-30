@@ -78,12 +78,10 @@ impl<E: MohoEngine> MasterSmasher<E> {
             } else {
                 self.update_meteor();
             }
+        } else if self.input_manager.did_click_mouse(MouseButton::Left) {
+            self.meteor.launch(self.input_manager.mouse_coords());
         } else {
-            if self.input_manager.did_click_mouse(MouseButton::Left) {
-                self.meteor.launch(self.input_manager.mouse_coords());
-            } else {
-                self.update_launch_vector();
-            }
+            self.update_launch_vector();
         }
 
         let explosion_ended = match self.explosion {

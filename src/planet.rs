@@ -8,6 +8,7 @@ use self::moho::resource_manager::*;
 
 use circle::Circle;
 use sprite_strip::SpriteStrip;
+use shape::Intersect;
 
 pub struct Planet<R: Renderer> {
     sprite: SpriteStrip<R>,
@@ -30,7 +31,11 @@ impl<R: Renderer> Planet<R> {
         self.sprite.draw(renderer, center, 0)
     }
 
-    pub fn collision_body(&self) -> Circle {
+    pub fn collides_with<S: Intersect<Circle>>(&self, shape: &S) -> bool {
+        shape.intersects(&self.collision_body())
+    }
+
+    fn collision_body(&self) -> Circle {
         let dims = self.sprite.get_dims();
         let diameter = cmp::min(dims.x, dims.y) as f64;
 

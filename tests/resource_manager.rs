@@ -110,6 +110,10 @@ impl Renderer for MockRenderer {
     fn output_size(&self) -> Result<(u32, u32), String> {
         Ok((0, 0))
     }
+
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 fn new_subject(error: Option<String>)
