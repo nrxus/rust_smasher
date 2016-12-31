@@ -1,6 +1,27 @@
 extern crate glm;
 
-pub fn get_wrapped_centers(original: glm::UVec2,
+pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>; 4] {
+    let center = glm::uvec2(((original.x + original.z / 2 + max.x as i32) % max.x as i32) as u32,
+                            ((original.y + original.w / 2 + max.y as i32) % max.y as i32) as u32);
+
+    let dims = glm::uvec2(original.z as u32, original.w as u32);
+    let mut ret = [None, None, None, None];
+    let centers = get_wrapped_centers(center, dims, max);
+    for (i, c) in centers.iter().enumerate() {
+        ret[i] = match c {
+            &Some(center) => {
+                let left = center.x - original.z / 2;
+                let top = center.y - original.w / 2;
+                let rect = glm::ivec4(left, top, original.z, original.w);
+                Some(rect)
+            }
+            &None => None,
+        }
+    }
+    ret
+}
+
+fn get_wrapped_centers(original: glm::UVec2,
                            dims: glm::UVec2,
                            max_coords: glm::UVec2)
                            -> [Option<glm::IVec2>; 4] {
@@ -32,7 +53,8 @@ pub fn get_wrapped_centers(original: glm::UVec2,
         _ => None,
     };
 
-    [Some(original), side, vert, side_vert]
+    let centers = [Some(original), side, vert, side_vert];
+    centers
 }
 
 #[cfg(test)]
@@ -43,93 +65,62 @@ mod test {
 
     #[test]
     fn no_wrapping() {
-        let original = glm::uvec2(30, 20);
-        let dims = glm::uvec2(10, 7);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(30, 20);
-        assert_eq!(centers.len(), 1);
-        assert_eq!(original, centers[0]);
+        let rect = glm::ivec4(25, 15, 10, 7);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 1);
+        assert_eq!(rect, rects[0]);
     }
 
     #[test]
     fn wrapping_left() {
-        let original = glm::uvec2(3, 20);
-        let dims = glm::uvec2(10, 8);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(3, 20);
-        let left = glm::ivec2(43, 20);
-        assert_eq!(centers.len(), 2);
-        assert_eq!(original, centers[0]);
-        assert_eq!(left, centers[1]);
+        let rect = glm::ivec4(-2, 16, 10, 8);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 2);
+        assert_eq!(rect, rects[0]);
+        assert_eq!(glm::ivec4(38, 16, 10, 8), rects[1]);
     }
 
     #[test]
     fn wrapping_right() {
-        let original = glm::uvec2(39, 20);
-        let dims = glm::uvec2(10, 13);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(39, 20);
-        let right = glm::ivec2(-1, 20);
-        assert_eq!(centers.len(), 2);
-        assert_eq!(original, centers[0]);
-        assert_eq!(right, centers[1]);
+        let rect = glm::ivec4(34, 16, 10, 13);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 2);
+        assert_eq!(rect, rects[0]);
+        assert_eq!(glm::ivec4(-6, 16, 10, 13), rects[1]);
     }
 
     #[test]
     fn wrapping_bottom() {
-        let original = glm::uvec2(30, 26);
-        let dims = glm::uvec2(6, 10);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(30, 26);
-        let bottom = glm::ivec2(30, -4);
-        assert_eq!(centers.len(), 2);
-        assert_eq!(original, centers[0]);
-        assert_eq!(bottom, centers[1]);
+        let rect = glm::ivec4(27, 21, 6, 10);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 2);
+        assert_eq!(rect, rects[0]);
+        assert_eq!(glm::ivec4(27, -9, 6, 10), rects[1]);
     }
 
     #[test]
     fn wrapping_top() {
-        let original = glm::uvec2(30, 2);
-        let dims = glm::uvec2(6, 10);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(30, 2);
-        let top = glm::ivec2(30, 32);
-        assert_eq!(centers.len(), 2);
-        assert_eq!(original, centers[0]);
-        assert_eq!(top, centers[1]);
+        let rect = glm::ivec4(27, -3, 6, 10);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 2);
+        assert_eq!(rect, rects[0]);
+        assert_eq!(glm::ivec4(27, 27, 6, 10), rects[1]);
     }
 
     #[test]
     fn wrapping_corner() {
-        let original = glm::uvec2(3, 2);
-        let dims = glm::uvec2(10, 10);
         let max_coords = glm::uvec2(40, 30);
-        let centers: Vec<_> =
-            get_wrapped_centers(original, dims, max_coords).iter().filter_map(|&x| x).collect();
-
-        let original = glm::ivec2(3, 2);
-        let left = glm::ivec2(43, 2);
-        let top = glm::ivec2(3, 32);
-        let top_left = glm::ivec2(43, 32);
-        assert_eq!(centers.len(), 4);
-        assert_eq!(original, centers[0]);
-        assert_eq!(left, centers[1]);
-        assert_eq!(top, centers[2]);
-        assert_eq!(top_left, centers[3]);
+        let rect = glm::ivec4(-2, -3, 10, 10);
+        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        assert_eq!(rects.len(), 4);
+        assert_eq!(rect, rects[0]);
+        assert_eq!(glm::ivec4(38, -3, 10, 10), rects[1]);
+        assert_eq!(glm::ivec4(-2, 27, 10, 10), rects[2]);
+        assert_eq!(glm::ivec4(38, 27, 10, 10), rects[3]);
     }
 }
