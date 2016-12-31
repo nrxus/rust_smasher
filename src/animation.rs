@@ -34,21 +34,23 @@ impl<R: Renderer> Animation<R> {
     }
 
     pub fn update(&mut self) -> bool {
-        self.current_frame = match self.frame_instant {
-            None => {
-                self.frame_instant = Some(Instant::now());
-                0
-            }
-            Some(instant) => {
-                if instant.elapsed() >= self.frame_duration {
-                    self.frame_instant = Some(instant + self.frame_duration);
-                    self.current_frame + 1
-                } else {
-                    self.current_frame
-                }
-            }
-        };
+        self.current_frame = self.calculate_frame();
+        self.is_active()
+    }
 
+    pub fn draw(&self,
+                renderer: &mut ResourceManager<R>,
+                center: glm::IVec2,
+                dims: glm::UVec2)
+                -> Result<(), String> {
+        let texture_width = (self.texture.width / self.num_frames) as i32;
+        let texture_height = self.texture.height as i32;
+        let uv_left = texture_width * self.current_frame as i32;
+        let src = glm::ivec4(uv_left, 0, texture_width, texture_height);
+        renderer.draw_from_center(&*self.texture.texture, Some(src), center, dims, None)
+    }
+
+    fn is_active(&mut self) -> bool {
         if self.current_frame >= self.num_frames {
             if self.repeat {
                 self.current_frame -= self.num_frames;
@@ -62,16 +64,20 @@ impl<R: Renderer> Animation<R> {
         }
     }
 
-    pub fn draw(&self,
-                renderer: &mut ResourceManager<R>,
-                center: glm::IVec2,
-                dims: glm::UVec2)
-                -> Result<(), String> {
-        let texture_width = (self.texture.width / self.num_frames) as i32;
-        let src = glm::ivec4(texture_width * self.current_frame as i32,
-                             0,
-                             texture_width,
-                             self.texture.height as i32);
-        renderer.draw_from_center(&*self.texture.texture, Some(src), center, dims, None)
+    fn calculate_frame(&mut self) -> u32 {
+        match self.frame_instant {
+            None => {
+                self.frame_instant = Some(Instant::now());
+                0
+            }
+            Some(instant) => {
+                if instant.elapsed() >= self.frame_duration {
+                    self.frame_instant = Some(instant + self.frame_duration);
+                    self.current_frame + 1
+                } else {
+                    self.current_frame
+                }
+            }
+        }
     }
 }
