@@ -3,6 +3,7 @@ extern crate glm;
 extern crate moho;
 
 use self::moho::resource_manager::*;
+use self::glm::ext::normalize_to;
 
 use std::rc::Rc;
 
@@ -47,6 +48,17 @@ impl<R: Renderer> Planet<R> {
 
         renderer.draw_from_center(&*self.gravity_texture, None, center, gravity_dims, None)?;
         renderer.draw_from_center(&*self.planet_texture, None, center, planet_dims, None)
+    }
+
+    pub fn pull_vector(&self, point: glm::DVec2) -> glm::DVec2 {
+        let dist = self.center - point;
+        let len = glm::length(dist);
+        if len > self.gravity_radius {
+            glm::dvec2(0., 0.)
+        } else {
+            let force = self.strength / (len * len);
+            normalize_to(dist, force)
+        }
     }
 
     pub fn collides_with<S: Intersect<Circle>>(&self, shape: &S) -> bool {

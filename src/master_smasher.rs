@@ -56,25 +56,25 @@ impl<E: MohoEngine> MasterSmasher<E> {
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
         let meteor_texture = renderer.load_texture("resources/meteor.png")?;
+        let white_planet_texture = renderer.load_texture("resources/white_planet.png")?;
         let blue_planet_texture = renderer.load_texture("resources/blue_planet.png")?;
-        let red_planet_texture = renderer.load_texture("resources/red_planet.png")?;
+        let white_ring_texture = renderer.load_texture("resources/white_ring.png")?;
         let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
-        let red_ring_texture = renderer.load_texture("resources/red_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
 
-        let blue_planet = Planet::new(glm::uvec2(400, 300),
-                                      5.,
-                                      300.,
+        let blue_planet = Planet::new(glm::uvec2(840, 478),
+                                      700.,
+                                      215.,
                                       Self::texture_radius(&blue_planet_texture),
                                       blue_planet_texture.texture,
                                       blue_ring_texture.texture);
 
-        let red_planet = Planet::new(glm::uvec2(700, 500),
-                                     4.,
-                                     424.,
-                                     Self::texture_radius(&red_planet_texture),
-                                     red_planet_texture.texture,
-                                     red_ring_texture.texture);
+        let white_planet = Planet::new(glm::uvec2(346, 298),
+                                       400.,
+                                       175.,
+                                       Self::texture_radius(&white_planet_texture),
+                                       white_planet_texture.texture,
+                                       white_ring_texture.texture);
 
         let (window_width, window_height) = renderer.output_size()?;
         let meteor = Meteor::new(glm::uvec2(50, 50),
@@ -84,7 +84,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
         Ok(MasterSmasher {
             meteor: meteor,
-            planets: vec![blue_planet, red_planet],
+            planets: vec![white_planet, blue_planet],
             background: background,
             explosions: vec![],
             input_manager: input_manager,

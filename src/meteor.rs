@@ -51,6 +51,7 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn update(&mut self, planets: &[Planet<R>]) -> bool {
+        self.pull(planets);
         self.displace();
         !self.collides_with(planets)
     }
@@ -72,6 +73,13 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn center(&self) -> glm::DVec2 {
         self.center
+    }
+
+    fn pull(&mut self, planets: &[Planet<R>]) {
+        for planet in planets {
+            let acceleration = planet.pull_vector(self.center);
+            self.velocity = self.velocity + acceleration;
+        }
     }
 
     fn displace(&mut self) {
