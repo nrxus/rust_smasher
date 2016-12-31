@@ -11,14 +11,16 @@ use shape::Intersect;
 
 pub struct Planet<R: Renderer> {
     center: glm::DVec2,
-    planet_texture: Rc<R::Texture>,
-    gravity_texture: Rc<R::Texture>,
+    strength: f64,
     planet_radius: f64,
     gravity_radius: f64,
+    planet_texture: Rc<R::Texture>,
+    gravity_texture: Rc<R::Texture>,
 }
 
 impl<R: Renderer> Planet<R> {
     pub fn new(center: glm::UVec2,
+               strength: f64,
                gravity_radius: f64,
                planet_radius: f64,
                planet_texture: Rc<R::Texture>,
@@ -28,6 +30,7 @@ impl<R: Renderer> Planet<R> {
 
         Planet {
             center: center,
+            strength: strength,
             planet_radius: planet_radius,
             gravity_radius: gravity_radius,
             planet_texture: planet_texture,

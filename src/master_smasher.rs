@@ -20,6 +20,27 @@ use planet::Planet;
 use animation::Animation;
 use explosion::Explosion;
 
+pub fn retain_mut<T, F>(vector: &mut Vec<T>, mut f: F)
+    where F: FnMut(&mut T) -> bool
+{
+    let len = vector.len();
+    let mut del = 0;
+    {
+        let v = &mut **vector;
+
+        for i in 0..len {
+            if !f(&mut v[i]) {
+                del += 1;
+            } else if del > 0 {
+                v.swap(i - del, i);
+            }
+        }
+    }
+    if del > 0 {
+        vector.truncate(len - del);
+    }
+}
+
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planets: Vec<Planet<E::Renderer>>,
@@ -42,12 +63,14 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let background = renderer.load_texture("resources/background_game.png")?;
 
         let blue_planet = Planet::new(glm::uvec2(400, 300),
+                                      5.,
                                       300.,
                                       Self::texture_radius(&blue_planet_texture),
                                       blue_planet_texture.texture,
                                       blue_ring_texture.texture);
 
         let red_planet = Planet::new(glm::uvec2(700, 500),
+                                     4.,
                                      424.,
                                      Self::texture_radius(&red_planet_texture),
                                      red_planet_texture.texture,
@@ -98,7 +121,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             self.update_launch_vector();
         }
 
-        self.retain_mut(|ref mut e| e.update());
+        retain_mut(&mut self.explosions, |ref mut e| e.update());
 
         true
     }
@@ -121,16 +144,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn update_meteor(&mut self) {
-        self.meteor.update();
-
-        if self.meteor.collides_with(&self.planets) {
-            let explosion_path = "resources/explosion_large.png";
-            let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
-            let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
-            let animation = Animation::new(explosion_texture, 8, false, 80);
-            let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-            self.explosions.push(Explosion::new(animation, center, dims));
-            self.meteor.restart_at(glm::ivec2(50, 50));
+        if !self.meteor.update(&self.planets) {
+            self.explode_meteor();
         }
     }
 
@@ -149,25 +164,13 @@ impl<E: MohoEngine> MasterSmasher<E> {
         }
     }
 
-    pub fn retain_mut<F>(&mut self, mut f: F)
-        where F: FnMut(&mut Explosion<E::Renderer>) -> bool
-    {
-        let vector = &mut self.explosions;
-        let len = vector.len();
-        let mut del = 0;
-        {
-            let v = &mut **vector;
-
-            for i in 0..len {
-                if !f(&mut v[i]) {
-                    del += 1;
-                } else if del > 0 {
-                    v.swap(i - del, i);
-                }
-            }
-        }
-        if del > 0 {
-            vector.truncate(len - del);
-        }
+    fn explode_meteor(&mut self) {
+        let explosion_path = "resources/explosion_large.png";
+        let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
+        let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
+        let animation = Animation::new(explosion_texture, 8, false, 80);
+        let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
+        self.explosions.push(Explosion::new(animation, center, dims));
+        self.meteor.restart_at(glm::ivec2(50, 50));
     }
 }

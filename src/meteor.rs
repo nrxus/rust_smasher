@@ -50,15 +50,9 @@ impl<R: Renderer> Meteor<R> {
         self.launched = true;
     }
 
-    pub fn update(&mut self) {
-        self.center.y += self.velocity.y;
-        self.center.x += self.velocity.x;
-
-        let max_height = self.max_coords.y as f64;
-        let max_width = self.max_coords.x as f64;
-
-        self.center.y = (self.center.y + max_height) % max_height;
-        self.center.x = (self.center.x + max_width) % max_width;
+    pub fn update(&mut self, planets: &[Planet<R>]) -> bool {
+        self.displace();
+        !self.collides_with(planets)
     }
 
     pub fn is_launched(&self) -> bool {
@@ -72,17 +66,28 @@ impl<R: Renderer> Meteor<R> {
         renderer.draw_from_center(&*self.texture, None, center, dims, Some(self.max_coords))
     }
 
-    pub fn collides_with(&self, planets: &[Planet<R>]) -> bool {
-        let body = self.collision_body();
-        planets.iter().any(|p| p.collides_with(&body))
-    }
-
     pub fn radius(&self) -> f64 {
         self.radius
     }
 
     pub fn center(&self) -> glm::DVec2 {
         self.center
+    }
+
+    fn displace(&mut self) {
+        self.center.y += self.velocity.y;
+        self.center.x += self.velocity.x;
+
+        let max_height = self.max_coords.y as f64;
+        let max_width = self.max_coords.x as f64;
+
+        self.center.y = (self.center.y + max_height) % max_height;
+        self.center.x = (self.center.x + max_width) % max_width;
+    }
+
+    fn collides_with(&self, planets: &[Planet<R>]) -> bool {
+        let body = self.collision_body();
+        planets.iter().any(|p| p.collides_with(&body))
     }
 
     fn collision_body(&self) -> Circle {
