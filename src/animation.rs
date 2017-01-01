@@ -34,8 +34,12 @@ impl<R: Renderer> Animation<R> {
     }
 
     pub fn update(&mut self) -> bool {
-        self.current_frame = self.calculate_frame();
-        self.is_active()
+        self.current_frame = self.advance_frame();
+        if self.current_frame >= self.num_frames {
+            self.update_loop()
+        } else {
+            true
+        }
     }
 
     pub fn draw(&self,
@@ -50,21 +54,17 @@ impl<R: Renderer> Animation<R> {
         renderer.draw_from_center(&*self.texture.texture, Some(src), center, dims, None)
     }
 
-    fn is_active(&mut self) -> bool {
-        if self.current_frame >= self.num_frames {
-            if self.repeat {
-                self.current_frame -= self.num_frames;
-                true
-            } else {
-                self.frame_instant = None;
-                false
-            }
-        } else {
+    fn update_loop(&mut self) -> bool {
+        if self.repeat {
+            self.current_frame -= self.num_frames;
             true
+        } else {
+            self.frame_instant = None;
+            false
         }
     }
 
-    fn calculate_frame(&mut self) -> u32 {
+    fn advance_frame(&mut self) -> u32 {
         match self.frame_instant {
             None => {
                 self.frame_instant = Some(Instant::now());
