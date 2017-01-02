@@ -43,7 +43,7 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn launch(&mut self, target: glm::Vector2<i32>) {
-        const FACTOR: f64 = 85.;
+        const FACTOR: f64 = 50.;
         let offset = glm::ivec2(target.x - self.center.x as i32,
                                 target.y - self.center.y as i32);
         self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
@@ -77,8 +77,8 @@ impl<R: Renderer> Meteor<R> {
 
     fn pull(&mut self, planets: &[Planet<R>]) {
         for planet in planets {
-            let acceleration = planet.pull_vector(self.center);
-            self.velocity = self.velocity + acceleration;
+            let acceleration = planet.pull_vector(self.center, self.radius);
+            self.velocity = self.velocity + acceleration / 50.;
         }
     }
 

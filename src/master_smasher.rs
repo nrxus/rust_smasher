@@ -77,7 +77,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
                                        white_ring_texture.texture);
 
         let (window_width, window_height) = renderer.output_size()?;
-        let meteor = Meteor::new(glm::uvec2(50, 50),
+        let meteor = Meteor::new(glm::uvec2(130, 402),
                                  Self::texture_radius(&meteor_texture),
                                  glm::uvec2(window_width, window_height),
                                  meteor_texture.texture);
@@ -111,7 +111,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
         if self.meteor.is_launched() {
             if self.input_manager.did_press_key(Keycode::R) {
-                self.meteor.restart_at(glm::ivec2(50, 50));
+                self.meteor.restart_at(glm::ivec2(130, 402));
             } else {
                 self.update_meteor();
             }
@@ -171,6 +171,6 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let animation = Animation::new(explosion_texture, 8, false, 80);
         let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
         self.explosions.push(Explosion::new(animation, center, dims));
-        self.meteor.restart_at(glm::ivec2(50, 50));
+        self.meteor.restart_at(glm::ivec2(130, 402));
     }
 }

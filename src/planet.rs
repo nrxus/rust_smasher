@@ -50,13 +50,13 @@ impl<R: Renderer> Planet<R> {
         renderer.draw_from_center(&*self.planet_texture, None, center, planet_dims, None)
     }
 
-    pub fn pull_vector(&self, point: glm::DVec2) -> glm::DVec2 {
+    pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
         let dist = self.center - point;
         let len = glm::length(dist);
-        if len > self.gravity_radius {
+        if len > (self.gravity_radius + radius) {
             glm::dvec2(0., 0.)
         } else {
-            let force = self.strength / (len * len);
+            let force = self.strength / (len.powf(0.8));
             normalize_to(dist, force)
         }
     }
