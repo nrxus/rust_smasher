@@ -2,22 +2,30 @@ extern crate sdl2;
 extern crate glm;
 extern crate moho;
 
+use std::rc::Rc;
+
 use animation::Animation;
 use self::moho::resource_manager::Renderer;
 use self::moho::resource_manager::ResourceManager;
 
 pub struct Explosion<R: Renderer> {
-    animation: Animation<R>,
     center: glm::IVec2,
     dims: glm::UVec2,
+    texture: Rc<R::Texture>,
+    animation: Animation,
 }
 
 impl<R: Renderer> Explosion<R> {
-    pub fn new(animation: Animation<R>, center: glm::IVec2, dims: glm::UVec2) -> Self {
+    pub fn new(center: glm::IVec2,
+               dims: glm::UVec2,
+               animation: Animation,
+               texture: Rc<R::Texture>)
+               -> Self {
         Explosion {
-            animation: animation,
             center: center,
             dims: dims,
+            texture: texture,
+            animation: animation,
         }
     }
 
@@ -26,6 +34,7 @@ impl<R: Renderer> Explosion<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        self.animation.draw(renderer, self.center, self.dims)
+        let src_rect = Some(self.animation.src_rect());
+        renderer.draw_from_center(&*self.texture, src_rect, self.center, self.dims, None)
     }
 }

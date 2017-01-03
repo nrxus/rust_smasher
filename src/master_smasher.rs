@@ -14,6 +14,7 @@ use self::glm::ext::normalize_to;
 
 use std::error::Error;
 use std::cmp;
+use std::time::Duration;
 
 use meteor::Meteor;
 use planet::Planet;
@@ -168,9 +169,13 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let explosion_path = "resources/explosion_large.png";
         let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
         let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
-        let animation = Animation::new(explosion_texture, 8, false, 80);
+        let animation = Animation::new(8,
+                                       Duration::from_millis(80_u64),
+                                       glm::uvec2(explosion_texture.width,
+                                                  explosion_texture.height),
+                                       false);
         let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-        self.explosions.push(Explosion::new(animation, center, dims));
+        self.explosions.push(Explosion::new(center, dims, animation, explosion_texture.texture));
         self.meteor.restart_at(glm::ivec2(130, 402));
     }
 }
