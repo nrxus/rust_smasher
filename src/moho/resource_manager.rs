@@ -14,16 +14,14 @@ use window_wrapper::*;
 
 pub struct TextureData<T> {
     pub texture: Rc<T>,
-    pub width: u32,
-    pub height: u32,
+    pub dims: glm::UVec2,
 }
 
 impl<T> Clone for TextureData<T> {
     fn clone(&self) -> TextureData<T> {
         TextureData {
             texture: self.texture.clone(),
-            width: self.width,
-            height: self.height,
+            dims: self.dims,
         }
     }
 }
@@ -53,8 +51,7 @@ impl Renderer for SdlRenderer<'static> {
         let query = texture.query();
         Ok(TextureData {
             texture: Rc::new(texture),
-            width: query.width,
-            height: query.height,
+            dims: glm::uvec2(query.width, query.height),
         })
     }
 

@@ -95,7 +95,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn texture_radius(texture_data: &TextureData<<E::Renderer as Renderer>::Texture>) -> f64 {
-        cmp::min(texture_data.width, texture_data.height) as f64 / 2.
+        cmp::min(texture_data.dims.x, texture_data.dims.y) as f64 / 2.
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
@@ -166,16 +166,12 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn explode_meteor(&mut self) {
-        let explosion_path = "resources/explosion_large.png";
-        let explosion_texture = self.renderer.load_texture(explosion_path).unwrap();
-        let dims = glm::uvec2(explosion_texture.width / 8, explosion_texture.height);
-        let animation = Animation::new(8,
-                                       Duration::from_millis(80_u64),
-                                       glm::uvec2(explosion_texture.width,
-                                                  explosion_texture.height),
-                                       false);
+        let path = "resources/explosion_large.png";
+        let texture = self.renderer.load_texture(path).unwrap();
+        let dims = glm::uvec2(texture.dims.x / 8, texture.dims.y);
+        let animation = Animation::new(8, Duration::from_millis(80_u64), texture.dims, false);
         let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-        self.explosions.push(Explosion::new(center, dims, animation, explosion_texture.texture));
+        self.explosions.push(Explosion::new(center, dims, animation, texture.texture));
         self.meteor.restart_at(glm::ivec2(130, 402));
     }
 }
