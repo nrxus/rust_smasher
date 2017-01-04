@@ -49,6 +49,7 @@ pub struct MasterSmasher<E: MohoEngine> {
     explosions: Vec<Explosion<E::Renderer>>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
+    explosion_texture: TextureData<<E::Renderer as Renderer>::Texture>,
     rects: [rect::Rect; 10],
 }
 
@@ -62,6 +63,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let white_ring_texture = renderer.load_texture("resources/white_ring.png")?;
         let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
+        let explosion_texture = renderer.load_texture("resources/explosion_large.png")?;
 
         let blue_planet = Planet::new(glm::uvec2(840, 478),
                                       700.,
@@ -90,6 +92,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             explosions: vec![],
             input_manager: input_manager,
             renderer: renderer,
+            explosion_texture: explosion_texture,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
     }
@@ -166,12 +169,14 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn explode_meteor(&mut self) {
-        let path = "resources/explosion_large.png";
-        let texture = self.renderer.load_texture(path).unwrap();
-        let dims = glm::uvec2(texture.dims.x / 8, texture.dims.y);
-        let animation = Animation::new(8, Duration::from_millis(80_u64), texture.dims, false);
+        let frame_duration = Duration::from_millis(80_u64);
+        let texture_dims = self.explosion_texture.dims;
+        let animation = Animation::new(8, frame_duration, texture_dims, false);
         let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-        self.explosions.push(Explosion::new(center, dims, animation, texture.texture));
+        let dims = glm::uvec2(texture_dims.x / 8, texture_dims.y);
+        let texture = self.explosion_texture.texture.clone();
+        let explosion = Explosion::new(center, dims, animation, texture);
+        self.explosions.push(explosion);
         self.meteor.restart_at(glm::ivec2(130, 402));
     }
 }
