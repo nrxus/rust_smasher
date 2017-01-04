@@ -1,5 +1,6 @@
 extern crate moho;
 extern crate sdl2;
+extern crate glm;
 
 use std::path::Path;
 use std::cell::RefCell;
@@ -79,8 +80,7 @@ impl Renderer for MockRenderer {
                 let texture = MockTexture { path: path.to_str().unwrap_or("").into() };
                 Ok(TextureData {
                     texture: Rc::new(texture),
-                    width: 48,
-                    height: 60,
+                    dims: glm::uvec2(48, 60),
                 })
             }
             Some(ref e) => Err(e.clone()),
