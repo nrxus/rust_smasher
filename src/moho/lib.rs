@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate glm;
 
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;

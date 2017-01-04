@@ -1,4 +1,4 @@
-extern crate glm;
+use glm;
 
 pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>; 4] {
     let max = glm::ivec2(max.x as i32, max.y as i32);
@@ -36,8 +36,6 @@ pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>;
 
 #[cfg(test)]
 mod test {
-    extern crate glm;
-
     use super::*;
 
     #[test]

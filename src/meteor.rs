@@ -1,8 +1,6 @@
-extern crate glm;
-extern crate sdl2;
-extern crate moho;
+use glm;
 
-use self::moho::resource_manager::*;
+use moho::resource_manager::{Renderer, ResourceManager};
 
 use std::rc::Rc;
 

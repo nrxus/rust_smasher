@@ -1,4 +1,5 @@
 extern crate moho;
+extern crate glm;
 extern crate sdl2;
 
 mod master_smasher;

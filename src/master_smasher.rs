@@ -1,16 +1,13 @@
-extern crate moho;
-extern crate sdl2;
-extern crate glm;
+use moho::input_manager::*;
+use moho::resource_manager::*;
+use moho::MohoEngine;
 
-use self::moho::input_manager::*;
-use self::moho::resource_manager::*;
-use self::moho::MohoEngine;
+use sdl2::keyboard::Keycode;
+use sdl2::rect;
+use sdl2::mouse::MouseButton;
 
-use self::sdl2::keyboard::Keycode;
-use self::sdl2::rect;
-use self::sdl2::mouse::MouseButton;
-
-use self::glm::ext::normalize_to;
+use glm;
+use glm::ext::normalize_to;
 
 use std::error::Error;
 use std::cmp;

@@ -1,12 +1,7 @@
-extern crate sdl2;
-extern crate glm;
-extern crate moho;
-
 use std::rc::Rc;
-
+use glm;
 use animation::Animation;
-use self::moho::resource_manager::Renderer;
-use self::moho::resource_manager::ResourceManager;
+use moho::resource_manager::{Renderer, ResourceManager};
 
 pub struct Explosion<R: Renderer> {
     center: glm::IVec2,

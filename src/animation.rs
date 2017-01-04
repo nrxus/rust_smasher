@@ -1,8 +1,5 @@
-extern crate sdl2;
-extern crate glm;
-extern crate moho;
-
 use std::time::{Instant, Duration};
+use glm;
 
 pub struct Animation {
     num_frames: u32,

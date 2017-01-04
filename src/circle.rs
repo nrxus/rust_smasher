@@ -1,5 +1,4 @@
-extern crate glm;
-
+use glm;
 use shape::*;
 use rectangle::*;
 
@@ -57,8 +56,6 @@ impl Intersect<Line> for Circle {
 
 #[cfg(test)]
 mod test {
-    extern crate glm;
-
     use super::*;
 
     #[test]

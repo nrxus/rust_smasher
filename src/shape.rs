@@ -1,4 +1,4 @@
-extern crate glm;
+use glm;
 
 pub type Line = (glm::DVec2, glm::DVec2);
 

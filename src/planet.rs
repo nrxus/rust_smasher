@@ -1,9 +1,7 @@
-extern crate sdl2;
-extern crate glm;
-extern crate moho;
+use glm::ext::normalize_to;
+use glm;
 
-use self::moho::resource_manager::*;
-use self::glm::ext::normalize_to;
+use moho::resource_manager::{Renderer, ResourceManager};
 
 use std::rc::Rc;
 
