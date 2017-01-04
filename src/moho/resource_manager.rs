@@ -1,14 +1,13 @@
-use glm;
-
-use sdl2::render::Renderer as SdlRenderer;
-use sdl2::render::Texture as SdlTexture;
-use sdl2::image::LoadTexture;
-use sdl2::rect;
-
 use std::path::Path;
 use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use glm;
+use sdl2::rect;
+use sdl2::render::Renderer as SdlRenderer;
+use sdl2::render::Texture as SdlTexture;
+use sdl2::image::LoadTexture;
 
 use window_wrapper::*;
 

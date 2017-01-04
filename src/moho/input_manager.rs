@@ -1,11 +1,10 @@
-use glm;
+use std::collections::HashSet;
 
+use glm;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::mouse::MouseButton;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-
-use std::collections::HashSet;
 
 struct EventGenerator<E: EventPump> {
     event_pump: E,

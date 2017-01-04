@@ -1,4 +1,5 @@
 use std::time::{Instant, Duration};
+
 use glm;
 
 pub struct Animation {

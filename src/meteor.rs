@@ -1,8 +1,7 @@
-use glm;
-
-use moho::resource_manager::{Renderer, ResourceManager};
-
 use std::rc::Rc;
+
+use glm;
+use moho::resource_manager::{Renderer, ResourceManager};
 
 use circle::Circle;
 use planet::Planet;

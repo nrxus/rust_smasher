@@ -1,9 +1,8 @@
-use glm::ext::normalize_to;
-use glm;
-
-use moho::resource_manager::{Renderer, ResourceManager};
-
 use std::rc::Rc;
+
+use glm;
+use glm::ext::normalize_to;
+use moho::resource_manager::{Renderer, ResourceManager};
 
 use circle::Circle;
 use shape::Intersect;

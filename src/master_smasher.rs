@@ -1,17 +1,15 @@
-use moho::input_manager::*;
-use moho::resource_manager::*;
-use moho::MohoEngine;
-
-use sdl2::keyboard::Keycode;
-use sdl2::rect;
-use sdl2::mouse::MouseButton;
-
-use glm;
-use glm::ext::normalize_to;
-
 use std::error::Error;
 use std::cmp;
 use std::time::Duration;
+
+use glm;
+use glm::ext::normalize_to;
+use sdl2::keyboard::Keycode;
+use sdl2::rect;
+use sdl2::mouse::MouseButton;
+use moho::input_manager::*;
+use moho::resource_manager::*;
+use moho::MohoEngine;
 
 use meteor::Meteor;
 use planet::Planet;

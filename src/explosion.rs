@@ -1,7 +1,9 @@
 use std::rc::Rc;
+
 use glm;
-use animation::Animation;
 use moho::resource_manager::{Renderer, ResourceManager};
+
+use animation::Animation;
 
 pub struct Explosion<R: Renderer> {
     center: glm::IVec2,
