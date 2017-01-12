@@ -76,15 +76,17 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
-        while self.update() {
+        while !self.game_quit() {
+            self.update();
             self.draw()?;
         }
         Ok(())
     }
 
-    fn update(&mut self) -> bool {
-        if !self.input_manager.update() || self.input_manager.is_key_down(Keycode::Escape) {
-            return false;
+    fn update(&mut self) {
+        self.input_manager.update();
+        if self.game_quit() {
+            return;
         }
 
         if self.meteor.is_launched() {
@@ -104,8 +106,10 @@ impl<E: MohoEngine> MasterSmasher<E> {
         }
 
         self.explosions.retain(Explosion::is_active);
+    }
 
-        true
+    fn game_quit(&self) -> bool {
+        self.input_manager.game_quit() || self.input_manager.is_key_down(Keycode::Escape)
     }
 
     fn draw(&mut self) -> Result<(), Box<Error>> {

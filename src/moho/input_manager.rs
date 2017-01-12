@@ -49,6 +49,7 @@ pub struct InputManager<P: EventPump> {
     prev_pressed_buttons: HashSet<MouseButton>,
     mouse_coords: glm::IVec2,
     event_generator: EventGenerator<P>,
+    game_quit: bool,
 }
 
 impl<P: EventPump> InputManager<P> {
@@ -60,16 +61,19 @@ impl<P: EventPump> InputManager<P> {
             prev_pressed_buttons: HashSet::new(),
             mouse_coords: glm::ivec2(0, 0),
             event_generator: EventGenerator::new(event_pump),
+            game_quit: false,
         }
     }
 
-    pub fn update(&mut self) -> bool {
+    pub fn update(&mut self) {
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
 
         for event in self.event_generator.iter() {
             match event {
-                Event::Quit { .. } => return false,
+                Event::Quit { .. } => {
+                    self.game_quit = true;
+                }
                 Event::KeyDown { keycode: Some(keycode), .. } => {
                     self.pressed_keys.insert(keycode);
                 }
@@ -88,8 +92,6 @@ impl<P: EventPump> InputManager<P> {
                 _ => {}
             }
         }
-
-        true
     }
 
     pub fn is_key_down(&self, keycode: Keycode) -> bool {
@@ -116,5 +118,9 @@ impl<P: EventPump> InputManager<P> {
 
     pub fn mouse_coords(&self) -> glm::IVec2 {
         self.mouse_coords
+    }
+
+    pub fn game_quit(&self) -> bool {
+        self.game_quit
     }
 }
