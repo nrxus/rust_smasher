@@ -16,27 +16,6 @@ use planet::Planet;
 use animation::Animation;
 use explosion::Explosion;
 
-pub fn retain_mut<T, F>(vector: &mut Vec<T>, mut f: F)
-    where F: FnMut(&mut T) -> bool
-{
-    let len = vector.len();
-    let mut del = 0;
-    {
-        let v = &mut **vector;
-
-        for i in 0..len {
-            if !f(&mut v[i]) {
-                del += 1;
-            } else if del > 0 {
-                v.swap(i - del, i);
-            }
-        }
-    }
-    if del > 0 {
-        vector.truncate(len - del);
-    }
-}
-
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planets: Vec<Planet<E::Renderer>>,
@@ -120,7 +99,11 @@ impl<E: MohoEngine> MasterSmasher<E> {
             self.update_launch_vector();
         }
 
-        retain_mut(&mut self.explosions, |ref mut e| e.update());
+        for mut explosion in &mut self.explosions {
+            explosion.update();
+        }
+
+        self.explosions.retain(Explosion::is_active);
 
         true
     }

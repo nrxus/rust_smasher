@@ -26,13 +26,16 @@ impl<R: Renderer> Explosion<R> {
         }
     }
 
-    pub fn update(&mut self) -> bool {
-        self.animation.update();
-        self.animation.is_active()
+    pub fn update(&mut self) {
+        self.animation.update()
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let src_rect = Some(self.animation.src_rect());
         renderer.draw_from_center(&*self.texture, src_rect, self.center, self.dims, None)
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.animation.is_active()
     }
 }
