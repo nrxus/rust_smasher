@@ -27,7 +27,8 @@ impl<R: Renderer> Explosion<R> {
     }
 
     pub fn update(&mut self) -> bool {
-        self.animation.update()
+        self.animation.update();
+        self.animation.is_active()
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {

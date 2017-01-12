@@ -23,12 +23,10 @@ impl Animation {
         }
     }
 
-    pub fn update(&mut self) -> bool {
+    pub fn update(&mut self) {
         self.current_frame = self.advance_frame();
         if self.current_frame >= self.num_frames {
-            self.update_loop()
-        } else {
-            true
+            self.loop_animation();
         }
     }
 
@@ -38,13 +36,15 @@ impl Animation {
         glm::ivec4(uv_left, 0, texture_width, self.dims.y as i32)
     }
 
-    fn update_loop(&mut self) -> bool {
+    pub fn is_active(&self) -> bool {
+        self.frame_instant.is_some()
+    }
+
+    fn loop_animation(&mut self) {
         if self.repeat {
             self.current_frame -= self.num_frames;
-            true
         } else {
             self.frame_instant = None;
-            false
         }
     }
 
