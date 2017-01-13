@@ -9,7 +9,6 @@ mod rectangle;
 mod circle;
 mod planet;
 mod animation;
-mod explosion;
 
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;

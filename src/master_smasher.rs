@@ -11,19 +11,16 @@ use moho::input_manager::*;
 use moho::resource_manager::*;
 use moho::MohoEngine;
 
-use meteor::Meteor;
+use meteor::{Meteor, MeteorState};
 use planet::Planet;
 use animation::Animation;
-use explosion::Explosion;
 
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planets: Vec<Planet<E::Renderer>>,
     background: TextureData<<E::Renderer as Renderer>::Texture>,
-    explosions: Vec<Explosion<E::Renderer>>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
-    explosion_texture: TextureData<<E::Renderer as Renderer>::Texture>,
     rects: [rect::Rect; 10],
 }
 
@@ -38,6 +35,11 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
         let explosion_texture = renderer.load_texture("resources/explosion_large.png")?;
+
+        let frame_duration = Duration::from_millis(80_u64);
+        let texture_dims = explosion_texture.dims;
+        let animation = Animation::new(8, frame_duration, texture_dims, false);
+        let explosion_dims = glm::uvec2(texture_dims.x / 8, texture_dims.y);
 
         let blue_planet = Planet::new(glm::uvec2(840, 478),
                                       700.,
@@ -57,16 +59,17 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let meteor = Meteor::new(glm::uvec2(130, 402),
                                  Self::texture_radius(&meteor_texture),
                                  glm::uvec2(window_width, window_height),
-                                 meteor_texture.texture);
+                                 explosion_dims,
+                                 animation,
+                                 meteor_texture.texture,
+                                 explosion_texture.texture);
 
         Ok(MasterSmasher {
             meteor: meteor,
             planets: vec![white_planet, blue_planet],
             background: background,
-            explosions: vec![],
             input_manager: input_manager,
             renderer: renderer,
-            explosion_texture: explosion_texture,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
     }
@@ -89,23 +92,23 @@ impl<E: MohoEngine> MasterSmasher<E> {
             return;
         }
 
-        if self.meteor.is_launched() {
-            if self.input_manager.did_press_key(Keycode::R) {
-                self.meteor.restart_at(glm::ivec2(130, 402));
-            } else {
-                self.update_meteor();
+        match self.meteor.state() {
+            MeteorState::UNLAUNCHED => {
+                if self.input_manager.did_click_mouse(MouseButton::Left) {
+                    self.meteor.launch(self.input_manager.mouse_coords());
+                } else {
+                    self.update_launch_vector();
+                }
             }
-        } else if self.input_manager.did_click_mouse(MouseButton::Left) {
-            self.meteor.launch(self.input_manager.mouse_coords());
-        } else {
-            self.update_launch_vector();
+            MeteorState::LAUNCHED => {
+                if self.input_manager.did_press_key(Keycode::R) {
+                    self.meteor.restart_at(glm::ivec2(130, 402));
+                }
+            }
+            MeteorState::EXPLODED => {}
         }
 
-        for mut explosion in &mut self.explosions {
-            explosion.update();
-        }
-
-        self.explosions.retain(Explosion::is_active);
+        self.update_meteor();
     }
 
     fn game_quit(&self) -> bool {
@@ -115,24 +118,19 @@ impl<E: MohoEngine> MasterSmasher<E> {
     fn draw(&mut self) -> Result<(), Box<Error>> {
         self.renderer.clear();
         self.renderer.draw(&*self.background.texture, None, None, None)?;
-        self.meteor.draw(&mut self.renderer)?;
         for planet in &self.planets {
             planet.draw(&mut self.renderer)?;
         }
-        if !self.meteor.is_launched() {
+        self.meteor.draw(&mut self.renderer)?;
+        if let MeteorState::UNLAUNCHED = self.meteor.state() {
             self.renderer.fill_rects(&self.rects)?;
-        }
-        for explosion in &self.explosions {
-            explosion.draw(&mut self.renderer)?
         }
         self.renderer.present();
         Ok(())
     }
 
     fn update_meteor(&mut self) {
-        if !self.meteor.update(&self.planets) {
-            self.explode_meteor();
-        }
+        self.meteor.update(&self.planets)
     }
 
     fn update_launch_vector(&mut self) {
@@ -148,17 +146,5 @@ impl<E: MohoEngine> MasterSmasher<E> {
             let point = anchor_point + (step * i as f64);
             rect.center_on((point.x as i32, point.y as i32));
         }
-    }
-
-    fn explode_meteor(&mut self) {
-        let frame_duration = Duration::from_millis(80_u64);
-        let texture_dims = self.explosion_texture.dims;
-        let animation = Animation::new(8, frame_duration, texture_dims, false);
-        let center = glm::ivec2(self.meteor.center().x as i32, self.meteor.center().y as i32);
-        let dims = glm::uvec2(texture_dims.x / 8, texture_dims.y);
-        let texture = self.explosion_texture.texture.clone();
-        let explosion = Explosion::new(center, dims, animation, texture);
-        self.explosions.push(explosion);
-        self.meteor.restart_at(glm::ivec2(130, 402));
     }
 }

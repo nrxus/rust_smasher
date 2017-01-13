@@ -3,23 +3,37 @@ use std::rc::Rc;
 use glm;
 use moho::resource_manager::{Renderer, ResourceManager};
 
+use animation::Animation;
 use circle::Circle;
 use planet::Planet;
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MeteorState {
+    UNLAUNCHED,
+    LAUNCHED,
+    EXPLODED,
+}
 
 pub struct Meteor<R: Renderer> {
     center: glm::DVec2,
     radius: f64,
     max_coords: glm::UVec2,
     velocity: glm::DVec2,
-    launched: bool,
+    state: MeteorState,
+    explosion_dims: glm::UVec2,
+    explosion_animation: Animation,
     texture: Rc<R::Texture>,
+    explosion_texture: Rc<R::Texture>,
 }
 
 impl<R: Renderer> Meteor<R> {
     pub fn new(center: glm::UVec2,
                radius: f64,
                max_coords: glm::UVec2,
-               texture: Rc<R::Texture>)
+               explosion_dims: glm::UVec2,
+               explosion_animation: Animation,
+               texture: Rc<R::Texture>,
+               explosion_texture: Rc<R::Texture>)
                -> Self {
         let center = glm::dvec2(center.x as f64, center.y as f64);
 
@@ -28,14 +42,17 @@ impl<R: Renderer> Meteor<R> {
             radius: radius,
             max_coords: max_coords,
             velocity: glm::dvec2(0., 0.),
-            launched: false,
+            state: MeteorState::UNLAUNCHED,
+            explosion_dims: explosion_dims,
+            explosion_animation: explosion_animation,
             texture: texture,
+            explosion_texture: explosion_texture,
         }
     }
 
     pub fn restart_at(&mut self, center: glm::IVec2) {
         self.center = glm::dvec2(center.x as f64, center.y as f64);
-        self.launched = false;
+        self.state = MeteorState::UNLAUNCHED;
         self.velocity = glm::dvec2(0., 0.);
     }
 
@@ -44,24 +61,41 @@ impl<R: Renderer> Meteor<R> {
         let offset = glm::ivec2(target.x - self.center.x as i32,
                                 target.y - self.center.y as i32);
         self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
-        self.launched = true;
+        self.state = MeteorState::LAUNCHED;
     }
 
-    pub fn update(&mut self, planets: &[Planet<R>]) -> bool {
-        self.pull(planets);
-        self.displace();
-        !self.collides_with(planets)
+    pub fn update(&mut self, planets: &[Planet<R>]) {
+        if self.state == MeteorState::LAUNCHED {
+            self.pull(planets);
+            self.displace();
+            if self.collides_with(planets) {
+                self.state = MeteorState::EXPLODED;
+            }
+        }
+
+        if self.state == MeteorState::EXPLODED {
+            self.explosion_animation.update();
+            if !self.explosion_animation.is_active() {
+                self.restart_at(glm::ivec2(130, 402));
+            }
+        }
     }
 
-    pub fn is_launched(&self) -> bool {
-        self.launched
+    pub fn state(&self) -> MeteorState {
+        self.state
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let center = glm::ivec2(self.center.x as i32, self.center.y as i32);
-        let diameter = (self.radius * 2.) as u32;
-        let dims = glm::uvec2(diameter, diameter);
-        renderer.draw_from_center(&*self.texture, None, center, dims, Some(self.max_coords))
+        let (texture, src_rect, dims) = if let MeteorState::EXPLODED = self.state {
+            let src_rect = Some(self.explosion_animation.src_rect());
+            (&*self.explosion_texture, src_rect, self.explosion_dims)
+        } else {
+            let diameter = (self.radius * 2.) as u32;
+            (&*self.texture, None, glm::uvec2(diameter, diameter))
+        };
+
+        renderer.draw_from_center(texture, src_rect, center, dims, Some(self.max_coords))
     }
 
     pub fn radius(&self) -> f64 {
