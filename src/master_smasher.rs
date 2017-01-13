@@ -102,13 +102,13 @@ impl<E: MohoEngine> MasterSmasher<E> {
             }
             MeteorState::LAUNCHED => {
                 if self.input_manager.did_press_key(Keycode::R) {
-                    self.meteor.restart_at(glm::ivec2(130, 402));
+                    self.meteor.restart();
                 }
             }
             MeteorState::EXPLODED => {}
         }
 
-        self.update_meteor();
+        self.meteor.update(&self.planets)
     }
 
     fn game_quit(&self) -> bool {
@@ -127,10 +127,6 @@ impl<E: MohoEngine> MasterSmasher<E> {
         }
         self.renderer.present();
         Ok(())
-    }
-
-    fn update_meteor(&mut self) {
-        self.meteor.update(&self.planets)
     }
 
     fn update_launch_vector(&mut self) {

@@ -7,7 +7,7 @@ use animation::Animation;
 use circle::Circle;
 use planet::Planet;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub enum MeteorState {
     UNLAUNCHED,
     LAUNCHED,
@@ -15,6 +15,7 @@ pub enum MeteorState {
 }
 
 pub struct Meteor<R: Renderer> {
+    initial_center: glm::DVec2,
     center: glm::DVec2,
     radius: f64,
     max_coords: glm::UVec2,
@@ -38,6 +39,7 @@ impl<R: Renderer> Meteor<R> {
         let center = glm::dvec2(center.x as f64, center.y as f64);
 
         Meteor {
+            initial_center: center,
             center: center,
             radius: radius,
             max_coords: max_coords,
@@ -50,10 +52,10 @@ impl<R: Renderer> Meteor<R> {
         }
     }
 
-    pub fn restart_at(&mut self, center: glm::IVec2) {
-        self.center = glm::dvec2(center.x as f64, center.y as f64);
-        self.state = MeteorState::UNLAUNCHED;
+    pub fn restart(&mut self) {
+        self.center = self.initial_center;
         self.velocity = glm::dvec2(0., 0.);
+        self.state = MeteorState::UNLAUNCHED;
     }
 
     pub fn launch(&mut self, target: glm::Vector2<i32>) {
@@ -65,18 +67,21 @@ impl<R: Renderer> Meteor<R> {
     }
 
     pub fn update(&mut self, planets: &[Planet<R>]) {
-        if self.state == MeteorState::LAUNCHED {
-            self.pull(planets);
-            self.displace();
-            if self.collides_with(planets) {
-                self.state = MeteorState::EXPLODED;
-            }
-        }
 
-        if self.state == MeteorState::EXPLODED {
-            self.explosion_animation.update();
-            if !self.explosion_animation.is_active() {
-                self.restart_at(glm::ivec2(130, 402));
+        match self.state {
+            MeteorState::UNLAUNCHED => {}
+            MeteorState::LAUNCHED => {
+                self.pull(planets);
+                self.displace();
+                if self.collides_with(planets) {
+                    self.state = MeteorState::EXPLODED;
+                }
+            }
+            MeteorState::EXPLODED => {
+                self.explosion_animation.update();
+                if !self.explosion_animation.is_active() {
+                    self.restart();
+                }
             }
         }
     }
