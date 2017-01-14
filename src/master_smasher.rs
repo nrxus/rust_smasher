@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::cmp;
 
 use glm;
 use glm::ext::normalize_to;
@@ -11,7 +10,7 @@ use moho::resource_manager::*;
 use moho::MohoEngine;
 
 use meteor::{Meteor, MeteorState};
-use planet::Planet;
+use planet::{Planet, PlanetKind};
 
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
@@ -26,25 +25,19 @@ impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(mut renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
-        let white_planet_texture = renderer.load_texture("resources/white_planet.png")?;
-        let blue_planet_texture = renderer.load_texture("resources/blue_planet.png")?;
-        let white_ring_texture = renderer.load_texture("resources/white_ring.png")?;
-        let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
 
         let blue_planet = Planet::new(glm::uvec2(840, 478),
                                       700.,
                                       215.,
-                                      Self::texture_radius(&blue_planet_texture),
-                                      blue_planet_texture.texture,
-                                      blue_ring_texture.texture);
+                                      PlanetKind::BLUE,
+                                      &mut renderer)?;
 
         let white_planet = Planet::new(glm::uvec2(346, 298),
                                        400.,
                                        175.,
-                                       Self::texture_radius(&white_planet_texture),
-                                       white_planet_texture.texture,
-                                       white_ring_texture.texture);
+                                       PlanetKind::WHITE,
+                                       &mut renderer)?;
 
         let meteor = Meteor::new(glm::ivec2(130, 402), &mut renderer)?;
 
@@ -56,10 +49,6 @@ impl<E: MohoEngine> MasterSmasher<E> {
             renderer: renderer,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
-    }
-
-    fn texture_radius(texture_data: &TextureData<<E::Renderer as Renderer>::Texture>) -> f64 {
-        cmp::min(texture_data.dims.x, texture_data.dims.y) as f64 / 2.
     }
 
     pub fn run(&mut self) -> Result<(), Box<Error>> {
