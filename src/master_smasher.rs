@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::cmp;
-use std::time::Duration;
 
 use glm;
 use glm::ext::normalize_to;
@@ -13,7 +12,6 @@ use moho::MohoEngine;
 
 use meteor::{Meteor, MeteorState};
 use planet::Planet;
-use animation::Animation;
 
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
@@ -25,21 +23,14 @@ pub struct MasterSmasher<E: MohoEngine> {
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
-    pub fn new(renderer: ResourceManager<E::Renderer>,
+    pub fn new(mut renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
-        let meteor_texture = renderer.load_texture("resources/meteor.png")?;
         let white_planet_texture = renderer.load_texture("resources/white_planet.png")?;
         let blue_planet_texture = renderer.load_texture("resources/blue_planet.png")?;
         let white_ring_texture = renderer.load_texture("resources/white_ring.png")?;
         let blue_ring_texture = renderer.load_texture("resources/blue_ring.png")?;
         let background = renderer.load_texture("resources/background_game.png")?;
-        let explosion_texture = renderer.load_texture("resources/explosion_large.png")?;
-
-        let frame_duration = Duration::from_millis(80_u64);
-        let texture_dims = explosion_texture.dims;
-        let animation = Animation::new(8, frame_duration, texture_dims, false);
-        let explosion_dims = glm::uvec2(texture_dims.x / 8, texture_dims.y);
 
         let blue_planet = Planet::new(glm::uvec2(840, 478),
                                       700.,
@@ -55,14 +46,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
                                        white_planet_texture.texture,
                                        white_ring_texture.texture);
 
-        let (window_width, window_height) = renderer.output_size()?;
-        let meteor = Meteor::new(glm::uvec2(130, 402),
-                                 Self::texture_radius(&meteor_texture),
-                                 glm::uvec2(window_width, window_height),
-                                 explosion_dims,
-                                 animation,
-                                 meteor_texture.texture,
-                                 explosion_texture.texture);
+        let meteor = Meteor::new(glm::ivec2(130, 402), &mut renderer)?;
 
         Ok(MasterSmasher {
             meteor: meteor,
