@@ -4,8 +4,6 @@ extern crate sdl2;
 
 mod master_smasher;
 mod meteor;
-mod world_meteor;
-mod drawable_meteor;
 mod shape;
 mod rectangle;
 mod circle;

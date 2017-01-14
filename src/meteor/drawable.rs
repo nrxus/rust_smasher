@@ -6,7 +6,7 @@ use moho::resource_manager::{Renderer, ResourceManager};
 use std::rc::Rc;
 use std::time::Duration;
 
-pub struct DrawableMeteor<R: Renderer> {
+pub struct Drawable<R: Renderer> {
     meteor: Rc<R::Texture>,
     explosion: Rc<R::Texture>,
     animation: Animation,
@@ -15,7 +15,7 @@ pub struct DrawableMeteor<R: Renderer> {
     max_coords: glm::UVec2,
 }
 
-impl<R: Renderer> DrawableMeteor<R> {
+impl<R: Renderer> Drawable<R> {
     pub fn new(max_coords: glm::UVec2,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
@@ -25,7 +25,7 @@ impl<R: Renderer> DrawableMeteor<R> {
         let frame_duration = Duration::from_millis(80_u64);
         let animation = Animation::new(8, frame_duration, explosion.dims, false);
 
-        let drawable = DrawableMeteor {
+        let drawable = Drawable {
             meteor: meteor.texture,
             explosion: explosion.texture,
             animation: animation,

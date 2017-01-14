@@ -136,8 +136,9 @@ impl<R: Renderer> ResourceManager<R> {
         self.renderer.present();
     }
 
-    pub fn output_size(&self) -> Result<(u32, u32), String> {
-        self.renderer.output_size()
+    pub fn output_size(&self) -> Result<glm::UVec2, String> {
+        let (x, y) = self.renderer.output_size()?;
+        Ok(glm::uvec2(x, y))
     }
 
     fn load_cached_texture(&self, path: &'static str) -> Option<TextureData<R::Texture>> {

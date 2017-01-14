@@ -4,19 +4,17 @@ use planet::Planet;
 use glm;
 use moho::resource_manager::Renderer;
 
-pub struct WorldMeteor {
+pub struct Object {
     initial_center: glm::DVec2,
     center: glm::DVec2,
     radius: f64,
-    max_coords: glm::UVec2,
+    max_coords: glm::DVec2,
     velocity: glm::DVec2,
 }
 
-impl WorldMeteor {
-    pub fn new(center: glm::IVec2, radius: f64, max_coords: glm::UVec2) -> Self {
-        let center = glm::dvec2(center.x as f64, center.y as f64);
-
-        WorldMeteor {
+impl Object {
+    pub fn new(center: glm::DVec2, radius: f64, max_coords: glm::DVec2) -> Self {
+        Object {
             initial_center: center,
             center: center,
             radius: radius,
@@ -63,14 +61,11 @@ impl WorldMeteor {
     }
 
     fn displace(&mut self) {
-        self.center.y += self.velocity.y;
         self.center.x += self.velocity.x;
+        self.center.y += self.velocity.y;
 
-        let max_height = self.max_coords.y as f64;
-        let max_width = self.max_coords.x as f64;
-
-        self.center.y = (self.center.y + max_height) % max_height;
-        self.center.x = (self.center.x + max_width) % max_width;
+        self.center.x = (self.center.x + self.max_coords.x) % self.max_coords.x;
+        self.center.y = (self.center.y + self.max_coords.y) % self.max_coords.y;
     }
 
     fn collision_body(&self) -> Circle {

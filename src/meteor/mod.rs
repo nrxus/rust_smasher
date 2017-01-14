@@ -1,9 +1,12 @@
-use drawable_meteor::DrawableMeteor;
-use world_meteor::WorldMeteor;
-use planet::Planet;
+mod drawable;
+mod object;
+
+use self::drawable::Drawable;
+use self::object::Object;
 
 use glm;
 use moho::resource_manager::{Renderer, ResourceManager};
+use planet::Planet;
 
 use std::cmp;
 
@@ -15,8 +18,8 @@ pub enum MeteorState {
 }
 
 pub struct Meteor<R: Renderer> {
-    drawable: DrawableMeteor<R>,
-    object: WorldMeteor,
+    drawable: Drawable<R>,
+    object: Object,
     state: MeteorState,
 }
 
@@ -24,12 +27,13 @@ impl<R: Renderer> Meteor<R> {
     pub fn new(center: glm::IVec2,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
-        let (window_width, window_height) = resource_manager.output_size()?;
-        let max_coords = glm::uvec2(window_width, window_height);
-        let drawable = DrawableMeteor::new(max_coords, resource_manager)?;
+        let max_coords = resource_manager.output_size()?;
+        let drawable = Drawable::new(max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let object = WorldMeteor::new(center, radius, max_coords);
+        let center = glm::dvec2(center.x as f64, center.y as f64);
+        let max_coords = glm::dvec2(max_coords.x as f64, max_coords.y as f64);
+        let object = Object::new(center, radius, max_coords);
         let meteor = Meteor {
             drawable: drawable,
             object: object,
