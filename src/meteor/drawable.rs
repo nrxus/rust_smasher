@@ -7,16 +7,18 @@ use std::rc::Rc;
 use std::time::Duration;
 
 pub struct Drawable<R: Renderer> {
-    meteor: Rc<R::Texture>,
-    explosion: Rc<R::Texture>,
-    animation: Animation,
+    pub center: glm::IVec2,
     meteor_dims: glm::UVec2,
     explosion_dims: glm::UVec2,
     max_coords: glm::UVec2,
+    animation: Animation,
+    meteor: Rc<R::Texture>,
+    explosion: Rc<R::Texture>,
 }
 
 impl<R: Renderer> Drawable<R> {
-    pub fn new(max_coords: glm::UVec2,
+    pub fn new(center: glm::IVec2,
+               max_coords: glm::UVec2,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
@@ -26,12 +28,13 @@ impl<R: Renderer> Drawable<R> {
         let animation = Animation::new(8, frame_duration, explosion.dims, false);
 
         let drawable = Drawable {
-            meteor: meteor.texture,
-            explosion: explosion.texture,
-            animation: animation,
+            center: center,
             meteor_dims: meteor.dims,
             explosion_dims: explosion_dims,
             max_coords: max_coords,
+            animation: animation,
+            meteor: meteor.texture,
+            explosion: explosion.texture,
         };
 
         Ok(drawable)
@@ -46,21 +49,17 @@ impl<R: Renderer> Drawable<R> {
         self.meteor_dims
     }
 
-    pub fn draw_meteor(&self,
-                       center: glm::IVec2,
-                       renderer: &mut ResourceManager<R>)
-                       -> Result<(), String> {
+    pub fn draw_meteor(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let max_coords = Some(self.max_coords);
-        renderer.draw_from_center(&*self.meteor, None, center, self.meteor_dims, max_coords)
+        let texture = &*self.meteor;
+        renderer.draw_from_center(texture, None, self.center, self.meteor_dims, max_coords)
     }
 
-    pub fn draw_explosion(&self,
-                          center: glm::IVec2,
-                          renderer: &mut ResourceManager<R>)
-                          -> Result<(), String> {
+    pub fn draw_explosion(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         let max_coords = Some(self.max_coords);
+        let texture = &*self.explosion;
         let src_rect = Some(self.animation.src_rect());
         let dims = self.explosion_dims;
-        renderer.draw_from_center(&*self.explosion, src_rect, center, dims, max_coords)
+        renderer.draw_from_center(texture, src_rect, self.center, dims, max_coords)
     }
 }

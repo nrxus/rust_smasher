@@ -128,7 +128,7 @@ fn mouse_coords() {
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
     subject.update();
-    assert_eq!(subject.mouse_coords(), glm::ivec2(50 as i32, 30 as i32));
+    assert_eq!(subject.mouse_coords(), glm::ivec2(50, 30));
 }
 
 #[test]

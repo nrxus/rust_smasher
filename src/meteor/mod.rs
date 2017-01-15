@@ -28,12 +28,11 @@ impl<R: Renderer> Meteor<R> {
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
         let max_coords = resource_manager.output_size()?;
-        let drawable = Drawable::new(max_coords, resource_manager)?;
+        let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let center = glm::dvec2(center.x as f64, center.y as f64);
         let max_coords = glm::dvec2(max_coords.x as f64, max_coords.y as f64);
-        let object = Object::new(center, radius, max_coords);
+        let object = Object::new(glm::to_dvec2(center), radius, max_coords);
         let meteor = Meteor {
             drawable: drawable,
             object: object,
@@ -58,6 +57,7 @@ impl<R: Renderer> Meteor<R> {
             MeteorState::UNLAUNCHED => {}
             MeteorState::LAUNCHED => {
                 self.object.update(planets);
+                self.drawable.center = glm::to_ivec2(self.center());
                 if self.object.collides_with(planets) {
                     self.state = MeteorState::EXPLODED;
                 }
@@ -65,17 +65,16 @@ impl<R: Renderer> Meteor<R> {
             MeteorState::EXPLODED => {
                 if !self.drawable.animate_explosion() {
                     self.restart();
+                    self.drawable.center = glm::to_ivec2(self.center());
                 }
             }
         }
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        let center = self.object.center();
-        let center = glm::ivec2(center.x as i32, center.y as i32);
         match self.state {
-            MeteorState::EXPLODED => self.drawable.draw_explosion(center, renderer),
-            _ => self.drawable.draw_meteor(center, renderer),
+            MeteorState::EXPLODED => self.drawable.draw_explosion(renderer),
+            _ => self.drawable.draw_meteor(renderer),
         }
     }
 
