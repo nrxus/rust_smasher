@@ -103,17 +103,16 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn update_launch_vector(&mut self) {
-        let mouse_coords = self.input_manager.mouse_coords();
-        let mouse_coords = glm::dvec2(mouse_coords.x as f64, mouse_coords.y as f64);
+        let mouse_coords = glm::to_dvec2(self.input_manager.mouse_coords());
         let distance = mouse_coords - self.meteor.center();
         let offset = self.meteor.radius() + 10.;
-        let offset_vector = normalize_to(distance, offset as f64);
+        let offset_vector = normalize_to(distance, offset);
         let anchor_point = self.meteor.center() + offset_vector;
         let step = (mouse_coords - anchor_point) / (self.rects.len() as f64);
 
         for (i, rect) in self.rects.iter_mut().enumerate() {
-            let point = anchor_point + (step * i as f64);
-            rect.center_on((point.x as i32, point.y as i32));
+            let point = glm::to_ivec2(anchor_point + (step * i as f64));
+            rect.center_on((point.x, point.y));
         }
     }
 }

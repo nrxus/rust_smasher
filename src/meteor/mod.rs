@@ -31,8 +31,7 @@ impl<R: Renderer> Meteor<R> {
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let max_coords = glm::dvec2(max_coords.x as f64, max_coords.y as f64);
-        let object = Object::new(glm::to_dvec2(center), radius, max_coords);
+        let object = Object::new(glm::to_dvec2(center), radius, glm::to_dvec2(max_coords));
         let meteor = Meteor {
             drawable: drawable,
             object: object,

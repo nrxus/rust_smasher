@@ -30,9 +30,8 @@ impl Object {
 
     pub fn launch(&mut self, target: glm::Vector2<i32>) {
         const FACTOR: f64 = 50.;
-        let offset = glm::ivec2(target.x - self.center.x as i32,
-                                target.y - self.center.y as i32);
-        self.velocity = glm::dvec2(offset.x as f64 / FACTOR, offset.y as f64 / FACTOR);
+        let offset = target - glm::to_ivec2(self.center);
+        self.velocity = glm::to_dvec2(offset) / FACTOR;
     }
 
     pub fn update<R: Renderer>(&mut self, planets: &[Planet<R>]) {

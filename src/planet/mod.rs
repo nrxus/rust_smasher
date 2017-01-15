@@ -27,7 +27,7 @@ impl<R: Renderer> Planet<R> {
         let drawable = Drawable::new(gravity_radius as u32, kind, resource_manager)?;
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let center = glm::dvec2(center.x as f64, center.y as f64);
+        let center = glm::to_dvec2(center);
         let object = Object::new(center, strength, planet_radius, gravity_radius);
         let planet = Planet {
             object: object,
@@ -46,7 +46,6 @@ impl<R: Renderer> Planet<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        let center = glm::ivec2(self.object.center().x as i32, self.object.center().y as i32);
-        self.drawable.draw(center, renderer)
+        self.drawable.draw(glm::to_ivec2(self.object.center()), renderer)
     }
 }

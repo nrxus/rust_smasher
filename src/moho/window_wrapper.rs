@@ -1,7 +1,7 @@
 use glm;
 
 pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>; 4] {
-    let max = glm::ivec2(max.x as i32, max.y as i32);
+    let max = glm::to_ivec2(max);
     let left = (original.x + max.x) % max.x;
     let right = left + original.z;
     let top = (original.y + max.y) % max.y;
@@ -10,7 +10,7 @@ pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>;
 
     let side = if left < 0 {
         Some(glm::ivec4(left + max.x, top, original.z, original.w))
-    } else if right > max.x as i32 {
+    } else if right > max.x {
         Some(glm::ivec4((right % max.x) - original.z, top, original.z, original.w))
     } else {
         None
