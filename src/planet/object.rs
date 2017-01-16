@@ -35,10 +35,6 @@ impl Object {
         shape.intersects(&self.collision_body())
     }
 
-    pub fn center(&self) -> glm::DVec2 {
-        self.center
-    }
-
     fn collision_body(&self) -> Circle {
         Circle {
             center: self.center,

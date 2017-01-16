@@ -26,20 +26,12 @@ impl<E: MohoEngine> MasterSmasher<E> {
                input_manager: InputManager<E::EventPump>)
                -> Result<Self, Box<Error>> {
         let background = renderer.load_texture("resources/background_game.png")?;
-
-        let blue_planet = Planet::new(glm::uvec2(840, 478),
-                                      700.,
-                                      215.,
-                                      PlanetKind::BLUE,
-                                      &mut renderer)?;
-
-        let white_planet = Planet::new(glm::uvec2(346, 298),
-                                       400.,
-                                       175.,
-                                       PlanetKind::WHITE,
-                                       &mut renderer)?;
-
-        let meteor = Meteor::new(glm::ivec2(130, 402), &mut renderer)?;
+        let blue_center = glm::ivec2(840, 478);
+        let white_center = glm::ivec2(346, 298);
+        let meteor_center = glm::ivec2(130, 402);
+        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &mut renderer)?;
+        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, &mut renderer)?;
+        let meteor = Meteor::new(meteor_center, &mut renderer)?;
 
         Ok(MasterSmasher {
             meteor: meteor,

@@ -14,10 +14,12 @@ pub struct Drawable<R: Renderer> {
     gravity: Rc<R::Texture>,
     planet_dims: glm::UVec2,
     gravity_dims: glm::UVec2,
+    center: glm::IVec2,
 }
 
 impl<R: Renderer> Drawable<R> {
-    pub fn new(gravity_radius: u32,
+    pub fn new(center: glm::IVec2,
+               gravity_radius: u32,
                kind: PlanetKind,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
@@ -28,6 +30,7 @@ impl<R: Renderer> Drawable<R> {
             gravity: gravity.texture,
             planet_dims: planet.dims,
             gravity_dims: gravity_dims,
+            center: center,
         };
 
         Ok(drawable)
@@ -37,12 +40,9 @@ impl<R: Renderer> Drawable<R> {
         self.planet_dims
     }
 
-    pub fn draw(&self,
-                center: glm::IVec2,
-                renderer: &mut ResourceManager<R>)
-                -> Result<(), String> {
-        renderer.draw_from_center(&*self.gravity, None, center, self.gravity_dims, None)?;
-        renderer.draw_from_center(&*self.planet, None, center, self.planet_dims, None)
+    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+        renderer.draw_from_center(&*self.gravity, None, self.center, self.gravity_dims, None)?;
+        renderer.draw_from_center(&*self.planet, None, self.center, self.planet_dims, None)
     }
 
     fn load_textures(kind: PlanetKind,

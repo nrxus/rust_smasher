@@ -18,13 +18,13 @@ pub struct Planet<R: Renderer> {
 }
 
 impl<R: Renderer> Planet<R> {
-    pub fn new(center: glm::UVec2,
+    pub fn new(center: glm::IVec2,
                strength: f64,
                gravity_radius: f64,
                kind: PlanetKind,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
-        let drawable = Drawable::new(gravity_radius as u32, kind, resource_manager)?;
+        let drawable = Drawable::new(center, gravity_radius as u32, kind, resource_manager)?;
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let center = glm::to_dvec2(center);
@@ -46,6 +46,6 @@ impl<R: Renderer> Planet<R> {
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
-        self.drawable.draw(glm::to_ivec2(self.object.center()), renderer)
+        self.drawable.draw(renderer)
     }
 }
