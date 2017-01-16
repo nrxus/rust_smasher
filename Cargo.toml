@@ -12,7 +12,7 @@ name = "moho"
 path = "src/moho/lib.rs"
 
 [dependencies]
-glm = "0.2.0"
+glm = "0.2.2"
 
 [dependencies.sdl2]
 version = "0.27"
