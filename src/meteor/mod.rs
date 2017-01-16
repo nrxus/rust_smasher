@@ -46,7 +46,7 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn restart(&mut self) {
         self.object.restart();
-        self.drawable.center = glm::to_ivec2(self.object.center());
+        self.update_drawable_center();
         self.state = MeteorState::UNLAUNCHED;
     }
 
@@ -61,10 +61,12 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn update(&mut self, planets: &[Planet<R>]) {
         match self.state {
-            MeteorState::UNLAUNCHED => {}
+            MeteorState::UNLAUNCHED => {
+                self.drawable.update_launch_vector(self.target);
+            }
             MeteorState::LAUNCHED => {
                 self.object.update(planets);
-                self.drawable.center = glm::to_ivec2(self.center());
+                self.update_drawable_center();
                 if self.object.collides_with(planets) {
                     self.state = MeteorState::EXPLODED;
                 }
@@ -72,7 +74,6 @@ impl<R: Renderer> Meteor<R> {
             MeteorState::EXPLODED => {
                 if !self.drawable.animate_explosion() {
                     self.restart();
-                    self.drawable.center = glm::to_ivec2(self.center());
                 }
             }
         }
@@ -80,8 +81,9 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
         match self.state {
+            MeteorState::UNLAUNCHED => self.drawable.draw_unlaunched(renderer),
+            MeteorState::LAUNCHED => self.drawable.draw_meteor(renderer),
             MeteorState::EXPLODED => self.drawable.draw_explosion(renderer),
-            _ => self.drawable.draw_meteor(renderer),
         }
     }
 
@@ -89,11 +91,7 @@ impl<R: Renderer> Meteor<R> {
         self.state
     }
 
-    pub fn radius(&self) -> f64 {
-        self.object.radius()
-    }
-
-    pub fn center(&self) -> glm::DVec2 {
-        self.object.center()
+    fn update_drawable_center(&mut self) {
+        self.drawable.center = glm::to_ivec2(self.object.center());
     }
 }

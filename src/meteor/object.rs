@@ -39,10 +39,6 @@ impl Object {
         self.displace();
     }
 
-    pub fn radius(&self) -> f64 {
-        self.radius
-    }
-
     pub fn center(&self) -> glm::DVec2 {
         self.center
     }
@@ -70,7 +66,7 @@ impl Object {
     fn collision_body(&self) -> Circle {
         Circle {
             center: self.center,
-            radius: self.radius as f64,
+            radius: self.radius,
         }
     }
 }

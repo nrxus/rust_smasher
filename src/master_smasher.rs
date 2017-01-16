@@ -1,9 +1,7 @@
 use std::error::Error;
 
 use glm;
-use glm::ext::normalize_to;
 use sdl2::keyboard::Keycode;
-use sdl2::rect;
 use sdl2::mouse::MouseButton;
 use moho::input_manager::*;
 use moho::resource_manager::*;
@@ -18,7 +16,6 @@ pub struct MasterSmasher<E: MohoEngine> {
     background: TextureData<<E::Renderer as Renderer>::Texture>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
-    rects: [rect::Rect; 10],
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
@@ -39,7 +36,6 @@ impl<E: MohoEngine> MasterSmasher<E> {
             background: background,
             input_manager: input_manager,
             renderer: renderer,
-            rects: [rect::Rect::new(0, 0, 5, 5); 10],
         })
     }
 
@@ -62,8 +58,6 @@ impl<E: MohoEngine> MasterSmasher<E> {
                 self.meteor.update_target(self.input_manager.mouse_coords());
                 if self.input_manager.did_click_mouse(MouseButton::Left) {
                     self.meteor.launch();
-                } else {
-                    self.update_launch_vector();
                 }
             }
             MeteorState::LAUNCHED => {
@@ -88,24 +82,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             planet.draw(&mut self.renderer)?;
         }
         self.meteor.draw(&mut self.renderer)?;
-        if let MeteorState::UNLAUNCHED = self.meteor.state() {
-            self.renderer.fill_rects(&self.rects)?;
-        }
         self.renderer.present();
         Ok(())
-    }
-
-    fn update_launch_vector(&mut self) {
-        let mouse_coords = glm::to_dvec2(self.input_manager.mouse_coords());
-        let distance = mouse_coords - self.meteor.center();
-        let offset = self.meteor.radius() + 10.;
-        let offset_vector = normalize_to(distance, offset);
-        let anchor_point = self.meteor.center() + offset_vector;
-        let step = (mouse_coords - anchor_point) / (self.rects.len() as f64);
-
-        for (i, rect) in self.rects.iter_mut().enumerate() {
-            let point = glm::to_ivec2(anchor_point + (step * i as f64));
-            rect.center_on((point.x, point.y));
-        }
     }
 }
