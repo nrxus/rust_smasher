@@ -1,3 +1,4 @@
+extern crate num_traits;
 extern crate moho;
 extern crate glm;
 extern crate sdl2;

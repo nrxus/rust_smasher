@@ -59,8 +59,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
         match self.meteor.state() {
             MeteorState::UNLAUNCHED => {
+                self.meteor.update_target(self.input_manager.mouse_coords());
                 if self.input_manager.did_click_mouse(MouseButton::Left) {
-                    self.meteor.launch(self.input_manager.mouse_coords());
+                    self.meteor.launch();
                 } else {
                     self.update_launch_vector();
                 }

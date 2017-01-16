@@ -5,6 +5,7 @@ use self::drawable::Drawable;
 use self::object::Object;
 
 use glm;
+use num_traits::Zero;
 use moho::resource_manager::{Renderer, ResourceManager};
 use planet::Planet;
 
@@ -21,6 +22,7 @@ pub struct Meteor<R: Renderer> {
     drawable: Drawable<R>,
     object: Object,
     state: MeteorState,
+    target: glm::IVec2,
 }
 
 impl<R: Renderer> Meteor<R> {
@@ -36,6 +38,7 @@ impl<R: Renderer> Meteor<R> {
             drawable: drawable,
             object: object,
             state: MeteorState::UNLAUNCHED,
+            target: glm::IVec2::zero(),
         };
 
         Ok(meteor)
@@ -43,11 +46,16 @@ impl<R: Renderer> Meteor<R> {
 
     pub fn restart(&mut self) {
         self.object.restart();
+        self.drawable.center = glm::to_ivec2(self.object.center());
         self.state = MeteorState::UNLAUNCHED;
     }
 
-    pub fn launch(&mut self, target: glm::IVec2) {
-        self.object.launch(target);
+    pub fn update_target(&mut self, target: glm::IVec2) {
+        self.target = target;
+    }
+
+    pub fn launch(&mut self) {
+        self.object.launch(self.target);
         self.state = MeteorState::LAUNCHED;
     }
 
