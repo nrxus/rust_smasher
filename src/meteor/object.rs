@@ -28,7 +28,7 @@ impl Object {
         self.velocity = glm::dvec2(0., 0.);
     }
 
-    pub fn launch(&mut self, target: glm::Vector2<i32>) {
+    pub fn launch(&mut self, target: glm::IVec2) {
         const FACTOR: f64 = 50.;
         let offset = target - glm::to_ivec2(self.center);
         self.velocity = glm::to_dvec2(offset) / FACTOR;

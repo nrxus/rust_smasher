@@ -24,11 +24,12 @@ impl<R: Renderer> Drawable<R> {
                max_coords: glm::UVec2,
                resource_manager: &mut ResourceManager<R>)
                -> Result<Self, String> {
+        const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
         let explosion = resource_manager.load_texture("resources/explosion_large.png")?;
-        let explosion_dims = glm::uvec2(explosion.dims.x / 8, explosion.dims.y);
+        let explosion_dims = glm::uvec2(explosion.dims.x / NUM_FRAMES, explosion.dims.y);
         let frame_duration = Duration::from_millis(80_u64);
-        let animation = Animation::new(8, frame_duration, explosion.dims, false);
+        let animation = Animation::new(NUM_FRAMES, frame_duration, explosion.dims, false);
 
         let drawable = Drawable {
             center: center,

@@ -11,7 +11,6 @@ use planet::Planet;
 
 use std::cmp;
 
-#[derive(Copy, Clone)]
 pub enum MeteorState {
     UNLAUNCHED,
     LAUNCHED,
@@ -44,21 +43,6 @@ impl<R: Renderer> Meteor<R> {
         Ok(meteor)
     }
 
-    pub fn restart(&mut self) {
-        self.object.restart();
-        self.update_drawable_center();
-        self.state = MeteorState::UNLAUNCHED;
-    }
-
-    pub fn update_target(&mut self, target: glm::IVec2) {
-        self.target = target;
-    }
-
-    pub fn launch(&mut self) {
-        self.object.launch(self.target);
-        self.state = MeteorState::LAUNCHED;
-    }
-
     pub fn update(&mut self, planets: &[Planet<R>]) {
         match self.state {
             MeteorState::UNLAUNCHED => {
@@ -66,14 +50,16 @@ impl<R: Renderer> Meteor<R> {
             }
             MeteorState::LAUNCHED => {
                 self.object.update(planets);
-                self.update_drawable_center();
+                self.move_drawable();
                 if self.object.collides_with(planets) {
-                    self.state = MeteorState::EXPLODED;
+                    self.explode();
                 }
             }
             MeteorState::EXPLODED => {
                 if !self.drawable.animate_explosion() {
-                    self.restart();
+                    self.object.restart();
+                    self.move_drawable();
+                    self.state = MeteorState::UNLAUNCHED;
                 }
             }
         }
@@ -87,11 +73,24 @@ impl<R: Renderer> Meteor<R> {
         }
     }
 
-    pub fn state(&self) -> MeteorState {
-        self.state
+    pub fn state(&self) -> &MeteorState {
+        &self.state
     }
 
-    fn update_drawable_center(&mut self) {
+    pub fn explode(&mut self) {
+        self.state = MeteorState::EXPLODED;
+    }
+
+    pub fn launch(&mut self) {
+        self.object.launch(self.target);
+        self.state = MeteorState::LAUNCHED;
+    }
+
+    pub fn update_target(&mut self, target: glm::IVec2) {
+        self.target = target;
+    }
+
+    fn move_drawable(&mut self) {
         self.drawable.center = glm::to_ivec2(self.object.center());
     }
 }

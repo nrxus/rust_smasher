@@ -54,18 +54,18 @@ impl<E: MohoEngine> MasterSmasher<E> {
         }
 
         match self.meteor.state() {
-            MeteorState::UNLAUNCHED => {
+            &MeteorState::UNLAUNCHED => {
                 self.meteor.update_target(self.input_manager.mouse_coords());
                 if self.input_manager.did_click_mouse(MouseButton::Left) {
                     self.meteor.launch();
                 }
             }
-            MeteorState::LAUNCHED => {
+            &MeteorState::LAUNCHED => {
                 if self.input_manager.did_press_key(Keycode::R) {
-                    self.meteor.restart();
+                    self.meteor.explode();
                 }
             }
-            MeteorState::EXPLODED => {}
+            &MeteorState::EXPLODED => {}
         }
 
         self.meteor.update(&self.planets)
