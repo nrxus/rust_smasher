@@ -1,11 +1,10 @@
-use std::error::Error;
-
 use glm;
-use sdl2::keyboard::Keycode;
-use sdl2::mouse::MouseButton;
+use moho::errors::*;
 use moho::input_manager::*;
 use moho::resource_manager::*;
 use moho::MohoEngine;
+use sdl2::keyboard::Keycode;
+use sdl2::mouse::MouseButton;
 
 use meteor::{Meteor, MeteorState};
 use planet::{Planet, PlanetKind};
@@ -21,7 +20,7 @@ pub struct MasterSmasher<E: MohoEngine> {
 impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(mut renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
-               -> Result<Self, Box<Error>> {
+               -> Result<Self> {
         let background = renderer.load_texture("resources/background_game.png")?;
         let blue_center = glm::ivec2(840, 478);
         let white_center = glm::ivec2(346, 298);
@@ -39,7 +38,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         })
     }
 
-    pub fn run(&mut self) -> Result<(), Box<Error>> {
+    pub fn run(&mut self) -> Result<()> {
         while !self.game_quit() {
             self.update();
             self.draw()?;
@@ -75,7 +74,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         self.input_manager.game_quit() || self.input_manager.is_key_down(Keycode::Escape)
     }
 
-    fn draw(&mut self) -> Result<(), Box<Error>> {
+    fn draw(&mut self) -> Result<()> {
         self.renderer.clear();
         self.renderer.draw(&*self.background.texture, None, None, None)?;
         for planet in &self.planets {

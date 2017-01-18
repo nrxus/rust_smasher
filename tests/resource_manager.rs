@@ -6,6 +6,7 @@ use std::path::Path;
 use std::cell::RefCell;
 use std::rc::Rc;
 use sdl2::rect;
+use moho::errors::*;
 use moho::resource_manager::*;
 
 #[test]
@@ -20,7 +21,7 @@ fn loads_texture_data() {
 fn returns_error() {
     let (subject, tracker) = new_subject(Some("FAIL".into()));
     let texture_data = subject.load_texture("mypath/");
-    assert_eq!(texture_data.err(), Some("FAIL".into()));
+    assert_eq!(texture_data.err().is_some(), true);
     assert_eq!(tracker.borrow().load_count, 1);
 }
 
@@ -73,7 +74,7 @@ struct MockRenderer {
 impl Renderer for MockRenderer {
     type Texture = MockTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<MockTexture>, String> {
+    fn load_texture(&self, path: &Path) -> Result<TextureData<MockTexture>> {
         self.tracker.borrow_mut().load_count += 1;
         match self.error {
             None => {
@@ -83,7 +84,7 @@ impl Renderer for MockRenderer {
                     dims: glm::uvec2(48, 60),
                 })
             }
-            Some(ref e) => Err(e.clone()),
+            Some(ref e) => Err(e.clone().into()),
         }
     }
 
@@ -91,7 +92,7 @@ impl Renderer for MockRenderer {
             texture: &MockTexture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
-            -> Result<(), String> {
+            -> Result<()> {
         match self.error {
             None => {
                 let mut tracker = self.tracker.borrow_mut();
@@ -99,7 +100,7 @@ impl Renderer for MockRenderer {
                 tracker.last_dst = dst;
                 Ok(())
             }
-            Some(ref e) => Err(e.clone()),
+            Some(ref e) => Err(e.clone().into()),
         }
     }
 
@@ -107,11 +108,11 @@ impl Renderer for MockRenderer {
 
     fn present(&mut self) {}
 
-    fn output_size(&self) -> Result<(u32, u32), String> {
+    fn output_size(&self) -> Result<(u32, u32)> {
         Ok((0, 0))
     }
 
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         Ok(())
     }
 }

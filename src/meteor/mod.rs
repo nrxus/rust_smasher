@@ -6,6 +6,7 @@ use self::object::Object;
 
 use glm;
 use num_traits::Zero;
+use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager};
 use planet::Planet;
 
@@ -27,7 +28,7 @@ pub struct Meteor<R: Renderer> {
 impl<R: Renderer> Meteor<R> {
     pub fn new(center: glm::IVec2,
                resource_manager: &mut ResourceManager<R>)
-               -> Result<Self, String> {
+               -> Result<Self> {
         let max_coords = resource_manager.output_size()?;
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
@@ -65,7 +66,7 @@ impl<R: Renderer> Meteor<R> {
         }
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             MeteorState::UNLAUNCHED => self.drawable.draw_unlaunched(renderer),
             MeteorState::LAUNCHED => self.drawable.draw_meteor(renderer),

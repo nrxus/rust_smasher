@@ -1,8 +1,8 @@
+#[macro_use]
+extern crate error_chain;
 extern crate glm;
 extern crate num_traits;
 extern crate sdl2;
-
-use std::error::Error;
 
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
@@ -14,6 +14,17 @@ use input_manager::*;
 pub mod input_manager;
 pub mod resource_manager;
 pub mod window_wrapper;
+
+pub mod errors {
+    error_chain!{}
+}
+
+error_chain!{
+    foreign_links {
+        WindowBuild(sdl2::video::WindowBuildError);
+        SdlContext(sdl2::IntegerOrSdlError);
+    }
+}
 
 pub trait MohoEngine {
     type Renderer: Renderer;
@@ -30,7 +41,7 @@ impl MohoEngine for SdlMohoEngine {
 pub fn init(name: &'static str,
             width: u32,
             height: u32)
-            -> Result<(ResourceManager<SdlRenderer>, InputManager<SdlEventPump>), Box<Error>> {
+            -> Result<(ResourceManager<SdlRenderer>, InputManager<SdlEventPump>)> {
     let sdl_ctx = sdl2::init()?;
     let video_ctx = sdl_ctx.video()?;
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG)?;

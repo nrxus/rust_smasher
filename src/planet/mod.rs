@@ -10,6 +10,7 @@ use std::cmp;
 use circle::Circle;
 use shape::Intersect;
 use glm;
+use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager};
 
 pub struct Planet<R: Renderer> {
@@ -23,7 +24,7 @@ impl<R: Renderer> Planet<R> {
                gravity_radius: f64,
                kind: PlanetKind,
                resource_manager: &mut ResourceManager<R>)
-               -> Result<Self, String> {
+               -> Result<Self> {
         let drawable = Drawable::new(center, gravity_radius as u32, kind, resource_manager)?;
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
@@ -45,7 +46,7 @@ impl<R: Renderer> Planet<R> {
         self.object.collides_with(shape)
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.drawable.draw(renderer)
     }
 }

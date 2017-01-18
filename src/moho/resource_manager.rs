@@ -10,6 +10,7 @@ use sdl2::render::Texture as SdlTexture;
 use sdl2::image::LoadTexture;
 
 use window_wrapper::*;
+use errors::*;
 
 pub struct TextureData<T> {
     pub texture: Rc<T>,
@@ -28,24 +29,24 @@ impl<T> Clone for TextureData<T> {
 pub trait Renderer {
     type Texture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<Self::Texture>, String>;
-    fn output_size(&self) -> Result<(u32, u32), String>;
+    fn load_texture(&self, path: &Path) -> Result<TextureData<Self::Texture>>;
+    fn output_size(&self) -> Result<(u32, u32)>;
 
     // Drawing methods
     fn clear(&mut self);
     fn present(&mut self);
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String>;
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self,
             texture: &Self::Texture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
-            -> Result<(), String>;
+            -> Result<()>;
 }
 
 impl Renderer for SdlRenderer<'static> {
     type Texture = SdlTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>, String> {
+    fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>> {
         let texture = LoadTexture::load_texture(self, path)?;
         let query = texture.query();
         Ok(TextureData {
@@ -54,16 +55,16 @@ impl Renderer for SdlRenderer<'static> {
         })
     }
 
-    fn output_size(&self) -> Result<(u32, u32), String> {
-        self.output_size()
+    fn output_size(&self) -> Result<(u32, u32)> {
+        Ok(self.output_size()?)
     }
 
     fn copy(&mut self,
             texture: &SdlTexture,
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
-            -> Result<(), String> {
-        self.copy(texture, src, dst)
+            -> Result<()> {
+        Ok(self.copy(texture, src, dst)?)
     }
 
     fn clear(&mut self) {
@@ -74,8 +75,8 @@ impl Renderer for SdlRenderer<'static> {
         self.present();
     }
 
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
-        self.fill_rects(rects)
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
+        Ok(self.fill_rects(rects)?)
     }
 }
 
@@ -92,7 +93,7 @@ impl<R: Renderer> ResourceManager<R> {
         }
     }
 
-    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>, String> {
+    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>> {
         match self.load_cached_texture(path) {
             Some(texture) => Ok(texture),
             None => self.load_new_texture(path),
@@ -105,7 +106,7 @@ impl<R: Renderer> ResourceManager<R> {
                             center: glm::IVec2,
                             dims: glm::UVec2,
                             wrapping_coords: Option<glm::UVec2>)
-                            -> Result<(), String> {
+                            -> Result<()> {
         let width = dims.x as i32;
         let height = dims.y as i32;
         let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
@@ -117,14 +118,14 @@ impl<R: Renderer> ResourceManager<R> {
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>,
                 wrapping_coords: Option<glm::UVec2>)
-                -> Result<(), String> {
+                -> Result<()> {
         match (dst, wrapping_coords) {
             (Some(d), Some(w)) => self.draw_and_wrap(texture, src, d, w),
             _ => self.draw_raw(texture, src, dst),
         }
     }
 
-    pub fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<(), String> {
+    pub fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         self.renderer.fill_rects(rects)
     }
 
@@ -136,7 +137,7 @@ impl<R: Renderer> ResourceManager<R> {
         self.renderer.present();
     }
 
-    pub fn output_size(&self) -> Result<glm::UVec2, String> {
+    pub fn output_size(&self) -> Result<glm::UVec2> {
         let (x, y) = self.renderer.output_size()?;
         Ok(glm::uvec2(x, y))
     }
@@ -149,7 +150,7 @@ impl<R: Renderer> ResourceManager<R> {
         }
     }
 
-    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>, String> {
+    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>> {
         let mut cache = self.texture_cache.borrow_mut();
         let texture_path = Path::new(path);
         let texture_data = self.renderer.load_texture(texture_path)?;
@@ -162,7 +163,7 @@ impl<R: Renderer> ResourceManager<R> {
                      src: Option<glm::IVec4>,
                      dst: glm::IVec4,
                      wrapping_coords: glm::UVec2)
-                     -> Result<(), String> {
+                     -> Result<()> {
         wrap_rects(dst, wrapping_coords)
             .iter()
             .filter_map(|&r| r)
@@ -174,7 +175,7 @@ impl<R: Renderer> ResourceManager<R> {
                 texture: &R::Texture,
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>)
-                -> Result<(), String> {
+                -> Result<()> {
         self.renderer.copy(texture, Self::get_rect(src), Self::get_rect(dst))
     }
 

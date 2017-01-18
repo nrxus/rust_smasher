@@ -2,6 +2,7 @@ use animation::Animation;
 
 use glm;
 use glm::ext::normalize_to;
+use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager};
 use sdl2::rect;
 
@@ -23,7 +24,7 @@ impl<R: Renderer> Drawable<R> {
     pub fn new(center: glm::IVec2,
                max_coords: glm::UVec2,
                resource_manager: &mut ResourceManager<R>)
-               -> Result<Self, String> {
+               -> Result<Self> {
         const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
         let explosion = resource_manager.load_texture("resources/explosion_large.png")?;
@@ -69,18 +70,18 @@ impl<R: Renderer> Drawable<R> {
         self.meteor_dims
     }
 
-    pub fn draw_unlaunched(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+    pub fn draw_unlaunched(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.draw_meteor(renderer)?;
         renderer.fill_rects(&self.rects)
     }
 
-    pub fn draw_meteor(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+    pub fn draw_meteor(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let max_coords = Some(self.max_coords);
         let texture = &*self.meteor;
         renderer.draw_from_center(texture, None, self.center, self.meteor_dims, max_coords)
     }
 
-    pub fn draw_explosion(&self, renderer: &mut ResourceManager<R>) -> Result<(), String> {
+    pub fn draw_explosion(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let max_coords = Some(self.max_coords);
         let texture = &*self.explosion;
         let src_rect = Some(self.animation.src_rect());
