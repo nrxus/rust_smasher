@@ -2,6 +2,7 @@ use circle::Circle;
 use planet::Planet;
 
 use glm;
+use num_traits::Zero;
 use moho::resource_manager::Renderer;
 
 pub struct Object {
@@ -19,13 +20,13 @@ impl Object {
             center: center,
             radius: radius,
             max_coords: max_coords,
-            velocity: glm::dvec2(0., 0.),
+            velocity: glm::DVec2::zero(),
         }
     }
 
     pub fn restart(&mut self) {
         self.center = self.initial_center;
-        self.velocity = glm::dvec2(0., 0.);
+        self.velocity = glm::DVec2::zero();
     }
 
     pub fn launch(&mut self, target: glm::IVec2) {

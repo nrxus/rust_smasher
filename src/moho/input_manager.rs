@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use glm;
+use num_traits::Zero;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::mouse::MouseButton;
 use sdl2::event::Event;
@@ -59,7 +60,7 @@ impl<P: EventPump> InputManager<P> {
             pressed_buttons: HashSet::new(),
             prev_pressed_keys: HashSet::new(),
             prev_pressed_buttons: HashSet::new(),
-            mouse_coords: glm::ivec2(0, 0),
+            mouse_coords: glm::IVec2::zero(),
             event_generator: EventGenerator::new(event_pump),
             game_quit: false,
         }

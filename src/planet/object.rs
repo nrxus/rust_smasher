@@ -1,5 +1,6 @@
 use circle::Circle;
 use shape::Intersect;
+use num_traits::Zero;
 use glm;
 use glm::ext::normalize_to;
 
@@ -24,7 +25,7 @@ impl Object {
         let dist = self.center - point;
         let len = glm::length(dist);
         if len > (self.gravity_radius + radius) {
-            glm::dvec2(0., 0.)
+            glm::DVec2::zero()
         } else {
             let force = self.strength / (len.powf(0.8));
             normalize_to(dist, force)

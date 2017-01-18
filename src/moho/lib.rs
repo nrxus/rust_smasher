@@ -1,5 +1,6 @@
-extern crate sdl2;
 extern crate glm;
+extern crate num_traits;
+extern crate sdl2;
 
 use std::error::Error;
 
