@@ -15,8 +15,9 @@ mod star {
     use moho::errors::*;
     use moho::resource_manager::{Renderer, ResourceManager, TextureData};
 
-    use circle::Circle;
     use animation::Animation;
+    use circle::Circle;
+    use shape::Intersect;
 
     use std::cmp;
     use std::time::Duration;
@@ -31,7 +32,7 @@ mod star {
         pub fn new(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self> {
             let drawable = Drawable::new(center, resource_manager)?;
             let dims = drawable.dims();
-            let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
+            let radius = cmp::max(dims.x, dims.y) as f64 / 2.;
             let object = Object::new(glm::to_dvec2(center), radius);
             let star = Star {
                 drawable: drawable,
@@ -115,6 +116,10 @@ mod star {
             };
 
             Object { body: body }
+        }
+
+        fn collides<S: Intersect<Circle>>(&self, body: S) -> bool {
+            body.intersects(&self.body)
         }
     }
 }

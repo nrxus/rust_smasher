@@ -46,9 +46,8 @@ impl<R: Renderer> Drawable<R> {
         Ok(drawable)
     }
 
-    pub fn animate_explosion(&mut self) -> bool {
+    pub fn animate_explosion(&mut self) {
         self.animation.update();
-        self.animation.is_active()
     }
 
     pub fn update_launch_vector(&mut self, target: glm::IVec2) {
@@ -87,5 +86,9 @@ impl<R: Renderer> Drawable<R> {
         let src_rect = Some(self.animation.src_rect());
         let dims = self.explosion_dims;
         renderer.draw_from_center(texture, src_rect, self.center, dims, max_coords)
+    }
+
+    pub fn is_exploding(&self) -> bool {
+        self.animation.is_active()
     }
 }

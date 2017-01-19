@@ -26,9 +26,7 @@ pub struct Meteor<R: Renderer> {
 }
 
 impl<R: Renderer> Meteor<R> {
-    pub fn new(center: glm::IVec2,
-               resource_manager: &mut ResourceManager<R>)
-               -> Result<Self> {
+    pub fn new(center: glm::IVec2, resource_manager: &mut ResourceManager<R>) -> Result<Self> {
         let max_coords = resource_manager.output_size()?;
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
@@ -57,7 +55,8 @@ impl<R: Renderer> Meteor<R> {
                 }
             }
             MeteorState::EXPLODED => {
-                if !self.drawable.animate_explosion() {
+                self.drawable.animate_explosion();
+                if !self.drawable.is_exploding() {
                     self.object.restart();
                     self.move_drawable();
                     self.state = MeteorState::UNLAUNCHED;
