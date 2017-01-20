@@ -74,19 +74,15 @@ impl<R: Renderer> Star<R> {
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             State::INACTIVE => Ok(()),
-            State::ACTIVE => self.draw_star(renderer),
-            State::EXPLODED => self.draw_explosion(renderer),
+            State::ACTIVE => {
+                let src_rect = self.animation.src_rect();
+                self.draw_on_center(&self.texture, src_rect, renderer)
+            }
+            State::EXPLODED => {
+                let src_rect = self.explosion_animation.src_rect();
+                self.draw_on_center(&self.explosion_texture, src_rect, renderer)
+            }
         }
-    }
-
-    fn draw_star(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let src_rect = self.animation.src_rect();
-        self.draw_on_center(&self.texture, src_rect, renderer)
-    }
-
-    fn draw_explosion(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let src_rect = self.explosion_animation.src_rect();
-        self.draw_on_center(&self.explosion_texture, src_rect, renderer)
     }
 
     fn draw_on_center(&self,
