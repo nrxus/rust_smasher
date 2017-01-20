@@ -101,16 +101,15 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn draw_from_center(&mut self,
-                            texture: &R::Texture,
-                            src: Option<glm::IVec4>,
+                            texture: &TextureData<R::Texture>,
                             center: glm::IVec2,
-                            dims: glm::UVec2,
+                            src: Option<glm::IVec4>,
                             wrapping_coords: Option<glm::UVec2>)
                             -> Result<()> {
-        let width = dims.x as i32;
-        let height = dims.y as i32;
+        let width = texture.dims.x as i32;
+        let height = texture.dims.y as i32;
         let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
-        self.draw(texture, src, Some(dst), wrapping_coords)
+        self.draw(&*texture.texture, src, Some(dst), wrapping_coords)
     }
 
     pub fn draw(&mut self,

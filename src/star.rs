@@ -95,11 +95,7 @@ impl<R: Renderer> Star<R> {
                       renderer: &mut ResourceManager<R>)
                       -> Result<()> {
         let center = glm::to_ivec2(self.body.center);
-        renderer.draw_from_center(&*texture.texture,
-                                  Some(src_rect),
-                                  center,
-                                  texture.dims,
-                                  None)
+        renderer.draw_from_center(texture, center, Some(src_rect), None)
     }
 }
 

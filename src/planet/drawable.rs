@@ -2,8 +2,6 @@ use glm;
 use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager, TextureData};
 
-use std::rc::Rc;
-
 pub enum PlanetKind {
     RED,
     BLUE,
@@ -11,10 +9,8 @@ pub enum PlanetKind {
 }
 
 pub struct Drawable<R: Renderer> {
-    planet: Rc<R::Texture>,
-    gravity: Rc<R::Texture>,
-    planet_dims: glm::UVec2,
-    gravity_dims: glm::UVec2,
+    planet: TextureData<R::Texture>,
+    gravity: TextureData<R::Texture>,
     center: glm::IVec2,
 }
 
@@ -24,13 +20,11 @@ impl<R: Renderer> Drawable<R> {
                kind: PlanetKind,
                resource_manager: &ResourceManager<R>)
                -> Result<Self> {
-        let (planet, gravity) = Self::load_textures(kind, resource_manager)?;
-        let gravity_dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
+        let (planet, mut gravity) = Self::load_textures(kind, resource_manager)?;
+        gravity.dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
         let drawable = Drawable {
-            planet: planet.texture,
-            gravity: gravity.texture,
-            planet_dims: planet.dims,
-            gravity_dims: gravity_dims,
+            planet: planet,
+            gravity: gravity,
             center: center,
         };
 
@@ -38,12 +32,12 @@ impl<R: Renderer> Drawable<R> {
     }
 
     pub fn planet_dims(&self) -> glm::UVec2 {
-        self.planet_dims
+        self.planet.dims
     }
 
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw_from_center(&*self.gravity, None, self.center, self.gravity_dims, None)?;
-        renderer.draw_from_center(&*self.planet, None, self.center, self.planet_dims, None)
+        renderer.draw_from_center(&self.gravity, self.center, None, None)?;
+        renderer.draw_from_center(&self.planet, self.center, None, None)
     }
 
     fn load_textures(kind: PlanetKind,
