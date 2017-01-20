@@ -7,7 +7,6 @@ use rectangle::Rectangle;
 use collidable::Collidable;
 use shape::Intersect;
 
-use std::cmp;
 use std::time::Duration;
 
 pub enum State {

@@ -185,19 +185,19 @@ impl<R: Renderer> ResourceManager<R> {
         let src = match src {
             None => None,
             Some(r) => {
-                Some(rect::Rect::new((r.x * data.dims.x as f64) as i32,
-                                     (r.y * data.dims.y as f64) as i32,
-                                     (r.z * data.dims.x as f64) as u32,
-                                     (r.w * data.dims.y as f64) as u32))
+                let dims = glm::to_dvec2(data.dims);
+                let rect = glm::dvec4(r.x * dims.x, r.y * dims.y, r.z * dims.x, r.w * dims.y);
+                Some(Self::get_rect(glm::to_ivec4(rect)))
             }
         };
-        self.renderer.copy(&data.texture, src, Self::get_rect(dst))
+        let dst = match dst {
+            None => None,
+            Some(r) => Some(Self::get_rect(r)),
+        };
+        self.renderer.copy(&data.texture, src, dst)
     }
 
-    fn get_rect(rect: Option<glm::IVec4>) -> Option<rect::Rect> {
-        match rect {
-            Some(r) => Some(rect::Rect::new(r.x, r.y, r.z as u32, r.w as u32)),
-            None => None,
-        }
+    fn get_rect(rect: glm::IVec4) -> rect::Rect {
+        rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
     }
 }
