@@ -14,7 +14,7 @@ pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor<E::Renderer>,
     planets: Vec<Planet<E::Renderer>>,
     stars: Vec<Star<E::Renderer>>,
-    background: TextureData<<E::Renderer as Renderer>::Texture>,
+    background: TextureData<E::Renderer>,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
 }

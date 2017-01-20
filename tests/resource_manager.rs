@@ -74,7 +74,7 @@ struct MockRenderer {
 impl Renderer for MockRenderer {
     type Texture = MockTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<MockTexture>> {
+    fn load_texture(&self, path: &Path) -> Result<TextureData<MockRenderer>> {
         self.tracker.borrow_mut().load_count += 1;
         match self.error {
             None => {

@@ -9,8 +9,8 @@ pub enum PlanetKind {
 }
 
 pub struct Drawable<R: Renderer> {
-    planet: TextureData<R::Texture>,
-    gravity: TextureData<R::Texture>,
+    planet: TextureData<R>,
+    gravity: TextureData<R>,
     center: glm::IVec2,
 }
 
@@ -42,7 +42,7 @@ impl<R: Renderer> Drawable<R> {
 
     fn load_textures(kind: PlanetKind,
                      resource_manager: &ResourceManager<R>)
-                     -> Result<(TextureData<R::Texture>, TextureData<R::Texture>)> {
+                     -> Result<(TextureData<R>, TextureData<R>)> {
         let (planet, gravity) = match kind {
             PlanetKind::RED => ("resources/red_planet.png", "resources/red_ring.png"),
             PlanetKind::BLUE => ("resources/blue_planet.png", "resources/blue_ring.png"),

@@ -12,8 +12,8 @@ pub struct Drawable<R: Renderer> {
     pub center: glm::IVec2,
     max_coords: glm::UVec2,
     animation: Animation,
-    meteor: TextureData<R::Texture>,
-    explosion: TextureData<R::Texture>,
+    meteor: TextureData<R>,
+    explosion: TextureData<R>,
     rects: [rect::Rect; 10],
 }
 

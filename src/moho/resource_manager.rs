@@ -12,13 +12,13 @@ use sdl2::image::LoadTexture;
 use window_wrapper::*;
 use errors::*;
 
-pub struct TextureData<T> {
-    pub texture: Rc<T>,
+pub struct TextureData<R: Renderer> {
+    pub texture: Rc<R::Texture>,
     pub dims: glm::UVec2,
 }
 
-impl<T> Clone for TextureData<T> {
-    fn clone(&self) -> TextureData<T> {
+impl<R: Renderer> Clone for TextureData<R> {
+    fn clone(&self) -> TextureData<R> {
         TextureData {
             texture: self.texture.clone(),
             dims: self.dims,
@@ -29,7 +29,7 @@ impl<T> Clone for TextureData<T> {
 pub trait Renderer {
     type Texture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<Self::Texture>>;
+    fn load_texture(&self, path: &Path) -> Result<TextureData<Self>> where Self: Sized;
     fn output_size(&self) -> Result<(u32, u32)>;
 
     // Drawing methods
@@ -46,7 +46,7 @@ pub trait Renderer {
 impl Renderer for SdlRenderer<'static> {
     type Texture = SdlTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<SdlTexture>> {
+    fn load_texture(&self, path: &Path) -> Result<TextureData<Self>> {
         let texture = LoadTexture::load_texture(self, path)?;
         let query = texture.query();
         Ok(TextureData {
@@ -81,7 +81,7 @@ impl Renderer for SdlRenderer<'static> {
 }
 
 pub struct ResourceManager<R: Renderer> {
-    texture_cache: RefCell<HashMap<&'static str, TextureData<R::Texture>>>,
+    texture_cache: RefCell<HashMap<&'static str, TextureData<R>>>,
     renderer: R,
 }
 
@@ -93,7 +93,7 @@ impl<R: Renderer> ResourceManager<R> {
         }
     }
 
-    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>> {
+    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R>> {
         match self.load_cached_texture(path) {
             Some(texture) => Ok(texture),
             None => self.load_new_texture(path),
@@ -101,7 +101,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn draw_from_center(&mut self,
-                            texture: &TextureData<R::Texture>,
+                            texture: &TextureData<R>,
                             center: glm::IVec2,
                             src: Option<glm::IVec4>,
                             wrapping_coords: Option<glm::UVec2>)
@@ -141,7 +141,7 @@ impl<R: Renderer> ResourceManager<R> {
         Ok(glm::uvec2(x, y))
     }
 
-    fn load_cached_texture(&self, path: &'static str) -> Option<TextureData<R::Texture>> {
+    fn load_cached_texture(&self, path: &'static str) -> Option<TextureData<R>> {
         let cache = self.texture_cache.borrow();
         match cache.get(path) {
             Some(texture) => Some(texture.clone()),
@@ -149,7 +149,7 @@ impl<R: Renderer> ResourceManager<R> {
         }
     }
 
-    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R::Texture>> {
+    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R>> {
         let mut cache = self.texture_cache.borrow_mut();
         let texture_path = Path::new(path);
         let texture_data = self.renderer.load_texture(texture_path)?;

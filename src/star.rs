@@ -19,8 +19,8 @@ pub enum State {
 pub struct Star<R: Renderer> {
     state: State,
     body: Circle,
-    texture: TextureData<R::Texture>,
-    explosion_texture: TextureData<R::Texture>,
+    texture: TextureData<R>,
+    explosion_texture: TextureData<R>,
     animation: Animation,
     explosion_animation: Animation,
 }
@@ -90,7 +90,7 @@ impl<R: Renderer> Star<R> {
     }
 
     fn draw_on_center(&self,
-                      texture: &TextureData<R::Texture>,
+                      texture: &TextureData<R>,
                       src_rect: glm::IVec4,
                       renderer: &mut ResourceManager<R>)
                       -> Result<()> {
