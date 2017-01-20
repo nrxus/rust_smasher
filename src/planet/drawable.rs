@@ -1,6 +1,6 @@
 use glm;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager, TextureData};
+use moho::resource_manager::{Renderer, ResourceManager, Texture};
 
 pub enum PlanetKind {
     RED,
@@ -8,18 +8,18 @@ pub enum PlanetKind {
     WHITE,
 }
 
-pub struct Drawable<R: Renderer> {
-    planet: TextureData<R>,
-    gravity: TextureData<R>,
+pub struct Drawable {
+    planet: Texture,
+    gravity: Texture,
     center: glm::IVec2,
 }
 
-impl<R: Renderer> Drawable<R> {
-    pub fn new(center: glm::IVec2,
-               gravity_radius: u32,
-               kind: PlanetKind,
-               resource_manager: &ResourceManager<R>)
-               -> Result<Self> {
+impl Drawable {
+    pub fn new<R: Renderer>(center: glm::IVec2,
+                            gravity_radius: u32,
+                            kind: PlanetKind,
+                            resource_manager: &ResourceManager<R>)
+                            -> Result<Self> {
         let (planet, mut gravity) = Self::load_textures(kind, resource_manager)?;
         gravity.dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
         let drawable = Drawable {
@@ -35,14 +35,14 @@ impl<R: Renderer> Drawable<R> {
         self.planet.dims
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         renderer.draw_from_center(&self.gravity, self.center, None, None)?;
         renderer.draw_from_center(&self.planet, self.center, None, None)
     }
 
-    fn load_textures(kind: PlanetKind,
-                     resource_manager: &ResourceManager<R>)
-                     -> Result<(TextureData<R>, TextureData<R>)> {
+    fn load_textures<R: Renderer>(kind: PlanetKind,
+                                  resource_manager: &ResourceManager<R>)
+                                  -> Result<(Texture, Texture)> {
         let (planet, gravity) = match kind {
             PlanetKind::RED => ("resources/red_planet.png", "resources/red_ring.png"),
             PlanetKind::BLUE => ("resources/blue_planet.png", "resources/blue_ring.png"),

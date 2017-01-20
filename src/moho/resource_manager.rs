@@ -12,6 +12,12 @@ use sdl2::image::LoadTexture;
 use window_wrapper::*;
 use errors::*;
 
+#[derive(Copy,Clone)]
+pub struct Texture {
+    pub id: usize,
+    pub dims: glm::UVec2,
+}
+
 pub struct TextureData<R: Renderer> {
     pub texture: Rc<R::Texture>,
     pub dims: glm::UVec2,
@@ -81,7 +87,8 @@ impl Renderer for SdlRenderer<'static> {
 }
 
 pub struct ResourceManager<R: Renderer> {
-    texture_cache: RefCell<HashMap<&'static str, TextureData<R>>>,
+    texture_cache: RefCell<HashMap<&'static str, Texture>>,
+    id_cache: RefCell<HashMap<usize, Rc<R::Texture>>>,
     renderer: R,
 }
 
@@ -89,11 +96,12 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
             texture_cache: RefCell::new(HashMap::new()),
+            id_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
         }
     }
 
-    pub fn load_texture(&self, path: &'static str) -> Result<TextureData<R>> {
+    pub fn load_texture(&self, path: &'static str) -> Result<Texture> {
         match self.load_cached_texture(path) {
             Some(texture) => Ok(texture),
             None => self.load_new_texture(path),
@@ -101,7 +109,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn draw_from_center(&mut self,
-                            texture: &TextureData<R>,
+                            texture: &Texture,
                             center: glm::IVec2,
                             src: Option<glm::IVec4>,
                             wrapping_coords: Option<glm::UVec2>)
@@ -109,18 +117,22 @@ impl<R: Renderer> ResourceManager<R> {
         let width = texture.dims.x as i32;
         let height = texture.dims.y as i32;
         let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
-        self.draw(&*texture.texture, src, Some(dst), wrapping_coords)
+        self.draw(&*texture, src, Some(dst), wrapping_coords)
     }
 
     pub fn draw(&mut self,
-                texture: &R::Texture,
+                texture: &Texture,
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>,
                 wrapping_coords: Option<glm::UVec2>)
                 -> Result<()> {
+        let texture = {
+            let cache = self.id_cache.borrow();
+            cache.get(&texture.id).ok_or("texture not loaded")?.clone()
+        };
         match (dst, wrapping_coords) {
-            (Some(d), Some(w)) => self.draw_and_wrap(texture, src, d, w),
-            _ => self.draw_raw(texture, src, dst),
+            (Some(d), Some(w)) => self.draw_and_wrap(&*texture, src, d, w),
+            _ => self.draw_raw(&*texture, src, dst),
         }
     }
 
@@ -141,20 +153,27 @@ impl<R: Renderer> ResourceManager<R> {
         Ok(glm::uvec2(x, y))
     }
 
-    fn load_cached_texture(&self, path: &'static str) -> Option<TextureData<R>> {
+    fn load_cached_texture(&self, path: &'static str) -> Option<Texture> {
         let cache = self.texture_cache.borrow();
         match cache.get(path) {
-            Some(texture) => Some(texture.clone()),
+            Some(texture) => Some(*texture),
             None => None,
         }
     }
 
-    fn load_new_texture(&self, path: &'static str) -> Result<TextureData<R>> {
+    fn load_new_texture(&self, path: &'static str) -> Result<Texture> {
         let mut cache = self.texture_cache.borrow_mut();
+        let mut id_cache = self.id_cache.borrow_mut();
+        let id = id_cache.len();
         let texture_path = Path::new(path);
         let texture_data = self.renderer.load_texture(texture_path)?;
-        cache.insert(path, texture_data.clone());
-        Ok(texture_data)
+        let texture = Texture {
+            id: id,
+            dims: texture_data.dims,
+        };
+        cache.insert(path, texture);
+        id_cache.insert(id, texture_data.texture);
+        Ok(texture)
     }
 
     fn draw_and_wrap(&mut self,

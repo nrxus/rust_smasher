@@ -3,7 +3,6 @@ use planet::Planet;
 
 use glm;
 use num_traits::Zero;
-use moho::resource_manager::Renderer;
 
 pub struct Object {
     body: Circle,
@@ -38,7 +37,7 @@ impl Object {
         self.velocity = glm::to_dvec2(offset) / FACTOR;
     }
 
-    pub fn update<R: Renderer>(&mut self, planets: &[Planet<R>]) {
+    pub fn update(&mut self, planets: &[Planet]) {
         self.pull(planets);
         self.displace();
     }
@@ -47,7 +46,7 @@ impl Object {
         &self.body
     }
 
-    fn pull<R: Renderer>(&mut self, planets: &[Planet<R>]) {
+    fn pull(&mut self, planets: &[Planet]) {
         for planet in planets {
             let acceleration = planet.pull_vector(self.body.center, self.body.radius);
             self.velocity = self.velocity + acceleration / 50.;

@@ -12,8 +12,8 @@ use moho::resource_manager::*;
 #[test]
 fn loads_texture_data() {
     let (subject, tracker) = new_subject(None);
-    let texture_data = subject.load_texture("mypath/").unwrap().texture;
-    assert_eq!(texture_data.path, String::from("mypath/"));
+    let texture = subject.load_texture("mypath/").unwrap();
+    assert_eq!(texture.id, 0);
     assert_eq!(tracker.borrow().load_count, 1);
 }
 
@@ -30,18 +30,18 @@ fn caches_texture_datas() {
     let (subject, tracker) = new_subject(None);
 
     // get a new texture_data - number of calls is 1
-    let texture_data1 = subject.load_texture("mypath/1").unwrap().texture;
-    assert_eq!(texture_data1.path, String::from("mypath/1"));
+    let texture1 = subject.load_texture("mypath/1").unwrap();
+    assert_eq!(texture1.id, 0);
     assert_eq!(tracker.borrow().load_count, 1);
 
     // load the same texture_data - number of calls should still be 1
-    let texture_data2 = subject.load_texture("mypath/1").unwrap().texture;
-    assert_eq!(texture_data2.path, String::from("mypath/1"));
+    let texture2 = subject.load_texture("mypath/1").unwrap();
+    assert_eq!(texture2.id, 0);
     assert_eq!(tracker.borrow().load_count, 1);
 
     // load a different texture_data - number of calls should increase
-    let texture_data3 = subject.load_texture("mypath/2").unwrap().texture;
-    assert_eq!(texture_data3.path, String::from("mypath/2"));
+    let texture3 = subject.load_texture("mypath/2").unwrap();
+    assert_eq!(texture3.id, 1);
     assert_eq!(tracker.borrow().load_count, 2);
 }
 

@@ -1,6 +1,6 @@
 use glm;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager, TextureData};
+use moho::resource_manager::{Renderer, ResourceManager, Texture};
 
 use animation::Animation;
 use circle::Circle;
@@ -16,17 +16,19 @@ pub enum State {
     EXPLODED,
 }
 
-pub struct Star<R: Renderer> {
+pub struct Star {
     state: State,
     body: Circle,
-    texture: TextureData<R>,
-    explosion_texture: TextureData<R>,
+    texture: Texture,
+    explosion_texture: Texture,
     animation: Animation,
     explosion_animation: Animation,
 }
 
-impl<R: Renderer> Star<R> {
-    pub fn new(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self> {
+impl Star {
+    pub fn new<R: Renderer>(center: glm::IVec2,
+                            resource_manager: &ResourceManager<R>)
+                            -> Result<Self> {
         let mut texture = resource_manager.load_texture("resources/star.png")?;
         let mut explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
         let star_duration = Duration::from_millis(150);
@@ -71,7 +73,7 @@ impl<R: Renderer> Star<R> {
         }
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             State::INACTIVE => Ok(()),
             State::ACTIVE => {
@@ -85,17 +87,17 @@ impl<R: Renderer> Star<R> {
         }
     }
 
-    fn draw_on_center(&self,
-                      texture: &TextureData<R>,
-                      src_rect: glm::IVec4,
-                      renderer: &mut ResourceManager<R>)
-                      -> Result<()> {
+    fn draw_on_center<R: Renderer>(&self,
+                                   texture: &Texture,
+                                   src_rect: glm::IVec4,
+                                   renderer: &mut ResourceManager<R>)
+                                   -> Result<()> {
         let center = glm::to_ivec2(self.body.center);
         renderer.draw_from_center(texture, center, Some(src_rect), None)
     }
 }
 
-impl<R: Renderer, I: Intersect<Circle>> Collidable<Circle, I> for Star<R> {
+impl<I: Intersect<Circle>> Collidable<Circle, I> for Star {
     fn collides(&self, collision: &I) -> bool {
         collision.intersects(&self.body)
     }

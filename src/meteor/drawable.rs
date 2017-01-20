@@ -3,25 +3,25 @@ use animation::Animation;
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager, TextureData};
+use moho::resource_manager::{Renderer, ResourceManager, Texture};
 use sdl2::rect;
 
 use std::time::Duration;
 
-pub struct Drawable<R: Renderer> {
+pub struct Drawable {
     pub center: glm::IVec2,
     max_coords: glm::UVec2,
     animation: Animation,
-    meteor: TextureData<R>,
-    explosion: TextureData<R>,
+    meteor: Texture,
+    explosion: Texture,
     rects: [rect::Rect; 10],
 }
 
-impl<R: Renderer> Drawable<R> {
-    pub fn new(center: glm::IVec2,
-               max_coords: glm::UVec2,
-               resource_manager: &ResourceManager<R>)
-               -> Result<Self> {
+impl Drawable {
+    pub fn new<R: Renderer>(center: glm::IVec2,
+                            max_coords: glm::UVec2,
+                            resource_manager: &ResourceManager<R>)
+                            -> Result<Self> {
         const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
         let mut explosion = resource_manager.load_texture("resources/explosion_large.png")?;
@@ -64,17 +64,17 @@ impl<R: Renderer> Drawable<R> {
         self.meteor.dims
     }
 
-    pub fn draw_unlaunched(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw_unlaunched<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.draw_meteor(renderer)?;
         renderer.fill_rects(&self.rects)
     }
 
-    pub fn draw_meteor(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw_meteor<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let max_coords = Some(self.max_coords);
         renderer.draw_from_center(&self.meteor, self.center, None, max_coords)
     }
 
-    pub fn draw_explosion(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let max_coords = Some(self.max_coords);
         let src_rect = Some(self.animation.src_rect());
         renderer.draw_from_center(&self.explosion, self.center, src_rect, max_coords)

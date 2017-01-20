@@ -11,10 +11,10 @@ use planet::{Planet, PlanetKind};
 use star::Star;
 
 pub struct MasterSmasher<E: MohoEngine> {
-    meteor: Meteor<E::Renderer>,
-    planets: Vec<Planet<E::Renderer>>,
-    stars: Vec<Star<E::Renderer>>,
-    background: TextureData<E::Renderer>,
+    meteor: Meteor,
+    planets: Vec<Planet>,
+    stars: Vec<Star>,
+    background: Texture,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
 }
@@ -94,7 +94,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
     fn draw(&mut self) -> Result<()> {
         self.renderer.clear();
-        self.renderer.draw(&*self.background.texture, None, None, None)?;
+        self.renderer.draw(&self.background, None, None, None)?;
         for star in &self.stars {
             star.draw(&mut self.renderer)?;
         }

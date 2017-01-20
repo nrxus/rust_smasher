@@ -14,18 +14,18 @@ use glm;
 use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager};
 
-pub struct Planet<R: Renderer> {
+pub struct Planet {
     object: Object,
-    drawable: Drawable<R>,
+    drawable: Drawable,
 }
 
-impl<R: Renderer> Planet<R> {
-    pub fn new(center: glm::IVec2,
-               strength: f64,
-               gravity_radius: f64,
-               kind: PlanetKind,
-               resource_manager: &mut ResourceManager<R>)
-               -> Result<Self> {
+impl Planet {
+    pub fn new<R: Renderer>(center: glm::IVec2,
+                            strength: f64,
+                            gravity_radius: f64,
+                            kind: PlanetKind,
+                            resource_manager: &mut ResourceManager<R>)
+                            -> Result<Self> {
         let drawable = Drawable::new(center, gravity_radius as u32, kind, resource_manager)?;
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
@@ -43,12 +43,12 @@ impl<R: Renderer> Planet<R> {
         self.object.pull_vector(point, radius)
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.drawable.draw(renderer)
     }
 }
 
-impl<R: Renderer, I: Intersect<Circle>> Collidable<Circle, I> for Planet<R> {
+impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
     fn collides(&self, collision: &I) -> bool {
         self.object.collides_with(collision)
     }

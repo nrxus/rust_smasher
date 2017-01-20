@@ -22,15 +22,17 @@ pub enum MeteorState {
     EXPLODED,
 }
 
-pub struct Meteor<R: Renderer> {
-    drawable: Drawable<R>,
+pub struct Meteor {
+    drawable: Drawable,
     object: Object,
     state: MeteorState,
     target: glm::IVec2,
 }
 
-impl<R: Renderer> Meteor<R> {
-    pub fn new(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self> {
+impl Meteor {
+    pub fn new<R: Renderer>(center: glm::IVec2,
+                            resource_manager: &ResourceManager<R>)
+                            -> Result<Self> {
         let max_coords = resource_manager.output_size()?;
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
@@ -46,7 +48,7 @@ impl<R: Renderer> Meteor<R> {
         Ok(meteor)
     }
 
-    pub fn update(&mut self, planets: &[Planet<R>]) {
+    pub fn update(&mut self, planets: &[Planet]) {
         match self.state {
             MeteorState::UNLAUNCHED => {
                 self.drawable.update_launch_vector(self.target);
@@ -66,7 +68,7 @@ impl<R: Renderer> Meteor<R> {
         }
     }
 
-    pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             MeteorState::UNLAUNCHED => self.drawable.draw_unlaunched(renderer),
             MeteorState::LAUNCHED => self.drawable.draw_meteor(renderer),
