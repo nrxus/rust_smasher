@@ -3,7 +3,7 @@ use moho::errors::*;
 use moho::resource_manager::{Renderer, ResourceManager, Texture};
 
 use animation::Animation;
-use circle::Circle;
+use rectangle::Rectangle;
 use collidable::Collidable;
 use shape::Intersect;
 
@@ -18,7 +18,7 @@ pub enum State {
 
 pub struct Star {
     state: State,
-    body: Circle,
+    body: Rectangle,
     texture: Texture,
     explosion_texture: Texture,
     animation: Animation,
@@ -35,12 +35,11 @@ impl Star {
         let explosion_duration = Duration::from_millis(100);
         let animation = Animation::new(2, star_duration, true);
         let explosion_animation = Animation::new(10, explosion_duration, false);
-        let radius = cmp::max(texture.dims.x, texture.dims.y) as f64 / 2.;
         texture.dims.x /= 2;
         explosion_texture.dims.x /= 10;
-        let body = Circle {
+        let body = Rectangle {
             center: glm::to_dvec2(center),
-            radius: radius,
+            dims: glm::to_dvec2(texture.dims),
         };
 
         let star = Star {
@@ -96,7 +95,7 @@ impl Star {
     }
 }
 
-impl<I: Intersect<Circle>> Collidable<Circle, I> for Star {
+impl<I: Intersect<Rectangle>> Collidable<Rectangle, I> for Star {
     fn collides(&self, collision: &I) -> bool {
         collision.intersects(&self.body)
     }
