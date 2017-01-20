@@ -5,18 +5,16 @@ use glm;
 pub struct Animation {
     num_frames: u32,
     frame_duration: Duration,
-    dims: glm::UVec2,
     repeat: bool,
     frame_instant: Option<Instant>,
     current_frame: u32,
 }
 
 impl Animation {
-    pub fn new(num_frames: u32, frame_duration: Duration, dims: glm::UVec2, repeat: bool) -> Self {
+    pub fn new(num_frames: u32, frame_duration: Duration, repeat: bool) -> Self {
         Animation {
             num_frames: num_frames,
             frame_duration: frame_duration,
-            dims: dims,
             repeat: repeat,
             frame_instant: None,
             current_frame: 0,
@@ -30,10 +28,10 @@ impl Animation {
         }
     }
 
-    pub fn src_rect(&self) -> glm::IVec4 {
-        let texture_width = (self.dims.x / self.num_frames) as i32;
-        let uv_left = texture_width * self.current_frame as i32;
-        glm::ivec4(uv_left, 0, texture_width, self.dims.y as i32)
+    pub fn src_rect(&self) -> glm::DVec4 {
+        let width = 1. / self.num_frames as f64;
+        let uv_left = width * self.current_frame as f64;
+        glm::dvec4(uv_left, 0., width, 1.)
     }
 
     pub fn is_active(&self) -> bool {

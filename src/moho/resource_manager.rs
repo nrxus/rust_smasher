@@ -78,7 +78,7 @@ impl Renderer for SdlRenderer<'static> {
 
 pub struct ResourceManager<R: Renderer> {
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    id_cache: RefCell<HashMap<usize, R::Texture>>,
+    id_cache: RefCell<HashMap<usize, TextureData<R>>>,
     renderer: R,
 }
 
@@ -101,24 +101,24 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn draw_from_center(&mut self,
                             texture: &Texture,
                             center: glm::IVec2,
-                            src: Option<glm::IVec4>,
+                            src: Option<glm::DVec4>,
                             wrapping_coords: Option<glm::UVec2>)
                             -> Result<()> {
         let width = texture.dims.x as i32;
         let height = texture.dims.y as i32;
         let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
-        self.draw(texture.id, src, Some(dst), wrapping_coords)
+        self.draw(texture.id, Some(dst), src, wrapping_coords)
     }
 
     pub fn draw(&mut self,
                 id: usize,
-                src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>,
+                src: Option<glm::DVec4>,
                 wrapping_coords: Option<glm::UVec2>)
                 -> Result<()> {
         match (dst, wrapping_coords) {
-            (Some(d), Some(w)) => self.draw_and_wrap(id, src, d, w),
-            _ => self.draw_raw(id, src, dst),
+            (Some(d), Some(w)) => self.draw_and_wrap(id, d, src, w),
+            _ => self.draw_raw(id, dst, src),
         }
     }
 
@@ -158,31 +158,40 @@ impl<R: Renderer> ResourceManager<R> {
             dims: texture_data.dims,
         };
         cache.insert(path, texture);
-        id_cache.insert(id, texture_data.texture);
+        id_cache.insert(id, texture_data);
         Ok(texture)
     }
 
     fn draw_and_wrap(&mut self,
                      id: usize,
-                     src: Option<glm::IVec4>,
                      dst: glm::IVec4,
+                     src: Option<glm::DVec4>,
                      wrapping_coords: glm::UVec2)
                      -> Result<()> {
         wrap_rects(dst, wrapping_coords)
             .iter()
             .filter_map(|&r| r)
-            .map(|r| self.draw_raw(id, src, Some(r)))
+            .map(|r| self.draw_raw(id, Some(r), src))
             .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
     }
 
     fn draw_raw(&mut self,
                 id: usize,
-                src: Option<glm::IVec4>,
-                dst: Option<glm::IVec4>)
+                dst: Option<glm::IVec4>,
+                src: Option<glm::DVec4>)
                 -> Result<()> {
         let cache = self.id_cache.borrow();
-        let texture = cache.get(&id).ok_or("texture not loaded")?;
-        self.renderer.copy(texture, Self::get_rect(src), Self::get_rect(dst))
+        let data = cache.get(&id).ok_or("texture not loaded")?;
+        let src = match src {
+            None => None,
+            Some(r) => {
+                Some(rect::Rect::new((r.x * data.dims.x as f64) as i32,
+                                     (r.y * data.dims.y as f64) as i32,
+                                     (r.z * data.dims.x as f64) as u32,
+                                     (r.w * data.dims.y as f64) as u32))
+            }
+        };
+        self.renderer.copy(&data.texture, src, Self::get_rect(dst))
     }
 
     fn get_rect(rect: Option<glm::IVec4>) -> Option<rect::Rect> {

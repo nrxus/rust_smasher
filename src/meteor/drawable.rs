@@ -26,7 +26,7 @@ impl Drawable {
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
         let mut explosion = resource_manager.load_texture("resources/explosion_large.png")?;
         let frame_duration = Duration::from_millis(80_u64);
-        let animation = Animation::new(NUM_FRAMES, frame_duration, explosion.dims, false);
+        let animation = Animation::new(NUM_FRAMES, frame_duration, false);
         explosion.dims.x /= NUM_FRAMES;
 
         let drawable = Drawable {

@@ -33,9 +33,8 @@ impl Star {
         let mut explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
         let star_duration = Duration::from_millis(150);
         let explosion_duration = Duration::from_millis(100);
-        let animation = Animation::new(2, star_duration, texture.dims, true);
-        let explosion_animation =
-            Animation::new(10, explosion_duration, explosion_texture.dims, false);
+        let animation = Animation::new(2, star_duration, true);
+        let explosion_animation = Animation::new(10, explosion_duration, false);
         let radius = cmp::max(texture.dims.x, texture.dims.y) as f64 / 2.;
         texture.dims.x /= 2;
         explosion_texture.dims.x /= 10;
@@ -89,7 +88,7 @@ impl Star {
 
     fn draw_on_center<R: Renderer>(&self,
                                    texture: &Texture,
-                                   src_rect: glm::IVec4,
+                                   src_rect: glm::DVec4,
                                    renderer: &mut ResourceManager<R>)
                                    -> Result<()> {
         let center = glm::to_ivec2(self.body.center);
