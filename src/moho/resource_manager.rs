@@ -107,18 +107,18 @@ impl<R: Renderer> ResourceManager<R> {
         let width = texture.dims.x as i32;
         let height = texture.dims.y as i32;
         let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
-        self.draw(&*texture, src, Some(dst), wrapping_coords)
+        self.draw(texture.id, src, Some(dst), wrapping_coords)
     }
 
     pub fn draw(&mut self,
-                texture: &Texture,
+                id: usize,
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>,
                 wrapping_coords: Option<glm::UVec2>)
                 -> Result<()> {
         match (dst, wrapping_coords) {
-            (Some(d), Some(w)) => self.draw_and_wrap(texture, src, d, w),
-            _ => self.draw_raw(texture, src, dst),
+            (Some(d), Some(w)) => self.draw_and_wrap(id, src, d, w),
+            _ => self.draw_raw(id, src, dst),
         }
     }
 
@@ -163,7 +163,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     fn draw_and_wrap(&mut self,
-                     texture: &Texture,
+                     id: usize,
                      src: Option<glm::IVec4>,
                      dst: glm::IVec4,
                      wrapping_coords: glm::UVec2)
@@ -171,17 +171,17 @@ impl<R: Renderer> ResourceManager<R> {
         wrap_rects(dst, wrapping_coords)
             .iter()
             .filter_map(|&r| r)
-            .map(|r| self.draw_raw(texture, src, Some(r)))
+            .map(|r| self.draw_raw(id, src, Some(r)))
             .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
     }
 
     fn draw_raw(&mut self,
-                texture: &Texture,
+                id: usize,
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>)
                 -> Result<()> {
         let cache = self.id_cache.borrow();
-        let texture = cache.get(&texture.id).ok_or("texture not loaded")?;
+        let texture = cache.get(&id).ok_or("texture not loaded")?;
         self.renderer.copy(texture, Self::get_rect(src), Self::get_rect(dst))
     }
 

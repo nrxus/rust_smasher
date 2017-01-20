@@ -94,7 +94,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
     fn draw(&mut self) -> Result<()> {
         self.renderer.clear();
-        self.renderer.draw(&self.background, None, None, None)?;
+        self.renderer.draw(self.background.id, None, None, None)?;
         for star in &self.stars {
             star.draw(&mut self.renderer)?;
         }
