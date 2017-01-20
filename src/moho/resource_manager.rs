@@ -78,7 +78,7 @@ impl Renderer for SdlRenderer<'static> {
 
 pub struct ResourceManager<R: Renderer> {
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    id_cache: RefCell<HashMap<usize, TextureData<R>>>,
+    data_cache: RefCell<HashMap<usize, TextureData<R>>>,
     renderer: R,
 }
 
@@ -86,7 +86,7 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
             texture_cache: RefCell::new(HashMap::new()),
-            id_cache: RefCell::new(HashMap::new()),
+            data_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
         }
     }
@@ -149,8 +149,8 @@ impl<R: Renderer> ResourceManager<R> {
 
     fn load_new_texture(&self, path: &'static str) -> Result<Texture> {
         let mut cache = self.texture_cache.borrow_mut();
-        let mut id_cache = self.id_cache.borrow_mut();
-        let id = id_cache.len();
+        let mut data_cache = self.data_cache.borrow_mut();
+        let id = data_cache.len();
         let texture_path = Path::new(path);
         let texture_data = self.renderer.load_texture(texture_path)?;
         let texture = Texture {
@@ -158,7 +158,7 @@ impl<R: Renderer> ResourceManager<R> {
             dims: texture_data.dims,
         };
         cache.insert(path, texture);
-        id_cache.insert(id, texture_data);
+        data_cache.insert(id, texture_data);
         Ok(texture)
     }
 
@@ -180,7 +180,7 @@ impl<R: Renderer> ResourceManager<R> {
                 dst: Option<glm::IVec4>,
                 src: Option<glm::DVec4>)
                 -> Result<()> {
-        let cache = self.id_cache.borrow();
+        let cache = self.data_cache.borrow();
         let data = cache.get(&id).ok_or("texture not loaded")?;
         let src = match src {
             None => None,
