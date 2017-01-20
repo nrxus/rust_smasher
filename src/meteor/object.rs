@@ -6,32 +6,35 @@ use num_traits::Zero;
 use moho::resource_manager::Renderer;
 
 pub struct Object {
+    body: Circle,
     initial_center: glm::DVec2,
-    center: glm::DVec2,
-    radius: f64,
     max_coords: glm::DVec2,
     velocity: glm::DVec2,
 }
 
 impl Object {
     pub fn new(center: glm::DVec2, radius: f64, max_coords: glm::DVec2) -> Self {
-        Object {
-            initial_center: center,
+        let body = Circle {
             center: center,
             radius: radius,
+        };
+
+        Object {
+            body: body,
+            initial_center: center,
             max_coords: max_coords,
             velocity: glm::DVec2::zero(),
         }
     }
 
     pub fn restart(&mut self) {
-        self.center = self.initial_center;
+        self.body.center = self.initial_center;
         self.velocity = glm::DVec2::zero();
     }
 
     pub fn launch(&mut self, target: glm::IVec2) {
         const FACTOR: f64 = 50.;
-        let offset = target - glm::to_ivec2(self.center);
+        let offset = target - glm::to_ivec2(self.body.center);
         self.velocity = glm::to_dvec2(offset) / FACTOR;
     }
 
@@ -40,34 +43,19 @@ impl Object {
         self.displace();
     }
 
-    pub fn center(&self) -> glm::DVec2 {
-        self.center
-    }
-
-    pub fn collides_with<R: Renderer>(&self, planets: &[Planet<R>]) -> bool {
-        let body = self.collision_body();
-        planets.iter().any(|p| p.collides_with(&body))
+    pub fn body(&self) -> &Circle {
+        &self.body
     }
 
     fn pull<R: Renderer>(&mut self, planets: &[Planet<R>]) {
         for planet in planets {
-            let acceleration = planet.pull_vector(self.center, self.radius);
+            let acceleration = planet.pull_vector(self.body.center, self.body.radius);
             self.velocity = self.velocity + acceleration / 50.;
         }
     }
 
     fn displace(&mut self) {
-        self.center.x += self.velocity.x;
-        self.center.y += self.velocity.y;
-
-        self.center.x = (self.center.x + self.max_coords.x) % self.max_coords.x;
-        self.center.y = (self.center.y + self.max_coords.y) % self.max_coords.y;
-    }
-
-    fn collision_body(&self) -> Circle {
-        Circle {
-            center: self.center,
-            radius: self.radius,
-        }
+        self.body.center = self.body.center + self.velocity;
+        self.body.center = (self.body.center + self.max_coords) % self.max_coords;
     }
 }

@@ -23,7 +23,7 @@ pub struct Drawable<R: Renderer> {
 impl<R: Renderer> Drawable<R> {
     pub fn new(center: glm::IVec2,
                max_coords: glm::UVec2,
-               resource_manager: &mut ResourceManager<R>)
+               resource_manager: &ResourceManager<R>)
                -> Result<Self> {
         const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;

@@ -4,6 +4,10 @@ mod object;
 use self::drawable::Drawable;
 use self::object::Object;
 
+use circle::Circle;
+use collidable::Collidable;
+use shape::Shape;
+use shape::Intersect;
 use glm;
 use num_traits::Zero;
 use moho::errors::*;
@@ -26,7 +30,7 @@ pub struct Meteor<R: Renderer> {
 }
 
 impl<R: Renderer> Meteor<R> {
-    pub fn new(center: glm::IVec2, resource_manager: &mut ResourceManager<R>) -> Result<Self> {
+    pub fn new(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self> {
         let max_coords = resource_manager.output_size()?;
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
@@ -50,9 +54,6 @@ impl<R: Renderer> Meteor<R> {
             MeteorState::LAUNCHED => {
                 self.object.update(planets);
                 self.move_drawable();
-                if self.object.collides_with(planets) {
-                    self.explode();
-                }
             }
             MeteorState::EXPLODED => {
                 self.drawable.animate_explosion();
@@ -90,7 +91,16 @@ impl<R: Renderer> Meteor<R> {
         self.target = target;
     }
 
+    pub fn collides<S, C>(&self, collidable: &C) -> bool
+        where S: Shape,
+              C: Collidable<S, Circle>,
+              Circle: Intersect<S>
+    {
+        collidable.collides(self.object.body())
+    }
+
     fn move_drawable(&mut self) {
-        self.drawable.center = glm::to_ivec2(self.object.center());
+        let body = self.object.body();
+        self.drawable.center = glm::to_ivec2(body.center);
     }
 }

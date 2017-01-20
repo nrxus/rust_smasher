@@ -22,7 +22,7 @@ impl<R: Renderer> Drawable<R> {
     pub fn new(center: glm::IVec2,
                gravity_radius: u32,
                kind: PlanetKind,
-               resource_manager: &mut ResourceManager<R>)
+               resource_manager: &ResourceManager<R>)
                -> Result<Self> {
         let (planet, gravity) = Self::load_textures(kind, resource_manager)?;
         let gravity_dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
@@ -47,7 +47,7 @@ impl<R: Renderer> Drawable<R> {
     }
 
     fn load_textures(kind: PlanetKind,
-                     resource_manager: &mut ResourceManager<R>)
+                     resource_manager: &ResourceManager<R>)
                      -> Result<(TextureData<R::Texture>, TextureData<R::Texture>)> {
         let (planet, gravity) = match kind {
             PlanetKind::RED => ("resources/red_planet.png", "resources/red_ring.png"),

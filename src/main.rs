@@ -4,8 +4,10 @@ extern crate num_traits;
 extern crate sdl2;
 
 mod master_smasher;
+mod collidable;
 mod meteor;
 mod shape;
+mod star;
 mod rectangle;
 mod circle;
 mod planet;

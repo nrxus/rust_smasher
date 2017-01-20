@@ -8,6 +8,7 @@ use self::drawable::Drawable;
 use std::cmp;
 
 use circle::Circle;
+use collidable::Collidable;
 use shape::Intersect;
 use glm;
 use moho::errors::*;
@@ -42,11 +43,13 @@ impl<R: Renderer> Planet<R> {
         self.object.pull_vector(point, radius)
     }
 
-    pub fn collides_with<S: Intersect<Circle>>(&self, shape: &S) -> bool {
-        self.object.collides_with(shape)
-    }
-
     pub fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.drawable.draw(renderer)
+    }
+}
+
+impl<R: Renderer, I: Intersect<Circle>> Collidable<Circle, I> for Planet<R> {
+    fn collides(&self, collision: &I) -> bool {
+        self.object.collides_with(collision)
     }
 }
