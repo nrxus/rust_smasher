@@ -80,7 +80,7 @@ impl Renderer for MockRenderer {
             None => {
                 let texture = MockTexture { path: path.to_str().unwrap_or("").into() };
                 Ok(TextureData {
-                    texture: Rc::new(texture),
+                    texture: texture,
                     dims: glm::uvec2(48, 60),
                 })
             }

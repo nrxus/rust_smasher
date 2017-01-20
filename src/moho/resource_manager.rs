@@ -1,7 +1,6 @@
 use std::path::Path;
 use std::collections::HashMap;
 use std::cell::RefCell;
-use std::rc::Rc;
 
 use glm;
 use sdl2::rect;
@@ -19,17 +18,8 @@ pub struct Texture {
 }
 
 pub struct TextureData<R: Renderer> {
-    pub texture: Rc<R::Texture>,
+    pub texture: R::Texture,
     pub dims: glm::UVec2,
-}
-
-impl<R: Renderer> Clone for TextureData<R> {
-    fn clone(&self) -> TextureData<R> {
-        TextureData {
-            texture: self.texture.clone(),
-            dims: self.dims,
-        }
-    }
 }
 
 pub trait Renderer {
@@ -56,7 +46,7 @@ impl Renderer for SdlRenderer<'static> {
         let texture = LoadTexture::load_texture(self, path)?;
         let query = texture.query();
         Ok(TextureData {
-            texture: Rc::new(texture),
+            texture: texture,
             dims: glm::uvec2(query.width, query.height),
         })
     }
@@ -88,7 +78,7 @@ impl Renderer for SdlRenderer<'static> {
 
 pub struct ResourceManager<R: Renderer> {
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    id_cache: RefCell<HashMap<usize, Rc<R::Texture>>>,
+    id_cache: RefCell<HashMap<usize, R::Texture>>,
     renderer: R,
 }
 
@@ -126,13 +116,9 @@ impl<R: Renderer> ResourceManager<R> {
                 dst: Option<glm::IVec4>,
                 wrapping_coords: Option<glm::UVec2>)
                 -> Result<()> {
-        let texture = {
-            let cache = self.id_cache.borrow();
-            cache.get(&texture.id).ok_or("texture not loaded")?.clone()
-        };
         match (dst, wrapping_coords) {
-            (Some(d), Some(w)) => self.draw_and_wrap(&*texture, src, d, w),
-            _ => self.draw_raw(&*texture, src, dst),
+            (Some(d), Some(w)) => self.draw_and_wrap(texture, src, d, w),
+            _ => self.draw_raw(texture, src, dst),
         }
     }
 
@@ -177,7 +163,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     fn draw_and_wrap(&mut self,
-                     texture: &R::Texture,
+                     texture: &Texture,
                      src: Option<glm::IVec4>,
                      dst: glm::IVec4,
                      wrapping_coords: glm::UVec2)
@@ -190,10 +176,12 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     fn draw_raw(&mut self,
-                texture: &R::Texture,
+                texture: &Texture,
                 src: Option<glm::IVec4>,
                 dst: Option<glm::IVec4>)
                 -> Result<()> {
+        let cache = self.id_cache.borrow();
+        let texture = cache.get(&texture.id).ok_or("texture not loaded")?;
         self.renderer.copy(texture, Self::get_rect(src), Self::get_rect(dst))
     }
 
