@@ -11,7 +11,8 @@ use shape::Intersect;
 use glm;
 use num_traits::Zero;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager};
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use planet::Planet;
 
 use std::cmp;

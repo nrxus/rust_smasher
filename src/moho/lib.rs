@@ -8,9 +8,11 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use resource_manager::*;
+use renderer::Renderer;
+use resource_manager::ResourceManager;
 use input_manager::*;
 
+pub mod renderer;
 pub mod input_manager;
 pub mod resource_manager;
 pub mod window_wrapper;

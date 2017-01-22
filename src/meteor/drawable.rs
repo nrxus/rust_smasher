@@ -3,7 +3,8 @@ use animation::Animation;
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager, Texture};
+use moho::renderer::Renderer;
+use moho::resource_manager::{ResourceManager, Texture};
 use sdl2::rect;
 
 use std::time::Duration;

@@ -1,6 +1,7 @@
 use glm;
+use moho::resource_manager::{ResourceManager, Texture};
+use moho::renderer::Renderer;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager, Texture};
 
 pub enum PlanetKind {
     RED,

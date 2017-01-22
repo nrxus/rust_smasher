@@ -12,7 +12,8 @@ use collidable::Collidable;
 use shape::Intersect;
 use glm;
 use moho::errors::*;
-use moho::resource_manager::{Renderer, ResourceManager};
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 
 pub struct Planet {
     object: Object,
