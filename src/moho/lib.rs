@@ -12,6 +12,7 @@ use renderer::Renderer;
 use resource_manager::ResourceManager;
 use input_manager::*;
 
+pub mod tile_sheet;
 pub mod renderer;
 pub mod input_manager;
 pub mod resource_manager;

@@ -16,11 +16,13 @@ pub struct Drawable {
 }
 
 impl Drawable {
-    pub fn new<R: Renderer>(center: glm::IVec2,
-                            gravity_radius: u32,
-                            kind: PlanetKind,
-                            resource_manager: &ResourceManager<R>)
-                            -> Result<Self> {
+    pub fn new<R>(center: glm::IVec2,
+                  gravity_radius: u32,
+                  kind: PlanetKind,
+                  resource_manager: &ResourceManager<R>)
+                  -> Result<Self>
+        where R: Renderer
+    {
         let (planet, mut gravity) = Self::load_textures(kind, resource_manager)?;
         gravity.dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
         let drawable = Drawable {
@@ -41,9 +43,11 @@ impl Drawable {
         renderer.draw_from_center(&self.planet, self.center, None, None)
     }
 
-    fn load_textures<R: Renderer>(kind: PlanetKind,
-                                  resource_manager: &ResourceManager<R>)
-                                  -> Result<(Texture, Texture)> {
+    fn load_textures<R>(kind: PlanetKind,
+                        resource_manager: &ResourceManager<R>)
+                        -> Result<(Texture, Texture)>
+        where R: Renderer
+    {
         let (planet, gravity) = match kind {
             PlanetKind::RED => ("resources/red_planet.png", "resources/red_ring.png"),
             PlanetKind::BLUE => ("resources/blue_planet.png", "resources/blue_ring.png"),
