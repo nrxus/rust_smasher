@@ -15,9 +15,8 @@ use std::time::Duration;
 pub struct Drawable {
     pub center: glm::IVec2,
     max_coords: glm::UVec2,
-    animation: Animation,
+    explosion: Animation,
     meteor: Asset,
-    explosion: Asset,
     rects: [rect::Rect; 10],
 }
 
@@ -35,12 +34,11 @@ impl Drawable {
         let frame_duration = Duration::from_millis(80_u64);
         let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
         let animator = FrameAnimator::new(NUM_FRAMES, frame_duration, false);
-        let animation = Animation::new(tile_sheet, animator);
+        let explosion = Animation::new(explosion, tile_sheet, animator);
 
         let drawable = Drawable {
             center: center,
             max_coords: max_coords,
-            animation: animation,
             meteor: meteor,
             explosion: explosion,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
@@ -50,7 +48,7 @@ impl Drawable {
     }
 
     pub fn animate_explosion(&mut self) {
-        self.animation.update();
+        self.explosion.update();
     }
 
     pub fn update_launch_vector(&mut self, target: glm::IVec2) {
@@ -82,12 +80,12 @@ impl Drawable {
     }
 
     pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let src_rect = Some(self.animation.src_rect());
-        self.draw(&self.explosion, src_rect, renderer)
+        let src_rect = Some(self.explosion.src_rect());
+        self.draw(self.explosion.asset(), src_rect, renderer)
     }
 
     pub fn is_exploding(&self) -> bool {
-        self.animation.is_active()
+        self.explosion.is_active()
     }
 
     fn draw<R>(&self,

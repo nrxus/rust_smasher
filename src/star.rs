@@ -22,10 +22,8 @@ pub enum State {
 pub struct Star {
     state: State,
     body: Rectangle,
-    asset: Asset,
-    explosion_asset: Asset,
     animation: Animation,
-    explosion_animation: Animation,
+    explosion: Animation,
 }
 
 impl Star {
@@ -40,14 +38,14 @@ impl Star {
         let star_sheet = TileSheet::new(glm::uvec2(2, 1));
         let star_duration = Duration::from_millis(150);
         let star_animator = FrameAnimator::new(2, star_duration, true);
-        let animation = Animation::new(star_sheet, star_animator);
+        let animation = Animation::new(asset, star_sheet, star_animator);
 
         let explosion_dims = glm::uvec2(explosion_texture.dims.x / 10, explosion_texture.dims.y);
         let explosion_asset = Asset::new(explosion_texture.id, explosion_dims);
         let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
         let explosion_duration = Duration::from_millis(100);
         let explosion_animator = FrameAnimator::new(10, explosion_duration, false);
-        let explosion_animation = Animation::new(explosion_sheet, explosion_animator);
+        let explosion = Animation::new(explosion_asset, explosion_sheet, explosion_animator);
 
         let body = Rectangle {
             center: glm::to_dvec2(center),
@@ -57,10 +55,8 @@ impl Star {
         let star = Star {
             state: State::ACTIVE,
             body: body,
-            asset: asset,
-            explosion_asset: explosion_asset,
+            explosion: explosion,
             animation: animation,
-            explosion_animation: explosion_animation,
         };
 
         Ok(star)
@@ -75,8 +71,8 @@ impl Star {
             State::INACTIVE => {}
             State::ACTIVE => self.animation.update(),
             State::EXPLODED => {
-                self.explosion_animation.update();
-                if !self.explosion_animation.is_active() {
+                self.explosion.update();
+                if !self.explosion.is_active() {
                     self.state = State::INACTIVE;
                 }
             }
@@ -86,24 +82,18 @@ impl Star {
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             State::INACTIVE => Ok(()),
-            State::ACTIVE => {
-                let src_rect = self.animation.src_rect();
-                self.draw_on_center(&self.asset, src_rect, renderer)
-            }
-            State::EXPLODED => {
-                let src_rect = self.explosion_animation.src_rect();
-                self.draw_on_center(&self.explosion_asset, src_rect, renderer)
-            }
+            State::ACTIVE => self.draw_on_center(&self.animation, renderer),
+            State::EXPLODED => self.draw_on_center(&self.explosion, renderer),
         }
     }
 
     fn draw_on_center<R: Renderer>(&self,
-                                   asset: &Asset,
-                                   src_rect: glm::DVec4,
+                                   animation: &Animation,
                                    renderer: &mut ResourceManager<R>)
                                    -> Result<()> {
-        let rect = asset.dst_rect(glm::to_ivec2(self.body.center));
-        renderer.draw(asset.texture_id, Some(rect), Some(src_rect), None)
+        let src = animation.src_rect();
+        let dst = animation.asset().dst_rect(glm::to_ivec2(self.body.center));
+        renderer.draw(animation.asset().texture_id, Some(dst), Some(src), None)
     }
 }
 
