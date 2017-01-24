@@ -1,12 +1,12 @@
 use animation::Animation;
-use utils;
+use asset::Asset;
 
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
 use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::ResourceManager;
 use moho::tile_sheet::TileSheet;
 use sdl2::rect;
 
@@ -16,8 +16,8 @@ pub struct Drawable {
     pub center: glm::IVec2,
     max_coords: glm::UVec2,
     animation: Animation,
-    meteor: Texture,
-    explosion: Texture,
+    meteor: Asset,
+    explosion: Asset,
     rects: [rect::Rect; 10],
 }
 
@@ -28,12 +28,14 @@ impl Drawable {
                             -> Result<Self> {
         const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
-        let mut explosion = resource_manager.load_texture("resources/explosion_large.png")?;
+        let meteor = Asset::from_texture(&meteor);
+        let explosion = resource_manager.load_texture("resources/explosion_large.png")?;
+        let explosion_dims = glm::uvec2(explosion.dims.x / NUM_FRAMES, explosion.dims.y);
+        let explosion = Asset::new(explosion.id, explosion_dims);
         let frame_duration = Duration::from_millis(80_u64);
         let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
         let animator = FrameAnimator::new(NUM_FRAMES, frame_duration, false);
         let animation = Animation::new(tile_sheet, animator);
-        explosion.dims.x /= NUM_FRAMES;
 
         let drawable = Drawable {
             center: center,
@@ -55,7 +57,7 @@ impl Drawable {
         let target = glm::to_dvec2(target);
         let center = glm::to_dvec2(self.center);
         let distance = target - center;
-        let offset = self.meteor.dims.x / 2 + 10;
+        let offset = self.meteor.dimensions.x / 2 + 10;
         let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = center + offset_vector;
         let step = (target - anchor_point) / (self.rects.len() as f64);
@@ -67,7 +69,7 @@ impl Drawable {
     }
 
     pub fn meteor_dims(&self) -> glm::UVec2 {
-        self.meteor.dims
+        self.meteor.dimensions
     }
 
     pub fn draw_unlaunched<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
@@ -89,14 +91,14 @@ impl Drawable {
     }
 
     fn draw<R>(&self,
-               texture: &Texture,
+               asset: &Asset,
                src: Option<glm::DVec4>,
                renderer: &mut ResourceManager<R>)
                -> Result<()>
         where R: Renderer
     {
         let max_coords = Some(self.max_coords);
-        let rect = utils::rect_from_center(self.center, texture.dims);
-        renderer.draw(texture.id, Some(rect), src, max_coords)
+        let rect = asset.dst_rect(self.center);
+        renderer.draw(asset.texture_id, Some(rect), src, max_coords)
     }
 }
