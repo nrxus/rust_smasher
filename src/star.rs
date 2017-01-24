@@ -1,14 +1,15 @@
+use animation::Animation;
+use collidable::Collidable;
+use rectangle::Rectangle;
+use shape::Intersect;
+use utils;
+
 use glm;
 use moho::errors::*;
 use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::tile_sheet::TileSheet;
-
-use animation::Animation;
-use rectangle::Rectangle;
-use collidable::Collidable;
-use shape::Intersect;
 
 use std::time::Duration;
 
@@ -96,8 +97,8 @@ impl Star {
                                    src_rect: glm::DVec4,
                                    renderer: &mut ResourceManager<R>)
                                    -> Result<()> {
-        let center = glm::to_ivec2(self.body.center);
-        renderer.draw_from_center(texture, center, Some(src_rect), None)
+        let rect = utils::rect_from_center(glm::to_ivec2(self.body.center), texture.dims);
+        renderer.draw(texture.id, Some(rect), Some(src_rect), None)
     }
 }
 

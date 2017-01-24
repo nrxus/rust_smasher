@@ -1,3 +1,5 @@
+use utils;
+
 use glm;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::renderer::Renderer;
@@ -38,9 +40,18 @@ impl Drawable {
         self.planet.dims
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw_from_center(&self.gravity, self.center, None, None)?;
-        renderer.draw_from_center(&self.planet, self.center, None, None)
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        self.draw_at_center(&self.gravity, renderer)?;
+        self.draw_at_center(&self.planet, renderer)
+    }
+
+    fn draw_at_center<R>(&self, texture: &Texture, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        let rect = utils::rect_from_center(self.center, texture.dims);
+        renderer.draw(texture.id, Some(rect), None, None)
     }
 
     fn load_textures<R>(kind: PlanetKind,

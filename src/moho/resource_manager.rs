@@ -37,18 +37,6 @@ impl<R: Renderer> ResourceManager<R> {
         }
     }
 
-    pub fn draw_from_center(&mut self,
-                            texture: &Texture,
-                            center: glm::IVec2,
-                            src: Option<glm::DVec4>,
-                            wrapping_coords: Option<glm::UVec2>)
-                            -> Result<()> {
-        let width = texture.dims.x as i32;
-        let height = texture.dims.y as i32;
-        let dst = glm::ivec4(center.x - width / 2, center.y - height / 2, width, height);
-        self.draw(texture.id, Some(dst), src, wrapping_coords)
-    }
-
     pub fn draw(&mut self,
                 id: usize,
                 dst: Option<glm::IVec4>,

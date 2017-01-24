@@ -1,4 +1,5 @@
 use animation::Animation;
+use utils;
 
 use glm;
 use glm::ext::normalize_to;
@@ -75,17 +76,27 @@ impl Drawable {
     }
 
     pub fn draw_meteor<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let max_coords = Some(self.max_coords);
-        renderer.draw_from_center(&self.meteor, self.center, None, max_coords)
+        self.draw(&self.meteor, None, renderer)
     }
 
     pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let max_coords = Some(self.max_coords);
         let src_rect = Some(self.animation.src_rect());
-        renderer.draw_from_center(&self.explosion, self.center, src_rect, max_coords)
+        self.draw(&self.explosion, src_rect, renderer)
     }
 
     pub fn is_exploding(&self) -> bool {
         self.animation.is_active()
+    }
+
+    fn draw<R>(&self,
+               texture: &Texture,
+               src: Option<glm::DVec4>,
+               renderer: &mut ResourceManager<R>)
+               -> Result<()>
+        where R: Renderer
+    {
+        let max_coords = Some(self.max_coords);
+        let rect = utils::rect_from_center(self.center, texture.dims);
+        renderer.draw(texture.id, Some(rect), src, max_coords)
     }
 }
