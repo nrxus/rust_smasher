@@ -1,14 +1,14 @@
 use animation::Animation;
+use asset::Asset;
 use collidable::Collidable;
 use rectangle::Rectangle;
 use shape::Intersect;
-use utils;
 
 use glm;
 use moho::errors::*;
 use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::ResourceManager;
 use moho::tile_sheet::TileSheet;
 
 use std::time::Duration;
@@ -22,8 +22,8 @@ pub enum State {
 pub struct Star {
     state: State,
     body: Rectangle,
-    texture: Texture,
-    explosion_texture: Texture,
+    asset: Asset,
+    explosion_asset: Asset,
     animation: Animation,
     explosion_animation: Animation,
 }
@@ -32,18 +32,23 @@ impl Star {
     pub fn new<R: Renderer>(center: glm::IVec2,
                             resource_manager: &ResourceManager<R>)
                             -> Result<Self> {
-        let mut texture = resource_manager.load_texture("resources/star.png")?;
-        let mut explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
-        let star_duration = Duration::from_millis(150);
-        let explosion_duration = Duration::from_millis(100);
+        let texture = resource_manager.load_texture("resources/star.png")?;
+        let explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
+
+        let star_dims = glm::uvec2(texture.dims.x / 2, texture.dims.y);
+        let asset = Asset::new(texture.id, star_dims);
         let star_sheet = TileSheet::new(glm::uvec2(2, 1));
+        let star_duration = Duration::from_millis(150);
         let star_animator = FrameAnimator::new(2, star_duration, true);
         let animation = Animation::new(star_sheet, star_animator);
+
+        let explosion_dims = glm::uvec2(explosion_texture.dims.x / 10, explosion_texture.dims.y);
+        let explosion_asset = Asset::new(explosion_texture.id, explosion_dims);
         let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
+        let explosion_duration = Duration::from_millis(100);
         let explosion_animator = FrameAnimator::new(10, explosion_duration, false);
         let explosion_animation = Animation::new(explosion_sheet, explosion_animator);
-        texture.dims.x /= 2;
-        explosion_texture.dims.x /= 10;
+
         let body = Rectangle {
             center: glm::to_dvec2(center),
             dims: glm::to_dvec2(texture.dims),
@@ -52,8 +57,8 @@ impl Star {
         let star = Star {
             state: State::ACTIVE,
             body: body,
-            texture: texture,
-            explosion_texture: explosion_texture,
+            asset: asset,
+            explosion_asset: explosion_asset,
             animation: animation,
             explosion_animation: explosion_animation,
         };
@@ -83,22 +88,22 @@ impl Star {
             State::INACTIVE => Ok(()),
             State::ACTIVE => {
                 let src_rect = self.animation.src_rect();
-                self.draw_on_center(&self.texture, src_rect, renderer)
+                self.draw_on_center(&self.asset, src_rect, renderer)
             }
             State::EXPLODED => {
                 let src_rect = self.explosion_animation.src_rect();
-                self.draw_on_center(&self.explosion_texture, src_rect, renderer)
+                self.draw_on_center(&self.explosion_asset, src_rect, renderer)
             }
         }
     }
 
     fn draw_on_center<R: Renderer>(&self,
-                                   texture: &Texture,
+                                   asset: &Asset,
                                    src_rect: glm::DVec4,
                                    renderer: &mut ResourceManager<R>)
                                    -> Result<()> {
-        let rect = utils::rect_from_center(glm::to_ivec2(self.body.center), texture.dims);
-        renderer.draw(texture.id, Some(rect), Some(src_rect), None)
+        let rect = asset.dst_rect(glm::to_ivec2(self.body.center));
+        renderer.draw(asset.texture_id, Some(rect), Some(src_rect), None)
     }
 }
 

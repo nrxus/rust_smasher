@@ -12,7 +12,6 @@ mod shape;
 mod star;
 mod rectangle;
 mod planet;
-mod utils;
 mod asset;
 
 fn main() {
