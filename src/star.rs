@@ -2,6 +2,7 @@ use glm;
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
+use moho::tile_sheet::TileSheet;
 
 use animation::Animation;
 use rectangle::Rectangle;
@@ -33,8 +34,10 @@ impl Star {
         let mut explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
         let star_duration = Duration::from_millis(150);
         let explosion_duration = Duration::from_millis(100);
-        let animation = Animation::new(2, star_duration, true);
-        let explosion_animation = Animation::new(10, explosion_duration, false);
+        let star_sheet = TileSheet::new(glm::uvec2(2, 1));
+        let animation = Animation::new(star_sheet, 2, star_duration, true);
+        let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
+        let explosion_animation = Animation::new(explosion_sheet, 10, explosion_duration, false);
         texture.dims.x /= 2;
         explosion_texture.dims.x /= 10;
         let body = Rectangle {

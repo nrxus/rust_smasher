@@ -1,6 +1,7 @@
 use std::time::{Instant, Duration};
 
 use glm;
+use moho::tile_sheet::TileSheet;
 
 pub struct Animation {
     num_frames: u32,
@@ -8,16 +9,18 @@ pub struct Animation {
     repeat: bool,
     frame_instant: Option<Instant>,
     current_frame: u32,
+    sheet: TileSheet,
 }
 
 impl Animation {
-    pub fn new(num_frames: u32, frame_duration: Duration, repeat: bool) -> Self {
+    pub fn new(sheet: TileSheet, num_frames: u32, frame_duration: Duration, repeat: bool) -> Self {
         Animation {
             num_frames: num_frames,
             frame_duration: frame_duration,
             repeat: repeat,
             frame_instant: None,
             current_frame: 0,
+            sheet: sheet,
         }
     }
 
@@ -29,9 +32,7 @@ impl Animation {
     }
 
     pub fn src_rect(&self) -> glm::DVec4 {
-        let width = 1. / self.num_frames as f64;
-        let uv_left = width * self.current_frame as f64;
-        glm::dvec4(uv_left, 0., width, 1.)
+        self.sheet.uv(self.current_frame)
     }
 
     pub fn is_active(&self) -> bool {

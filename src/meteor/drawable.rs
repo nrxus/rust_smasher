@@ -3,6 +3,7 @@ use animation::Animation;
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
+use moho::tile_sheet::TileSheet;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 use sdl2::rect;
@@ -27,7 +28,8 @@ impl Drawable {
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
         let mut explosion = resource_manager.load_texture("resources/explosion_large.png")?;
         let frame_duration = Duration::from_millis(80_u64);
-        let animation = Animation::new(NUM_FRAMES, frame_duration, false);
+        let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
+        let animation = Animation::new(tile_sheet, NUM_FRAMES, frame_duration, false);
         explosion.dims.x /= NUM_FRAMES;
 
         let drawable = Drawable {
