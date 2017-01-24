@@ -91,9 +91,7 @@ impl Star {
                                    animation: &Animation,
                                    renderer: &mut ResourceManager<R>)
                                    -> Result<()> {
-        let src = animation.src_rect();
-        let dst = animation.asset().dst_rect(glm::to_ivec2(self.body.center));
-        renderer.draw(animation.asset().texture_id, Some(dst), Some(src), None)
+        animation.draw(glm::to_ivec2(self.body.center), None, renderer)
     }
 }
 

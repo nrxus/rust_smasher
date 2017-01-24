@@ -76,12 +76,13 @@ impl Drawable {
     }
 
     pub fn draw_meteor<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.draw(&self.meteor, None, renderer)
+        let max_coords = Some(self.max_coords);
+        let rect = self.meteor.dst_rect(self.center);
+        renderer.draw(self.meteor.texture_id, Some(rect), None, max_coords)
     }
 
     pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let src_rect = Some(self.explosion.src_rect());
-        self.draw(self.explosion.asset(), src_rect, renderer)
+        self.explosion.draw(self.center, Some(self.max_coords), renderer)
     }
 
     pub fn is_exploding(&self) -> bool {
@@ -90,17 +91,5 @@ impl Drawable {
 
     pub fn set_center(&mut self, center: glm::IVec2) {
         self.center = center;
-    }
-
-    fn draw<R>(&self,
-               asset: &Asset,
-               src: Option<glm::DVec4>,
-               renderer: &mut ResourceManager<R>)
-               -> Result<()>
-        where R: Renderer
-    {
-        let max_coords = Some(self.max_coords);
-        let rect = asset.dst_rect(self.center);
-        renderer.draw(asset.texture_id, Some(rect), src, max_coords)
     }
 }
