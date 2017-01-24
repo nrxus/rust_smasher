@@ -1,6 +1,6 @@
-use utils;
+use asset::Asset;
 
-use glm;
+use glm::{self, GenNum};
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::renderer::Renderer;
 use moho::errors::*;
@@ -12,8 +12,8 @@ pub enum PlanetKind {
 }
 
 pub struct Drawable {
-    planet: Texture,
-    gravity: Texture,
+    planet: Asset,
+    gravity: Asset,
     center: glm::IVec2,
 }
 
@@ -25,8 +25,9 @@ impl Drawable {
                   -> Result<Self>
         where R: Renderer
     {
-        let (planet, mut gravity) = Self::load_textures(kind, resource_manager)?;
-        gravity.dims = glm::uvec2(gravity_radius * 2, gravity_radius * 2);
+        let (planet, gravity) = Self::load_textures(kind, resource_manager)?;
+        let planet = Asset::from_texture(&planet);
+        let gravity = Asset::new(gravity.id, glm::UVec2::from_s(gravity_radius * 2));
         let drawable = Drawable {
             planet: planet,
             gravity: gravity,
@@ -37,7 +38,7 @@ impl Drawable {
     }
 
     pub fn planet_dims(&self) -> glm::UVec2 {
-        self.planet.dims
+        self.planet.dimensions
     }
 
     pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
@@ -47,11 +48,11 @@ impl Drawable {
         self.draw_at_center(&self.planet, renderer)
     }
 
-    fn draw_at_center<R>(&self, texture: &Texture, renderer: &mut ResourceManager<R>) -> Result<()>
+    fn draw_at_center<R>(&self, asset: &Asset, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        let rect = utils::rect_from_center(self.center, texture.dims);
-        renderer.draw(texture.id, Some(rect), None, None)
+        let rect = asset.dst_rect(self.center);
+        renderer.draw(asset.texture_id, Some(rect), None, None)
     }
 
     fn load_textures<R>(kind: PlanetKind,
