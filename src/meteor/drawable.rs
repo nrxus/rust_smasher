@@ -76,9 +76,7 @@ impl Drawable {
     }
 
     pub fn draw_meteor<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let max_coords = Some(self.max_coords);
-        let rect = self.meteor.dst_rect(self.center);
-        renderer.draw(self.meteor.texture_id, Some(rect), None, max_coords)
+        self.meteor.draw(self.center, None, Some(self.max_coords), renderer)
     }
 
     pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {

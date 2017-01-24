@@ -37,9 +37,8 @@ impl Animation {
                    -> Result<()>
         where R: Renderer
     {
-        let dst = Some(self.asset.dst_rect(center));
         let src = Some(self.src_rect());
-        renderer.draw(self.asset.texture_id, dst, src, wrapping)
+        self.asset.draw(center, src, wrapping, renderer)
     }
 
     fn src_rect(&self) -> glm::DVec4 {

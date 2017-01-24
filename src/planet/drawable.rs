@@ -51,8 +51,7 @@ impl Drawable {
     fn draw_at_center<R>(&self, asset: &Asset, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        let rect = asset.dst_rect(self.center);
-        renderer.draw(asset.texture_id, Some(rect), None, None)
+        asset.draw(self.center, None, None, renderer)
     }
 
     fn load_textures<R>(kind: PlanetKind,

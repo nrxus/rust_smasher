@@ -49,7 +49,7 @@ impl Star {
 
         let body = Rectangle {
             center: glm::to_dvec2(center),
-            dims: glm::to_dvec2(texture.dims),
+            dims: glm::to_dvec2(star_dims),
         };
 
         let star = Star {
@@ -87,10 +87,12 @@ impl Star {
         }
     }
 
-    fn draw_on_center<R: Renderer>(&self,
-                                   animation: &Animation,
-                                   renderer: &mut ResourceManager<R>)
-                                   -> Result<()> {
+    fn draw_on_center<R>(&self,
+                         animation: &Animation,
+                         renderer: &mut ResourceManager<R>)
+                         -> Result<()>
+        where R: Renderer
+    {
         animation.draw(glm::to_ivec2(self.body.center), None, renderer)
     }
 }
