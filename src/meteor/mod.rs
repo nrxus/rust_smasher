@@ -31,9 +31,9 @@ pub struct Meteor {
 }
 
 impl Meteor {
-    pub fn new<R: Renderer>(center: glm::IVec2,
-                            resource_manager: &ResourceManager<R>)
-                            -> Result<Self> {
+    pub fn new<R>(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self>
+        where R: Renderer
+    {
         let max_coords = resource_manager.output_size()?;
         let drawable = Drawable::new(center, max_coords, resource_manager)?;
         let dims = drawable.meteor_dims();
@@ -104,6 +104,6 @@ impl Meteor {
 
     fn move_drawable(&mut self) {
         let body = self.object.body();
-        self.drawable.center = glm::to_ivec2(body.center);
+        self.drawable.set_center(glm::to_ivec2(body.center));
     }
 }

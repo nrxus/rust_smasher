@@ -13,7 +13,7 @@ use sdl2::rect;
 use std::time::Duration;
 
 pub struct Drawable {
-    pub center: glm::IVec2,
+    center: glm::IVec2,
     max_coords: glm::UVec2,
     explosion: Animation,
     meteor: Asset,
@@ -86,6 +86,10 @@ impl Drawable {
 
     pub fn is_exploding(&self) -> bool {
         self.explosion.is_active()
+    }
+
+    pub fn set_center(&mut self, center: glm::IVec2) {
+        self.center = center;
     }
 
     fn draw<R>(&self,
