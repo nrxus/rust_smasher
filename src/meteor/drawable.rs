@@ -3,9 +3,10 @@ use animation::Animation;
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
-use moho::tile_sheet::TileSheet;
+use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
+use moho::tile_sheet::TileSheet;
 use sdl2::rect;
 
 use std::time::Duration;
@@ -29,7 +30,8 @@ impl Drawable {
         let mut explosion = resource_manager.load_texture("resources/explosion_large.png")?;
         let frame_duration = Duration::from_millis(80_u64);
         let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
-        let animation = Animation::new(tile_sheet, NUM_FRAMES, frame_duration, false);
+        let animator = FrameAnimator::new(NUM_FRAMES, frame_duration, false);
+        let animation = Animation::new(tile_sheet, animator);
         explosion.dims.x /= NUM_FRAMES;
 
         let drawable = Drawable {

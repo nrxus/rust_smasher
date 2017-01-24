@@ -12,10 +12,11 @@ use renderer::Renderer;
 use resource_manager::ResourceManager;
 use input_manager::*;
 
-pub mod tile_sheet;
-pub mod renderer;
+pub mod frame_animator;
 pub mod input_manager;
+pub mod renderer;
 pub mod resource_manager;
+pub mod tile_sheet;
 pub mod window_wrapper;
 
 pub mod errors {

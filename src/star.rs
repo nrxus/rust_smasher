@@ -1,5 +1,6 @@
 use glm;
 use moho::errors::*;
+use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::tile_sheet::TileSheet;
@@ -35,9 +36,11 @@ impl Star {
         let star_duration = Duration::from_millis(150);
         let explosion_duration = Duration::from_millis(100);
         let star_sheet = TileSheet::new(glm::uvec2(2, 1));
-        let animation = Animation::new(star_sheet, 2, star_duration, true);
+        let star_animator = FrameAnimator::new(2, star_duration, true);
+        let animation = Animation::new(star_sheet, star_animator);
         let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
-        let explosion_animation = Animation::new(explosion_sheet, 10, explosion_duration, false);
+        let explosion_animator = FrameAnimator::new(10, explosion_duration, false);
+        let explosion_animation = Animation::new(explosion_sheet, explosion_animator);
         texture.dims.x /= 2;
         explosion_texture.dims.x /= 10;
         let body = Rectangle {
