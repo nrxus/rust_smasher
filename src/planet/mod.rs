@@ -1,18 +1,17 @@
-mod object;
-
-use self::object::Object;
-
-use std::cmp;
-
 use asset::Asset;
 use asset_manager::{AssetManager, TextureAsset};
 use circle::Circle;
 use collidable::Collidable;
 use shape::Intersect;
+
 use glm;
+use glm::ext::normalize_to;
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
+use num_traits::Zero;
+
+use std::cmp;
 
 pub enum PlanetKind {
     RED,
@@ -21,7 +20,9 @@ pub enum PlanetKind {
 }
 
 pub struct Planet {
-    object: Object,
+    body: Circle,
+    strength: f64,
+    gravity_radius: f64,
     planet_asset: Asset,
     gravity_asset: Asset,
 }
@@ -41,17 +42,29 @@ impl Planet {
         let rect = planet_asset.dst_rect;
         let planet_radius = cmp::min(rect.z, rect.w) as f64 / 2.;
         let center = glm::to_dvec2(center);
-        let object = Object::new(center, strength, planet_radius, gravity_radius);
+        let body = Circle {
+            center: center,
+            radius: planet_radius,
+        };
 
         Planet {
-            object: object,
+            body: body,
+            strength: strength,
+            gravity_radius: gravity_radius,
             planet_asset: planet_asset,
             gravity_asset: gravity_asset,
         }
     }
 
     pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
-        self.object.pull_vector(point, radius)
+        let dist = self.body.center - point;
+        let len = glm::length(dist);
+        if len > (self.gravity_radius + radius) {
+            glm::DVec2::zero()
+        } else {
+            let force = self.strength / (len.powf(0.8));
+            normalize_to(dist, force)
+        }
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
@@ -71,7 +84,7 @@ impl Planet {
 }
 
 impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
-    fn collides(&self, collision: &I) -> bool {
-        self.object.collides_with(collision)
+    fn collides(&self, shape: &I) -> bool {
+        shape.intersects(&self.body)
     }
 }

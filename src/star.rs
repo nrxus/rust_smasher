@@ -62,23 +62,14 @@ impl Star {
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             State::INACTIVE => Ok(()),
-            State::ACTIVE => self.draw_on_center(&self.animation, renderer),
-            State::EXPLODED => self.draw_on_center(&self.explosion, renderer),
+            State::ACTIVE => self.animation.draw(None, renderer),
+            State::EXPLODED => self.explosion.draw(None, renderer),
         }
-    }
-
-    fn draw_on_center<R>(&self,
-                         animation: &Animation,
-                         renderer: &mut ResourceManager<R>)
-                         -> Result<()>
-        where R: Renderer
-    {
-        animation.draw(None, renderer)
     }
 }
 
 impl<I: Intersect<Rectangle>> Collidable<Rectangle, I> for Star {
-    fn collides(&self, collision: &I) -> bool {
-        collision.intersects(&self.body)
+    fn collides(&self, shape: &I) -> bool {
+        shape.intersects(&self.body)
     }
 }
