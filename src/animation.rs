@@ -26,19 +26,22 @@ impl Animation {
         self.animator.animate();
     }
 
+    pub fn set_center(&mut self, center: glm::IVec2) {
+        self.asset.set_center(center);
+    }
+
     pub fn is_active(&self) -> bool {
         self.animator.is_active()
     }
 
     pub fn draw<R>(&self,
-                   center: glm::IVec2,
                    wrapping: Option<glm::UVec2>,
                    renderer: &mut ResourceManager<R>)
                    -> Result<()>
         where R: Renderer
     {
         let src = Some(self.src_rect());
-        self.asset.draw(center, src, wrapping, renderer)
+        self.asset.draw(src, wrapping, renderer)
     }
 
     fn src_rect(&self) -> glm::DVec4 {

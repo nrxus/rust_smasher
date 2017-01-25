@@ -5,35 +5,34 @@ use moho::resource_manager::{ResourceManager, Texture};
 
 pub struct Asset {
     texture_id: usize,
-    pub dimensions: glm::UVec2,
+    pub dst_rect: glm::IVec4,
 }
 
 impl Asset {
     pub fn from_texture(texture: &Texture) -> Asset {
-        Asset::new(texture.id, texture.dims)
+        let rect = glm::ivec4(0, 0, texture.dims.x as i32, texture.dims.y as i32);
+        Asset::new(texture.id, rect)
     }
 
-    pub fn new(texture_id: usize, dimensions: glm::UVec2) -> Asset {
+    pub fn new(texture_id: usize, dst_rect: glm::IVec4) -> Asset {
         Asset {
             texture_id: texture_id,
-            dimensions: dimensions,
+            dst_rect: dst_rect,
         }
     }
 
+    pub fn set_center(&mut self, center: glm::IVec2) {
+        self.dst_rect.x = center.x - self.dst_rect.z / 2;
+        self.dst_rect.y = center.y - self.dst_rect.w / 2;
+    }
+
     pub fn draw<R>(&self,
-                   center: glm::IVec2,
                    src: Option<glm::DVec4>,
                    wrapping: Option<glm::UVec2>,
                    renderer: &mut ResourceManager<R>)
                    -> Result<()>
         where R: Renderer
     {
-        let dst = Some(self.dst_rect(center));
-        renderer.draw(self.texture_id, dst, src, wrapping)
-    }
-
-    fn dst_rect(&self, center: glm::IVec2) -> glm::IVec4 {
-        let dimensions = glm::to_ivec2(self.dimensions);
-        (center - dimensions / 2).extend(dimensions.x).extend(dimensions.y)
+        renderer.draw(self.texture_id, Some(self.dst_rect), src, wrapping)
     }
 }

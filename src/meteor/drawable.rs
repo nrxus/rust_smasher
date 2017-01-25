@@ -13,7 +13,6 @@ use sdl2::rect;
 use std::time::Duration;
 
 pub struct Drawable {
-    center: glm::IVec2,
     max_coords: glm::UVec2,
     explosion: Animation,
     meteor: Asset,
@@ -27,17 +26,20 @@ impl Drawable {
                             -> Result<Self> {
         const NUM_FRAMES: u32 = 8;
         let meteor = resource_manager.load_texture("resources/meteor.png")?;
-        let meteor = Asset::from_texture(&meteor);
+        let mut meteor = Asset::from_texture(&meteor);
+        meteor.set_center(center);
         let explosion = resource_manager.load_texture("resources/explosion_large.png")?;
-        let explosion_dims = glm::uvec2(explosion.dims.x / NUM_FRAMES, explosion.dims.y);
-        let explosion = Asset::new(explosion.id, explosion_dims);
+        let explosion_rect = glm::ivec4(0,
+                                        0,
+                                        (explosion.dims.x / NUM_FRAMES) as i32,
+                                        explosion.dims.y as i32);
+        let explosion = Asset::new(explosion.id, explosion_rect);
         let frame_duration = Duration::from_millis(80_u64);
         let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
         let animator = FrameAnimator::new(NUM_FRAMES, frame_duration, false);
         let explosion = Animation::new(explosion, tile_sheet, animator);
 
         let drawable = Drawable {
-            center: center,
             max_coords: max_coords,
             meteor: meteor,
             explosion: explosion,
@@ -53,9 +55,11 @@ impl Drawable {
 
     pub fn update_launch_vector(&mut self, target: glm::IVec2) {
         let target = glm::to_dvec2(target);
-        let center = glm::to_dvec2(self.center);
+        let rect = self.meteor.dst_rect;
+        let center = glm::ivec2(rect.x + rect.z / 2, rect.y + rect.w / 2);
+        let center = glm::to_dvec2(center);
         let distance = target - center;
-        let offset = self.meteor.dimensions.x / 2 + 10;
+        let offset = self.meteor.dst_rect.z / 2 + 10;
         let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = center + offset_vector;
         let step = (target - anchor_point) / (self.rects.len() as f64);
@@ -67,7 +71,7 @@ impl Drawable {
     }
 
     pub fn meteor_dims(&self) -> glm::UVec2 {
-        self.meteor.dimensions
+        glm::uvec2(self.meteor.dst_rect.z as u32, self.meteor.dst_rect.w as u32)
     }
 
     pub fn draw_unlaunched<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
@@ -76,11 +80,11 @@ impl Drawable {
     }
 
     pub fn draw_meteor<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.meteor.draw(self.center, None, Some(self.max_coords), renderer)
+        self.meteor.draw(None, Some(self.max_coords), renderer)
     }
 
     pub fn draw_explosion<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.explosion.draw(self.center, Some(self.max_coords), renderer)
+        self.explosion.draw(Some(self.max_coords), renderer)
     }
 
     pub fn is_exploding(&self) -> bool {
@@ -88,6 +92,7 @@ impl Drawable {
     }
 
     pub fn set_center(&mut self, center: glm::IVec2) {
-        self.center = center;
+        self.meteor.set_center(center);
+        self.explosion.set_center(center);
     }
 }

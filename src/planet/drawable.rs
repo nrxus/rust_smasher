@@ -14,7 +14,6 @@ pub enum PlanetKind {
 pub struct Drawable {
     planet: Asset,
     gravity: Asset,
-    center: glm::IVec2,
 }
 
 impl Drawable {
@@ -26,19 +25,21 @@ impl Drawable {
         where R: Renderer
     {
         let (planet, gravity) = Self::load_textures(kind, resource_manager)?;
-        let planet = Asset::from_texture(&planet);
-        let gravity = Asset::new(gravity.id, glm::UVec2::from_s(gravity_radius * 2));
+        let mut planet = Asset::from_texture(&planet);
+        planet.set_center(center);
+        let rect = glm::ivec4(0, 0, gravity_radius as i32 * 2, gravity_radius as i32 * 2);
+        let mut gravity = Asset::new(gravity.id, rect);
+        gravity.set_center(center);
         let drawable = Drawable {
             planet: planet,
             gravity: gravity,
-            center: center,
         };
 
         Ok(drawable)
     }
 
     pub fn planet_dims(&self) -> glm::UVec2 {
-        self.planet.dimensions
+        glm::uvec2(self.planet.dst_rect.z as u32, self.planet.dst_rect.w as u32)
     }
 
     pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
@@ -51,7 +52,7 @@ impl Drawable {
     fn draw_at_center<R>(&self, asset: &Asset, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        asset.draw(self.center, None, None, renderer)
+        asset.draw(None, None, renderer)
     }
 
     fn load_textures<R>(kind: PlanetKind,

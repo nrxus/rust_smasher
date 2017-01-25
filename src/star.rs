@@ -33,15 +33,20 @@ impl Star {
         let texture = resource_manager.load_texture("resources/star.png")?;
         let explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
 
-        let star_dims = glm::uvec2(texture.dims.x / 2, texture.dims.y);
-        let asset = Asset::new(texture.id, star_dims);
+        let star_dims = glm::ivec2(texture.dims.x as i32 / 2, texture.dims.y as i32);
+        let mut asset = Asset::new(texture.id, glm::ivec4(0, 0, star_dims.x, star_dims.y));
+        asset.set_center(center);
         let star_sheet = TileSheet::new(glm::uvec2(2, 1));
         let star_duration = Duration::from_millis(150);
         let star_animator = FrameAnimator::new(2, star_duration, true);
         let animation = Animation::new(asset, star_sheet, star_animator);
 
-        let explosion_dims = glm::uvec2(explosion_texture.dims.x / 10, explosion_texture.dims.y);
-        let explosion_asset = Asset::new(explosion_texture.id, explosion_dims);
+        let explosion_rect = glm::ivec4(0,
+                                        0,
+                                        explosion_texture.dims.x as i32 / 10,
+                                        explosion_texture.dims.y as i32);
+        let mut explosion_asset = Asset::new(explosion_texture.id, explosion_rect);
+        explosion_asset.set_center(center);
         let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
         let explosion_duration = Duration::from_millis(100);
         let explosion_animator = FrameAnimator::new(10, explosion_duration, false);
@@ -93,7 +98,7 @@ impl Star {
                          -> Result<()>
         where R: Renderer
     {
-        animation.draw(glm::to_ivec2(self.body.center), None, renderer)
+        animation.draw(None, renderer)
     }
 }
 
