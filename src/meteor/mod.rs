@@ -4,6 +4,7 @@ mod object;
 use self::drawable::Drawable;
 use self::object::Object;
 
+use asset_manager::AssetManager;
 use circle::Circle;
 use collidable::Collidable;
 use shape::Shape;
@@ -31,22 +32,18 @@ pub struct Meteor {
 }
 
 impl Meteor {
-    pub fn new<R>(center: glm::IVec2, resource_manager: &ResourceManager<R>) -> Result<Self>
-        where R: Renderer
-    {
-        let max_coords = resource_manager.output_size()?;
-        let drawable = Drawable::new(center, max_coords, resource_manager)?;
+    pub fn new(center: glm::IVec2, max_coords: glm::UVec2, asset_manager: &AssetManager) -> Self {
+        let drawable = Drawable::new(center, max_coords, asset_manager);
         let dims = drawable.meteor_dims();
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let object = Object::new(glm::to_dvec2(center), radius, glm::to_dvec2(max_coords));
-        let meteor = Meteor {
+
+        Meteor {
             drawable: drawable,
             object: object,
             state: MeteorState::UNLAUNCHED,
             target: glm::IVec2::zero(),
-        };
-
-        Ok(meteor)
+        }
     }
 
     pub fn update(&mut self, planets: &[Planet]) {

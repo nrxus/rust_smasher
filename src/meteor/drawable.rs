@@ -1,16 +1,13 @@
 use animation::Animation;
 use asset::Asset;
+use asset_manager::{AnimationAsset, AssetManager, TextureAsset};
 
 use glm;
 use glm::ext::normalize_to;
 use moho::errors::*;
-use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
-use moho::tile_sheet::TileSheet;
 use sdl2::rect;
-
-use std::time::Duration;
 
 pub struct Drawable {
     max_coords: glm::UVec2,
@@ -20,33 +17,17 @@ pub struct Drawable {
 }
 
 impl Drawable {
-    pub fn new<R: Renderer>(center: glm::IVec2,
-                            max_coords: glm::UVec2,
-                            resource_manager: &ResourceManager<R>)
-                            -> Result<Self> {
-        const NUM_FRAMES: u32 = 8;
-        let meteor = resource_manager.load_texture("resources/meteor.png")?;
-        let mut meteor = Asset::from_texture(&meteor);
+    pub fn new(center: glm::IVec2, max_coords: glm::UVec2, asset_manager: &AssetManager) -> Self {
+        let mut meteor = asset_manager.get_asset(TextureAsset::Meteor);
         meteor.set_center(center);
-        let explosion = resource_manager.load_texture("resources/explosion_large.png")?;
-        let explosion_rect = glm::ivec4(0,
-                                        0,
-                                        (explosion.dims.x / NUM_FRAMES) as i32,
-                                        explosion.dims.y as i32);
-        let explosion = Asset::new(explosion.id, explosion_rect);
-        let frame_duration = Duration::from_millis(80_u64);
-        let tile_sheet = TileSheet::new(glm::uvec2(NUM_FRAMES, 1));
-        let animator = FrameAnimator::new(NUM_FRAMES, frame_duration, false);
-        let explosion = Animation::new(explosion, tile_sheet, animator);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
 
-        let drawable = Drawable {
+        Drawable {
             max_coords: max_coords,
             meteor: meteor,
             explosion: explosion,
             rects: [rect::Rect::new(0, 0, 5, 5); 10],
-        };
-
-        Ok(drawable)
+        }
     }
 
     pub fn animate_explosion(&mut self) {

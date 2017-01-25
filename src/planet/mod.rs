@@ -27,18 +27,17 @@ impl Planet {
                gravity_radius: f64,
                kind: PlanetKind,
                asset_manager: &AssetManager)
-               -> Result<Self> {
+               -> Self {
         let drawable = Drawable::new(center, gravity_radius as u32, kind, asset_manager);
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let center = glm::to_dvec2(center);
         let object = Object::new(center, strength, planet_radius, gravity_radius);
-        let planet = Planet {
+
+        Planet {
             object: object,
             drawable: drawable,
-        };
-
-        Ok(planet)
+        }
     }
 
     pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {

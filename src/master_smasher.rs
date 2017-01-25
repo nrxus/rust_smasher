@@ -31,10 +31,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let white_center = glm::ivec2(346, 298);
         let meteor_center = glm::ivec2(130, 402);
         let star_center = glm::ivec2(500, 130);
-        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &asset_manager)?;
-        let white_planet =
-            Planet::new(white_center, 400., 175., PlanetKind::WHITE, &asset_manager)?;
-        let meteor = Meteor::new(meteor_center, &renderer)?;
+        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &asset_manager);
+        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, &asset_manager);
+        let meteor = Meteor::new(meteor_center, renderer.output_size()?, &asset_manager);
         let star = Star::new(star_center, &asset_manager);
 
         Ok(MasterSmasher {
