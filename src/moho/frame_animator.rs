@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 
+#[derive(Clone)]
 pub struct FrameAnimator {
     max: u32,
     duration: Duration,

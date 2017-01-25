@@ -1,17 +1,13 @@
 use animation::Animation;
-use asset::Asset;
+use asset_manager::{AssetManager, AnimationAsset};
 use collidable::Collidable;
 use rectangle::Rectangle;
 use shape::Intersect;
 
 use glm;
 use moho::errors::*;
-use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
-use moho::tile_sheet::TileSheet;
-
-use std::time::Duration;
 
 pub enum State {
     INACTIVE,
@@ -27,44 +23,23 @@ pub struct Star {
 }
 
 impl Star {
-    pub fn new<R: Renderer>(center: glm::IVec2,
-                            resource_manager: &ResourceManager<R>)
-                            -> Result<Self> {
-        let texture = resource_manager.load_texture("resources/star.png")?;
-        let explosion_texture = resource_manager.load_texture("resources/explosion_small.png")?;
-
-        let star_dims = glm::ivec2(texture.dims.x as i32 / 2, texture.dims.y as i32);
-        let mut asset = Asset::new(texture.id, glm::ivec4(0, 0, star_dims.x, star_dims.y));
-        asset.set_center(center);
-        let star_sheet = TileSheet::new(glm::uvec2(2, 1));
-        let star_duration = Duration::from_millis(150);
-        let star_animator = FrameAnimator::new(2, star_duration, true);
-        let animation = Animation::new(asset, star_sheet, star_animator);
-
-        let explosion_rect = glm::ivec4(0,
-                                        0,
-                                        explosion_texture.dims.x as i32 / 10,
-                                        explosion_texture.dims.y as i32);
-        let mut explosion_asset = Asset::new(explosion_texture.id, explosion_rect);
-        explosion_asset.set_center(center);
-        let explosion_sheet = TileSheet::new(glm::uvec2(10, 1));
-        let explosion_duration = Duration::from_millis(100);
-        let explosion_animator = FrameAnimator::new(10, explosion_duration, false);
-        let explosion = Animation::new(explosion_asset, explosion_sheet, explosion_animator);
+    pub fn new(center: glm::IVec2, asset_manager: &AssetManager) -> Self {
+        let mut animation = asset_manager.get_animation(AnimationAsset::Star);
+        let mut explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall);
+        animation.set_center(center);
+        explosion.set_center(center);
 
         let body = Rectangle {
             center: glm::to_dvec2(center),
-            dims: glm::to_dvec2(star_dims),
+            dims: glm::dvec2(animation.dst_rect().z as f64, animation.dst_rect().w as f64),
         };
 
-        let star = Star {
+        Star {
             state: State::ACTIVE,
             body: body,
             explosion: explosion,
             animation: animation,
-        };
-
-        Ok(star)
+        }
     }
 
     pub fn explode(&mut self) {

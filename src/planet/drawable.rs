@@ -1,6 +1,6 @@
 use asset::Asset;
 
-use glm::{self, GenNum};
+use glm;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::renderer::Renderer;
 use moho::errors::*;

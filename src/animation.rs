@@ -7,6 +7,7 @@ use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
 use moho::tile_sheet::TileSheet;
 
+#[derive(Clone)]
 pub struct Animation {
     asset: Asset,
     sheet: TileSheet,
@@ -28,6 +29,10 @@ impl Animation {
 
     pub fn set_center(&mut self, center: glm::IVec2) {
         self.asset.set_center(center);
+    }
+
+    pub fn dst_rect(&self) -> glm::IVec4 {
+        self.asset.dst_rect
     }
 
     pub fn is_active(&self) -> bool {

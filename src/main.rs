@@ -4,6 +4,8 @@ extern crate num_traits;
 extern crate sdl2;
 
 mod animation;
+mod asset;
+mod asset_manager;
 mod circle;
 mod collidable;
 mod master_smasher;
@@ -12,7 +14,6 @@ mod shape;
 mod star;
 mod rectangle;
 mod planet;
-mod asset;
 
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;

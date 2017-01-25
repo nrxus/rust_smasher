@@ -3,6 +3,7 @@ use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 
+#[derive(Clone)]
 pub struct Asset {
     texture_id: usize,
     pub dst_rect: glm::IVec4,

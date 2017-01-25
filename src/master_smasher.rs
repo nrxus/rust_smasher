@@ -1,3 +1,8 @@
+use asset_manager::AssetManager;
+use meteor::{Meteor, MeteorState};
+use planet::{Planet, PlanetKind};
+use star::Star;
+
 use glm;
 use moho::errors::*;
 use moho::input_manager::*;
@@ -6,10 +11,6 @@ use moho::MohoEngine;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
-use meteor::{Meteor, MeteorState};
-use planet::{Planet, PlanetKind};
-use star::Star;
-
 pub struct MasterSmasher<E: MohoEngine> {
     meteor: Meteor,
     planets: Vec<Planet>,
@@ -17,12 +18,14 @@ pub struct MasterSmasher<E: MohoEngine> {
     background: Texture,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
+    asset_manager: AssetManager,
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(mut renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self> {
+        let asset_manager = AssetManager::new(&renderer)?;
         let background = renderer.load_texture("resources/background_game.png")?;
         let blue_center = glm::ivec2(840, 478);
         let white_center = glm::ivec2(346, 298);
@@ -31,7 +34,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &mut renderer)?;
         let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, &mut renderer)?;
         let meteor = Meteor::new(meteor_center, &renderer)?;
-        let star = Star::new(star_center, &renderer)?;
+        let star = Star::new(star_center, &asset_manager);
 
         Ok(MasterSmasher {
             meteor: meteor,
@@ -40,6 +43,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             background: background,
             input_manager: input_manager,
             renderer: renderer,
+            asset_manager: asset_manager,
         })
     }
 

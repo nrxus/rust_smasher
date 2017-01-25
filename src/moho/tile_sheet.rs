@@ -1,5 +1,6 @@
 use glm;
 
+#[derive(Clone)]
 pub struct TileSheet {
     tiles: glm::UVec2,
 }
