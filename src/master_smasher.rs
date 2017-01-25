@@ -1,3 +1,4 @@
+use animation::Animation;
 use asset_manager::AssetManager;
 use meteor::{Meteor, MeteorState};
 use planet::{Planet, PlanetKind};
@@ -19,6 +20,7 @@ pub struct MasterSmasher<E: MohoEngine> {
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
     asset_manager: AssetManager,
+    animations: Vec<Animation>,
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
@@ -44,6 +46,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
             input_manager: input_manager,
             renderer: renderer,
             asset_manager: asset_manager,
+            animations: Vec::new(),
         })
     }
 
@@ -81,15 +84,26 @@ impl<E: MohoEngine> MasterSmasher<E> {
             self.meteor.explode();
         }
 
-        let meteor = &mut self.meteor;
+        let collidable_indices = self.stars.iter()
+            .enumerate()
+            .filter(|&(_, s)| self.meteor.collides(s))
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>();
 
-        for star in self.stars.iter_mut().filter(|s| meteor.collides(*s)) {
-            star.explode();
+        for i in collidable_indices {
+            let star = self.stars.swap_remove(i);
+            self.animations.push(star.explode());
         }
 
         for star in &mut self.stars {
             star.update();
         }
+
+        for animation in &mut self.animations {
+            animation.update();
+        }
+
+        self.animations.retain(Animation::is_active);
     }
 
     fn game_quit(&self) -> bool {
@@ -104,6 +118,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
         }
         for planet in &self.planets {
             planet.draw(&mut self.renderer)?;
+        }
+        for animation in &self.animations {
+            animation.draw(None, &mut self.renderer)?;
         }
         self.meteor.draw(&mut self.renderer)?;
         self.renderer.present();

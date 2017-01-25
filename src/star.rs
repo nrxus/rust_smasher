@@ -9,14 +9,7 @@ use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
 
-pub enum State {
-    INACTIVE,
-    ACTIVE,
-    EXPLODED,
-}
-
 pub struct Star {
-    state: State,
     body: Rectangle,
     animation: Animation,
     explosion: Animation,
@@ -25,9 +18,8 @@ pub struct Star {
 impl Star {
     pub fn new(center: glm::IVec2, asset_manager: &AssetManager) -> Self {
         let mut animation = asset_manager.get_animation(AnimationAsset::Star);
-        let mut explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall);
         animation.set_center(center);
-        explosion.set_center(center);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall);
 
         let body = Rectangle {
             center: glm::to_dvec2(center),
@@ -35,36 +27,24 @@ impl Star {
         };
 
         Star {
-            state: State::ACTIVE,
             body: body,
             explosion: explosion,
             animation: animation,
         }
     }
 
-    pub fn explode(&mut self) {
-        self.state = State::EXPLODED;
+    pub fn explode(&self) -> Animation {
+        let mut explosion = self.explosion.clone();
+        explosion.set_center(glm::to_ivec2(self.body.center));
+        explosion
     }
 
     pub fn update(&mut self) {
-        match self.state {
-            State::INACTIVE => {}
-            State::ACTIVE => self.animation.update(),
-            State::EXPLODED => {
-                self.explosion.update();
-                if !self.explosion.is_active() {
-                    self.state = State::INACTIVE;
-                }
-            }
-        }
+        self.animation.update();
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        match self.state {
-            State::INACTIVE => Ok(()),
-            State::ACTIVE => self.animation.draw(None, renderer),
-            State::EXPLODED => self.explosion.draw(None, renderer),
-        }
+        self.animation.draw(None, renderer)
     }
 }
 
