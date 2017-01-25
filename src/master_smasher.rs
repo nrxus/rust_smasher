@@ -22,7 +22,7 @@ pub struct MasterSmasher<E: MohoEngine> {
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
-    pub fn new(mut renderer: ResourceManager<E::Renderer>,
+    pub fn new(renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self> {
         let asset_manager = AssetManager::new(&renderer)?;
@@ -31,8 +31,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let white_center = glm::ivec2(346, 298);
         let meteor_center = glm::ivec2(130, 402);
         let star_center = glm::ivec2(500, 130);
-        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &mut renderer)?;
-        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, &mut renderer)?;
+        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &asset_manager)?;
+        let white_planet =
+            Planet::new(white_center, 400., 175., PlanetKind::WHITE, &asset_manager)?;
         let meteor = Meteor::new(meteor_center, &renderer)?;
         let star = Star::new(star_center, &asset_manager);
 

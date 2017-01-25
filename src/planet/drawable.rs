@@ -1,7 +1,8 @@
 use asset::Asset;
+use asset_manager::{AssetManager, TextureAsset};
 
 use glm;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::ResourceManager;
 use moho::renderer::Renderer;
 use moho::errors::*;
 
@@ -17,25 +18,21 @@ pub struct Drawable {
 }
 
 impl Drawable {
-    pub fn new<R>(center: glm::IVec2,
-                  gravity_radius: u32,
-                  kind: PlanetKind,
-                  resource_manager: &ResourceManager<R>)
-                  -> Result<Self>
-        where R: Renderer
-    {
-        let (planet, gravity) = Self::load_textures(kind, resource_manager)?;
-        let mut planet = Asset::from_texture(&planet);
+    pub fn new(center: glm::IVec2,
+               gravity_radius: u32,
+               kind: PlanetKind,
+               asset_manager: &AssetManager)
+               -> Self {
+        let (mut planet, mut gravity) = Self::load_assets(kind, asset_manager);
+        gravity.dst_rect.z = gravity_radius as i32 * 2;
+        gravity.dst_rect.w = gravity_radius as i32 * 2;
         planet.set_center(center);
-        let rect = glm::ivec4(0, 0, gravity_radius as i32 * 2, gravity_radius as i32 * 2);
-        let mut gravity = Asset::new(gravity.id, rect);
         gravity.set_center(center);
-        let drawable = Drawable {
+
+        Drawable {
             planet: planet,
             gravity: gravity,
-        };
-
-        Ok(drawable)
+        }
     }
 
     pub fn planet_dims(&self) -> glm::UVec2 {
@@ -45,27 +42,17 @@ impl Drawable {
     pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        self.draw_at_center(&self.gravity, renderer)?;
-        self.draw_at_center(&self.planet, renderer)
+        self.gravity.draw(None, None, renderer)?;
+        self.planet.draw(None, None, renderer)
     }
 
-    fn draw_at_center<R>(&self, asset: &Asset, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        asset.draw(None, None, renderer)
-    }
-
-    fn load_textures<R>(kind: PlanetKind,
-                        resource_manager: &ResourceManager<R>)
-                        -> Result<(Texture, Texture)>
-        where R: Renderer
-    {
-        let (planet, gravity) = match kind {
-            PlanetKind::RED => ("resources/red_planet.png", "resources/red_ring.png"),
-            PlanetKind::BLUE => ("resources/blue_planet.png", "resources/blue_ring.png"),
-            PlanetKind::WHITE => ("resources/white_planet.png", "resources/white_ring.png"),
+    fn load_assets(kind: PlanetKind, asset_manager: &AssetManager) -> (Asset, Asset) {
+        let (planet, ring) = match kind {
+            PlanetKind::RED => (TextureAsset::RedPlanet, TextureAsset::RedRing),
+            PlanetKind::BLUE => (TextureAsset::BluePlanet, TextureAsset::BlueRing),
+            PlanetKind::WHITE => (TextureAsset::WhitePlanet, TextureAsset::WhiteRing),
         };
 
-        Ok((resource_manager.load_texture(planet)?, resource_manager.load_texture(gravity)?))
+        (asset_manager.get_asset(planet), asset_manager.get_asset(ring))
     }
 }

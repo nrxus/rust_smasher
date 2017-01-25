@@ -7,6 +7,7 @@ use self::drawable::Drawable;
 
 use std::cmp;
 
+use asset_manager::AssetManager;
 use circle::Circle;
 use collidable::Collidable;
 use shape::Intersect;
@@ -21,13 +22,13 @@ pub struct Planet {
 }
 
 impl Planet {
-    pub fn new<R: Renderer>(center: glm::IVec2,
-                            strength: f64,
-                            gravity_radius: f64,
-                            kind: PlanetKind,
-                            resource_manager: &mut ResourceManager<R>)
-                            -> Result<Self> {
-        let drawable = Drawable::new(center, gravity_radius as u32, kind, resource_manager)?;
+    pub fn new(center: glm::IVec2,
+               strength: f64,
+               gravity_radius: f64,
+               kind: PlanetKind,
+               asset_manager: &AssetManager)
+               -> Result<Self> {
+        let drawable = Drawable::new(center, gravity_radius as u32, kind, asset_manager);
         let dims = drawable.planet_dims();
         let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let center = glm::to_dvec2(center);

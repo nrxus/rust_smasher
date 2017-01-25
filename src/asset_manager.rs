@@ -10,6 +10,16 @@ use moho::tile_sheet::TileSheet;
 
 use std::time::Duration;
 
+pub enum TextureAsset {
+    RedPlanet,
+    WhitePlanet,
+    BluePlanet,
+    RedRing,
+    WhiteRing,
+    BlueRing,
+    Meteor,
+}
+
 pub enum AnimationAsset {
     ExplosionSmall,
     ExplosionLarge,
@@ -17,6 +27,14 @@ pub enum AnimationAsset {
 }
 
 pub struct AssetManager {
+    red_planet: Asset,
+    white_planet: Asset,
+    blue_planet: Asset,
+    red_ring: Asset,
+    white_ring: Asset,
+    blue_ring: Asset,
+    meteor: Asset,
+
     explosion_small: Animation,
     explosion_large: Animation,
     star: Animation,
@@ -29,17 +47,44 @@ impl AssetManager {
         let star = Self::load_star(resource_manager)?;
         let explosion_small = Self::load_small_explosion(resource_manager)?;
         let explosion_large = Self::load_large_explosion(resource_manager)?;
+        let red_planet = Self::load_asset("resources/red_planet.png", resource_manager)?;
+        let white_planet = Self::load_asset("resources/white_planet.png", resource_manager)?;
+        let blue_planet = Self::load_asset("resources/blue_planet.png", resource_manager)?;
+        let red_ring = Self::load_asset("resources/red_ring.png", resource_manager)?;
+        let white_ring = Self::load_asset("resources/white_ring.png", resource_manager)?;
+        let blue_ring = Self::load_asset("resources/blue_ring.png", resource_manager)?;
+        let meteor = Self::load_asset("resources/meteor.png", resource_manager)?;
 
         let manager = AssetManager {
             star: star,
             explosion_small: explosion_small,
             explosion_large: explosion_large,
+            red_planet: red_planet,
+            white_planet: white_planet,
+            blue_planet: blue_planet,
+            red_ring: red_ring,
+            white_ring: white_ring,
+            blue_ring: blue_ring,
+            meteor: meteor,
         };
         Ok(manager)
     }
 
-    pub fn get_animation(&self, asset: AnimationAsset) -> Animation {
-        let animation = match asset {
+    pub fn get_asset(&self, kind: TextureAsset) -> Asset {
+        let asset = match kind {
+            TextureAsset::RedPlanet => &self.red_planet,
+            TextureAsset::WhitePlanet => &self.white_planet,
+            TextureAsset::BluePlanet => &self.blue_planet,
+            TextureAsset::RedRing => &self.red_ring,
+            TextureAsset::WhiteRing => &self.white_ring,
+            TextureAsset::BlueRing => &self.blue_ring,
+            TextureAsset::Meteor => &self.meteor,
+        };
+        asset.clone()
+    }
+
+    pub fn get_animation(&self, kind: AnimationAsset) -> Animation {
+        let animation = match kind {
             AnimationAsset::Star => &self.star,
             AnimationAsset::ExplosionSmall => &self.explosion_small,
             AnimationAsset::ExplosionLarge => &self.explosion_large,
