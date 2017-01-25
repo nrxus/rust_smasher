@@ -33,10 +33,9 @@ impl Star {
         }
     }
 
-    pub fn explode(&self) -> Animation {
-        let mut explosion = self.explosion.clone();
-        explosion.set_center(glm::to_ivec2(self.body.center));
-        explosion
+    pub fn explode(mut self) -> Animation {
+        self.explosion.set_center(glm::to_ivec2(self.body.center));
+        self.explosion
     }
 
     pub fn update(&mut self) {
