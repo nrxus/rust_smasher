@@ -1,5 +1,3 @@
-mod animation;
-mod asset;
 mod asset_manager;
 mod collidable;
 mod meteor;

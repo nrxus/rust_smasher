@@ -1,5 +1,4 @@
-use super::animation::Animation;
-use super::asset_manager::AssetManager;
+use super::asset_manager::{Animation, AssetManager};
 use super::meteor::{Meteor, MeteorState};
 use super::planet::{Planet, PlanetKind};
 use super::star::Star;

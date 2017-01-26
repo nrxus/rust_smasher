@@ -1,5 +1,8 @@
-use super::animation::Animation;
-use super::asset::Asset;
+pub mod animation;
+pub mod asset;
+
+pub use self::animation::Animation;
+pub use self::asset::Asset;
 
 use glm;
 use moho::errors::*;
