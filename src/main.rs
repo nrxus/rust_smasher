@@ -3,18 +3,7 @@ extern crate moho;
 extern crate num_traits;
 extern crate sdl2;
 
-mod animation;
-mod asset;
-mod asset_manager;
-mod circle;
-mod collidable;
 mod master_smasher;
-mod meteor;
-mod level;
-mod planet;
-mod shape;
-mod star;
-mod rectangle;
 
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;

@@ -1,7 +1,7 @@
-use glm;
+use super::shape::*;
+use super::rectangle::*;
 
-use shape::*;
-use rectangle::*;
+use glm;
 
 pub struct Circle {
     pub radius: f64,

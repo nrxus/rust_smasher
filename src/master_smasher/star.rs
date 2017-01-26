@@ -1,8 +1,8 @@
-use animation::Animation;
-use asset_manager::{AssetManager, AnimationAsset};
-use collidable::Collidable;
-use rectangle::Rectangle;
-use shape::Intersect;
+use super::animation::Animation;
+use super::asset_manager::{AssetManager, AnimationAsset};
+use super::collidable::Collidable;
+use super::rectangle::Rectangle;
+use super::shape::Intersect;
 
 use glm;
 use moho::errors::*;

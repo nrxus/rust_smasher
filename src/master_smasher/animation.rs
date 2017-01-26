@@ -1,4 +1,4 @@
-use asset::Asset;
+use super::asset::Asset;
 
 use glm;
 use moho::errors::*;

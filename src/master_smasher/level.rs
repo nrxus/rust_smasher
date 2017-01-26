@@ -1,8 +1,8 @@
-use animation::Animation;
-use asset_manager::AssetManager;
-use meteor::{Meteor, MeteorState};
-use planet::{Planet, PlanetKind};
-use star::Star;
+use super::animation::Animation;
+use super::asset_manager::AssetManager;
+use super::meteor::{Meteor, MeteorState};
+use super::planet::{Planet, PlanetKind};
+use super::star::Star;
 
 use glm;
 use moho::errors::*;

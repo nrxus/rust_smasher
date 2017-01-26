@@ -1,5 +1,5 @@
-use circle::Circle;
-use planet::Planet;
+use super::super::circle::Circle;
+use super::super::planet::Planet;
 
 use glm;
 use num_traits::Zero;

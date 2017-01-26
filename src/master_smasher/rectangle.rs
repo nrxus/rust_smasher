@@ -1,7 +1,7 @@
-use glm;
+use super::shape::*;
+use super::circle::*;
 
-use shape::*;
-use circle::*;
+use glm;
 
 pub struct Rectangle {
     pub dims: glm::DVec2,

@@ -1,5 +1,5 @@
-use animation::Animation;
-use asset::Asset;
+use super::animation::Animation;
+use super::asset::Asset;
 
 use glm;
 use moho::errors::*;

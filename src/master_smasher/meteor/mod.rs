@@ -1,21 +1,21 @@
 mod object;
 
 use self::object::Object;
+use super::animation::Animation;
+use super::asset::Asset;
+use super::asset_manager::{AnimationAsset, AssetManager, TextureAsset};
+use super::circle::Circle;
+use super::collidable::Collidable;
+use super::shape::{Intersect, Shape};
+use super::planet::Planet;
 
-use animation::Animation;
-use asset::Asset;
-use asset_manager::{AnimationAsset, AssetManager, TextureAsset};
-use circle::Circle;
-use collidable::Collidable;
-use sdl2::rect;
-use shape::{Intersect, Shape};
 use glm;
 use glm::ext::normalize_to;
 use num_traits::Zero;
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
-use planet::Planet;
+use sdl2::rect;
 
 use std::cmp;
 
