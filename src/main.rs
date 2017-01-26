@@ -10,10 +10,11 @@ mod circle;
 mod collidable;
 mod master_smasher;
 mod meteor;
+mod level;
+mod planet;
 mod shape;
 mod star;
 mod rectangle;
-mod planet;
 
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
