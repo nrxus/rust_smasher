@@ -80,14 +80,13 @@ impl Meteor {
         &self.state
     }
 
-    pub fn restart(&mut self) {
-        self.state = MeteorState::UNLAUNCHED;
-        self.object.restart();
-    }
-
     pub fn explode(&mut self) -> Animation {
         self.explosion.set_center(glm::to_ivec2(self.object.body().center));
-        self.explosion.clone()
+        let explosion = self.explosion.clone();
+        self.state = MeteorState::UNLAUNCHED;
+        self.object.restart();
+        self.move_drawable();
+        explosion
     }
 
     pub fn launch(&mut self) {

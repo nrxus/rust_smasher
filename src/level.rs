@@ -41,6 +41,26 @@ impl Level {
     }
 
     pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
+        self.process_input(input_manager);
+        self.update_meteor();
+        self.update_stars();
+        self.update_animations();
+    }
+
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        for star in &self.stars {
+            star.draw(renderer)?;
+        }
+        for planet in &self.planets {
+            planet.draw(renderer)?;
+        }
+        for animation in &self.animations {
+            animation.draw(None, renderer)?;
+        }
+        self.meteor.draw(renderer)
+    }
+
+    pub fn process_input<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
         match *self.meteor.state() {
             MeteorState::UNLAUNCHED => {
                 self.meteor.update_target(input_manager.mouse_coords());
@@ -50,18 +70,22 @@ impl Level {
             }
             MeteorState::LAUNCHED => {
                 if input_manager.did_press_key(Keycode::R) {
-                    self.meteor.restart();
+                    let explosion = self.meteor.explode();
+                    self.animations.push(explosion);
                 }
             }
         }
+    }
 
+    fn update_meteor(&mut self) {
         self.meteor.update(&self.planets);
         if self.planets.iter().any(|p| self.meteor.collides(p)) {
             let explosion = self.meteor.explode();
             self.animations.push(explosion);
-            self.meteor.restart();
         }
+    }
 
+    fn update_stars(&mut self) {
         let collidable_indices = self.stars
             .iter()
             .enumerate()
@@ -77,24 +101,13 @@ impl Level {
         for star in &mut self.stars {
             star.update();
         }
+    }
 
+    fn update_animations(&mut self) {
         for animation in &mut self.animations {
             animation.update();
         }
 
         self.animations.retain(Animation::is_active);
-    }
-
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        for star in &self.stars {
-            star.draw(renderer)?;
-        }
-        for planet in &self.planets {
-            planet.draw(renderer)?;
-        }
-        for animation in &self.animations {
-            animation.draw(None, renderer)?;
-        }
-        self.meteor.draw(renderer)
     }
 }
