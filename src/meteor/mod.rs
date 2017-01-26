@@ -113,11 +113,9 @@ impl Meteor {
 
     fn update_launch_vector(&mut self) {
         let target = glm::to_dvec2(self.target);
-        let rect = self.asset.dst_rect;
-        let center = glm::ivec2(rect.x + rect.z / 2, rect.y + rect.w / 2);
-        let center = glm::to_dvec2(center);
+        let center = glm::to_dvec2(self.object.body().center);
         let distance = target - center;
-        let offset = rect.z / 2 + 10;
+        let offset = self.asset.dst_rect.z / 2 + 10;
         let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = center + offset_vector;
         let step = (target - anchor_point) / (self.rects.len() as f64);
