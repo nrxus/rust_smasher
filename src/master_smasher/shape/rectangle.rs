@@ -1,5 +1,4 @@
-use super::shape::*;
-use super::circle::*;
+use super::{Circle, Intersect, Line, Shape};
 
 use glm;
 

@@ -1,4 +1,4 @@
-use super::super::circle::Circle;
+use super::super::shape::Circle;
 use super::super::planet::Planet;
 
 use glm;

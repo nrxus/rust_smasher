@@ -1,5 +1,4 @@
-use super::shape::*;
-use super::rectangle::*;
+use super::{Intersect, Line, Shape, Rectangle};
 
 use glm;
 

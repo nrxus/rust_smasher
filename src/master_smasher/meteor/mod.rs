@@ -4,9 +4,8 @@ use self::object::Object;
 use super::animation::Animation;
 use super::asset::Asset;
 use super::asset_manager::{AnimationAsset, AssetManager, TextureAsset};
-use super::circle::Circle;
 use super::collidable::Collidable;
-use super::shape::{Intersect, Shape};
+use super::shape::{Circle, Intersect, Shape};
 use super::planet::Planet;
 
 use glm;

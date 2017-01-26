@@ -1,8 +1,7 @@
 use super::asset::Asset;
 use super::asset_manager::{AssetManager, TextureAsset};
-use super::circle::Circle;
 use super::collidable::Collidable;
-use super::shape::Intersect;
+use super::shape::{Circle, Intersect};
 
 use glm;
 use glm::ext::normalize_to;

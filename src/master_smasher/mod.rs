@@ -1,14 +1,12 @@
 mod animation;
 mod asset;
 mod asset_manager;
-mod circle;
 mod collidable;
 mod meteor;
 mod level;
 mod planet;
 mod shape;
 mod star;
-mod rectangle;
 
 use self::asset_manager::AssetManager;
 use self::level::Level;
