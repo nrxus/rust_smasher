@@ -50,15 +50,16 @@ impl Level {
             }
             MeteorState::LAUNCHED => {
                 if input_manager.did_press_key(Keycode::R) {
-                    self.meteor.explode();
+                    self.meteor.restart();
                 }
             }
-            MeteorState::EXPLODED => {}
         }
 
         self.meteor.update(&self.planets);
         if self.planets.iter().any(|p| self.meteor.collides(p)) {
-            self.meteor.explode();
+            let explosion = self.meteor.explode();
+            self.animations.push(explosion);
+            self.meteor.restart();
         }
 
         let collidable_indices = self.stars

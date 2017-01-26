@@ -97,7 +97,7 @@ impl AssetManager {
         const FRAMES: u32 = 2;
         const DURATION_MS: u64 = 150;
 
-        Self::load_animation(PATH, FRAMES, DURATION_MS, resource_manager)
+        Self::load_animation(PATH, FRAMES, DURATION_MS, true, resource_manager)
     }
 
     fn load_small_explosion<R: Renderer>(resource_manager: &ResourceManager<R>)
@@ -106,7 +106,7 @@ impl AssetManager {
         const FRAMES: u32 = 10;
         const DURATION_MS: u64 = 100;
 
-        Self::load_animation(PATH, FRAMES, DURATION_MS, resource_manager)
+        Self::load_animation(PATH, FRAMES, DURATION_MS, false, resource_manager)
     }
 
     fn load_large_explosion<R: Renderer>(resource_manager: &ResourceManager<R>)
@@ -115,19 +115,20 @@ impl AssetManager {
         const FRAMES: u32 = 8;
         const DURATION_MS: u64 = 80;
 
-        Self::load_animation(PATH, FRAMES, DURATION_MS, resource_manager)
+        Self::load_animation(PATH, FRAMES, DURATION_MS, false, resource_manager)
     }
 
     fn load_animation<R>(path: &'static str,
                          frames: u32,
                          duration_ms: u64,
+                         repeat: bool,
                          resource_manager: &ResourceManager<R>)
                          -> Result<Animation>
         where R: Renderer
     {
         let duration = Duration::from_millis(duration_ms);
         let asset = Self::load_asset(path, resource_manager)?;
-        Ok(Self::create_animation(asset, frames, duration))
+        Ok(Self::create_animation(asset, frames, duration, repeat))
     }
 
     fn load_asset<R>(path: &'static str, resource_manager: &ResourceManager<R>) -> Result<Asset>
@@ -137,10 +138,14 @@ impl AssetManager {
         Ok(Asset::from_texture(&texture))
     }
 
-    fn create_animation(mut asset: Asset, frames: u32, duration: Duration) -> Animation {
+    fn create_animation(mut asset: Asset,
+                        frames: u32,
+                        duration: Duration,
+                        repeat: bool)
+                        -> Animation {
         asset.dst_rect.z /= frames as i32;
         let tile_sheet = TileSheet::new(glm::uvec2(frames, 1));
-        let animator = FrameAnimator::new(frames, duration, false);
+        let animator = FrameAnimator::new(frames, duration, repeat);
         Animation::new(asset, tile_sheet, animator)
     }
 }

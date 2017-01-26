@@ -1,15 +1,16 @@
-mod drawable;
 mod object;
 
-use self::drawable::Drawable;
 use self::object::Object;
 
-use asset_manager::AssetManager;
+use animation::Animation;
+use asset::Asset;
+use asset_manager::{AnimationAsset, AssetManager, TextureAsset};
 use circle::Circle;
 use collidable::Collidable;
-use shape::Shape;
-use shape::Intersect;
+use sdl2::rect;
+use shape::{Intersect, Shape};
 use glm;
+use glm::ext::normalize_to;
 use num_traits::Zero;
 use moho::errors::*;
 use moho::renderer::Renderer;
@@ -21,11 +22,13 @@ use std::cmp;
 pub enum MeteorState {
     UNLAUNCHED,
     LAUNCHED,
-    EXPLODED,
 }
 
 pub struct Meteor {
-    drawable: Drawable,
+    max_coords: glm::UVec2,
+    explosion: Animation,
+    asset: Asset,
+    rects: [rect::Rect; 10],
     object: Object,
     state: MeteorState,
     target: glm::IVec2,
@@ -33,13 +36,18 @@ pub struct Meteor {
 
 impl Meteor {
     pub fn new(center: glm::IVec2, max_coords: glm::UVec2, asset_manager: &AssetManager) -> Self {
-        let drawable = Drawable::new(center, max_coords, asset_manager);
-        let dims = drawable.meteor_dims();
+        let mut asset = asset_manager.get_asset(TextureAsset::Meteor);
+        asset.set_center(center);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
+        let dims = glm::ivec2(asset.dst_rect.z, asset.dst_rect.w);
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let object = Object::new(glm::to_dvec2(center), radius, glm::to_dvec2(max_coords));
 
         Meteor {
-            drawable: drawable,
+            max_coords: max_coords,
+            asset: asset,
+            explosion: explosion,
+            rects: [rect::Rect::new(0, 0, 5, 5); 10],
             object: object,
             state: MeteorState::UNLAUNCHED,
             target: glm::IVec2::zero(),
@@ -49,28 +57,22 @@ impl Meteor {
     pub fn update(&mut self, planets: &[Planet]) {
         match self.state {
             MeteorState::UNLAUNCHED => {
-                self.drawable.update_launch_vector(self.target);
+                self.update_launch_vector();
             }
             MeteorState::LAUNCHED => {
                 self.object.update(planets);
                 self.move_drawable();
-            }
-            MeteorState::EXPLODED => {
-                self.drawable.animate_explosion();
-                if !self.drawable.is_exploding() {
-                    self.object.restart();
-                    self.move_drawable();
-                    self.state = MeteorState::UNLAUNCHED;
-                }
             }
         }
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
-            MeteorState::UNLAUNCHED => self.drawable.draw_unlaunched(renderer),
-            MeteorState::LAUNCHED => self.drawable.draw_meteor(renderer),
-            MeteorState::EXPLODED => self.drawable.draw_explosion(renderer),
+            MeteorState::UNLAUNCHED => {
+                self.asset.draw(None, Some(self.max_coords), renderer)?;
+                renderer.fill_rects(&self.rects)
+            }
+            MeteorState::LAUNCHED => self.asset.draw(None, Some(self.max_coords), renderer),
         }
     }
 
@@ -78,8 +80,14 @@ impl Meteor {
         &self.state
     }
 
-    pub fn explode(&mut self) {
-        self.state = MeteorState::EXPLODED;
+    pub fn restart(&mut self) {
+        self.state = MeteorState::UNLAUNCHED;
+        self.object.restart();
+    }
+
+    pub fn explode(&mut self) -> Animation {
+        self.explosion.set_center(glm::to_ivec2(self.object.body().center));
+        self.explosion.clone()
     }
 
     pub fn launch(&mut self) {
@@ -100,7 +108,24 @@ impl Meteor {
     }
 
     fn move_drawable(&mut self) {
-        let body = self.object.body();
-        self.drawable.set_center(glm::to_ivec2(body.center));
+        let center = glm::to_ivec2(self.object.body().center);
+        self.asset.set_center(center);
+    }
+
+    fn update_launch_vector(&mut self) {
+        let target = glm::to_dvec2(self.target);
+        let rect = self.asset.dst_rect;
+        let center = glm::ivec2(rect.x + rect.z / 2, rect.y + rect.w / 2);
+        let center = glm::to_dvec2(center);
+        let distance = target - center;
+        let offset = rect.z / 2 + 10;
+        let offset_vector = normalize_to(distance, offset as f64);
+        let anchor_point = center + offset_vector;
+        let step = (target - anchor_point) / (self.rects.len() as f64);
+
+        for (i, rect) in self.rects.iter_mut().enumerate() {
+            let point = glm::to_ivec2(anchor_point + (step * i as f64));
+            rect.center_on((point.x, point.y));
+        }
     }
 }
