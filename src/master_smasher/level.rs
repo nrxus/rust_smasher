@@ -12,7 +12,6 @@ use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
 pub struct Level {
-    initial: glm::IVec2,
     meteor: Meteor,
     planets: Vec<Planet>,
     stars: Vec<Star>,
@@ -25,13 +24,12 @@ impl Level {
         let white_center = glm::ivec2(346, 298);
         let meteor_center = glm::ivec2(130, 402);
         let star_center = glm::ivec2(500, 130);
-        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, &asset_manager);
-        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, &asset_manager);
-        let meteor = Meteor::new(meteor_center, window_size, &asset_manager);
-        let star = Star::new(star_center, &asset_manager);
+        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, asset_manager);
+        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, asset_manager);
+        let meteor = Meteor::new(meteor_center, window_size, asset_manager);
+        let star = Star::new(star_center, asset_manager);
 
         Level {
-            initial: meteor_center,
             meteor: meteor,
             planets: vec![blue_planet, white_planet],
             stars: vec![star],
@@ -67,7 +65,7 @@ impl Level {
                     self.meteor.launch();
                 }
             }
-            MeteorState::LAUNCHED => {
+            MeteorState::LAUNCHED(_) => {
                 if input_manager.did_press_key(Keycode::R) {
                     let explosion = self.meteor.explode();
                     self.animations.push(explosion);

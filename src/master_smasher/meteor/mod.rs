@@ -1,6 +1,8 @@
 mod unlaunched_meteor;
+mod launched_meteor;
 
 use self::unlaunched_meteor::UnlaunchedMeteor;
+use self::launched_meteor::LaunchedMeteor;
 use super::asset_manager::{Animation, AnimationAsset, Asset, AssetManager, TextureAsset};
 use super::collidable::Collidable;
 use super::shape::{Circle, Intersect, Shape};
@@ -12,11 +14,9 @@ use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
 
-use std::cmp;
-
 pub enum MeteorState {
     UNLAUNCHED,
-    LAUNCHED,
+    LAUNCHED(LaunchedMeteor),
 }
 
 pub struct Meteor {
@@ -26,9 +26,6 @@ pub struct Meteor {
     asset: Asset,
     state: MeteorState,
     target: glm::IVec2,
-    body: Circle,
-    initial_center: glm::IVec2,
-    velocity: glm::DVec2,
 }
 
 impl Meteor {
@@ -37,12 +34,6 @@ impl Meteor {
         asset.set_center(center);
         let unlaunched_meteor = UnlaunchedMeteor::new(asset.clone());
         let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
-        let dims = glm::ivec2(asset.dst_rect.z, asset.dst_rect.w);
-        let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let body = Circle {
-            center: glm::to_dvec2(center),
-            radius: radius,
-        };
 
         Meteor {
             unlaunched_meteor: unlaunched_meteor,
@@ -51,27 +42,20 @@ impl Meteor {
             explosion: explosion,
             state: MeteorState::UNLAUNCHED,
             target: glm::IVec2::zero(),
-            body: body,
-            initial_center: center,
-            velocity: glm::DVec2::zero(),
         }
     }
 
     pub fn update(&mut self, planets: &[Planet]) {
         match self.state {
             MeteorState::UNLAUNCHED => self.unlaunched_meteor.update(self.target),
-            MeteorState::LAUNCHED => {
-                self.pull(planets);
-                self.displace();
-                self.move_drawable();
-            }
+            MeteorState::LAUNCHED(ref mut m) => m.update(planets),
         }
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
             MeteorState::UNLAUNCHED => self.unlaunched_meteor.draw(renderer),
-            MeteorState::LAUNCHED => self.asset.draw(None, Some(self.max_coords), renderer),
+            MeteorState::LAUNCHED(ref m) => m.draw(renderer),
         }
     }
 
@@ -80,20 +64,21 @@ impl Meteor {
     }
 
     pub fn explode(&mut self) -> Animation {
-        self.explosion.set_center(glm::to_ivec2(self.body.center));
-        let explosion = self.explosion.clone();
+        let mut explosion = self.explosion.clone();
+        if let MeteorState::LAUNCHED(ref m) = self.state {
+            explosion.set_center(glm::to_ivec2(m.center()));
+        }
         self.state = MeteorState::UNLAUNCHED;
-        self.body.center = glm::to_dvec2(self.initial_center);
-        self.velocity = glm::DVec2::zero();
-        self.move_drawable();
         explosion
     }
 
     pub fn launch(&mut self) {
         const FACTOR: f64 = 50.;
-        let offset = self.target - glm::to_ivec2(self.body.center);
-        self.velocity = glm::to_dvec2(offset) / FACTOR;
-        self.state = MeteorState::LAUNCHED;
+        let asset = self.asset.clone();
+        let offset = self.target - glm::to_ivec2(asset.center());
+        let velocity = glm::to_dvec2(offset) / FACTOR;
+        let launched = LaunchedMeteor::new(asset, self.max_coords, velocity);
+        self.state = MeteorState::LAUNCHED(launched);
     }
 
     pub fn update_target(&mut self, target: glm::IVec2) {
@@ -105,24 +90,9 @@ impl Meteor {
               C: Collidable<S, Circle>,
               Circle: Intersect<S>
     {
-        collidable.collides(&self.body)
-    }
-
-    fn move_drawable(&mut self) {
-        let center = glm::to_ivec2(self.body.center);
-        self.asset.set_center(center);
-    }
-
-    fn pull(&mut self, planets: &[Planet]) {
-        for planet in planets {
-            let acceleration = planet.pull_vector(self.body.center, self.body.radius);
-            self.velocity = self.velocity + acceleration / 50.;
+        match self.state {
+            MeteorState::LAUNCHED(ref m) => m.collides(collidable),
+            MeteorState::UNLAUNCHED => false,
         }
-    }
-
-    fn displace(&mut self) {
-        let max_coords = glm::to_dvec2(self.max_coords);
-        self.body.center = self.body.center + self.velocity;
-        self.body.center = (self.body.center + max_coords) % max_coords;
     }
 }
