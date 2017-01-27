@@ -27,6 +27,11 @@ impl Asset {
         self.dst_rect.y = center.y - self.dst_rect.w / 2;
     }
 
+    pub fn center(&self) -> glm::IVec2 {
+        glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
+                   self.dst_rect.y + self.dst_rect.w / 2)
+    }
+
     pub fn draw<R>(&self,
                    src: Option<glm::DVec4>,
                    wrapping: Option<glm::UVec2>,
