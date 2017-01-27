@@ -59,7 +59,7 @@ impl Level {
 
     pub fn process_input<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
         match *self.meteor.state() {
-            MeteorState::UNLAUNCHED => {
+            MeteorState::UNLAUNCHED(_) => {
                 self.meteor.update_target(input_manager.mouse_coords());
                 if input_manager.did_click_mouse(MouseButton::Left) {
                     self.meteor.launch();

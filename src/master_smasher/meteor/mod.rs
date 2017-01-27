@@ -15,12 +15,11 @@ use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
 
 pub enum MeteorState {
-    UNLAUNCHED,
+    UNLAUNCHED(UnlaunchedMeteor),
     LAUNCHED(LaunchedMeteor),
 }
 
 pub struct Meteor {
-    unlaunched_meteor: UnlaunchedMeteor,
     max_coords: glm::UVec2,
     explosion: Animation,
     asset: Asset,
@@ -33,28 +32,28 @@ impl Meteor {
         let mut asset = asset_manager.get_asset(TextureAsset::Meteor);
         asset.set_center(center);
         let unlaunched_meteor = UnlaunchedMeteor::new(asset.clone());
+        let state = MeteorState::UNLAUNCHED(unlaunched_meteor);
         let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
 
         Meteor {
-            unlaunched_meteor: unlaunched_meteor,
             max_coords: max_coords,
             asset: asset,
             explosion: explosion,
-            state: MeteorState::UNLAUNCHED,
+            state: state,
             target: glm::IVec2::zero(),
         }
     }
 
     pub fn update(&mut self, planets: &[Planet]) {
         match self.state {
-            MeteorState::UNLAUNCHED => self.unlaunched_meteor.update(self.target),
+            MeteorState::UNLAUNCHED(ref mut m) => m.update(self.target),
             MeteorState::LAUNCHED(ref mut m) => m.update(planets),
         }
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match self.state {
-            MeteorState::UNLAUNCHED => self.unlaunched_meteor.draw(renderer),
+            MeteorState::UNLAUNCHED(ref m) => m.draw(renderer),
             MeteorState::LAUNCHED(ref m) => m.draw(renderer),
         }
     }
@@ -68,7 +67,8 @@ impl Meteor {
         if let MeteorState::LAUNCHED(ref m) = self.state {
             explosion.set_center(glm::to_ivec2(m.center()));
         }
-        self.state = MeteorState::UNLAUNCHED;
+        let unlaunched_meteor = UnlaunchedMeteor::new(self.asset.clone());
+        self.state = MeteorState::UNLAUNCHED(unlaunched_meteor);
         explosion
     }
 
@@ -92,7 +92,7 @@ impl Meteor {
     {
         match self.state {
             MeteorState::LAUNCHED(ref m) => m.collides(collidable),
-            MeteorState::UNLAUNCHED => false,
+            MeteorState::UNLAUNCHED(_) => false,
         }
     }
 }
