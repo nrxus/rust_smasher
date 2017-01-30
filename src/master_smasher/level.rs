@@ -1,5 +1,5 @@
-use super::asset_manager::{Animation, AssetManager};
-use super::meteor::{Meteor, MeteorState};
+use super::asset_manager::{Animation, AnimationAsset, Asset, AssetManager, TextureAsset};
+use super::meteor::{UnlaunchedMeteor, LaunchedMeteor};
 use super::planet::{Planet, PlanetKind};
 use super::star::Star;
 
@@ -11,11 +11,19 @@ use moho::resource_manager::ResourceManager;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
+pub enum MeteorState {
+    UNLAUNCHED(UnlaunchedMeteor),
+    LAUNCHED(LaunchedMeteor),
+}
+
 pub struct Level {
-    meteor: Meteor,
     planets: Vec<Planet>,
     stars: Vec<Star>,
     animations: Vec<Animation>,
+    state: MeteorState,
+    max_coords: glm::UVec2,
+    explosion: Animation,
+    asset: Asset,
 }
 
 impl Level {
@@ -26,22 +34,84 @@ impl Level {
         let star_center = glm::ivec2(500, 130);
         let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, asset_manager);
         let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, asset_manager);
-        let meteor = Meteor::new(meteor_center, window_size, asset_manager);
         let star = Star::new(star_center, asset_manager);
+        let mut asset = asset_manager.get_asset(TextureAsset::Meteor);
+        asset.set_center(meteor_center);
+        let unlaunched_meteor = UnlaunchedMeteor::new(asset.clone());
+        let state = MeteorState::UNLAUNCHED(unlaunched_meteor);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
 
         Level {
-            meteor: meteor,
             planets: vec![blue_planet, white_planet],
             stars: vec![star],
             animations: Vec::new(),
+            state: state,
+            max_coords: window_size,
+            explosion: explosion,
+            asset: asset,
         }
     }
 
     pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
-        self.process_input(input_manager);
-        self.update_meteor();
-        self.update_stars();
-        self.update_animations();
+        let next_state = match self.state {
+            MeteorState::UNLAUNCHED(_) if input_manager.did_click_mouse(MouseButton::Left) => {
+                let meteor = self.launch(input_manager.mouse_coords());
+                Some(MeteorState::LAUNCHED(meteor))
+            }
+            MeteorState::LAUNCHED(ref mut m) if input_manager.did_press_key(Keycode::R) => {
+                let explosion = m.explode();
+                self.animations.push(explosion);
+                let unlaunched_meteor = UnlaunchedMeteor::new(self.asset.clone());
+                Some(MeteorState::UNLAUNCHED(unlaunched_meteor))
+            }
+            _ => None,
+        };
+
+        if let Some(s) = next_state {
+            self.state = s;
+        }
+
+        let next_state = if let MeteorState::LAUNCHED(ref mut m) = self.state {
+            m.update(&self.planets);
+            let collidable_indices = self.stars
+                .iter()
+                .enumerate()
+                .filter(|&(_, s)| m.collides(s))
+                .map(|(i, _)| i)
+                .collect::<Vec<_>>();
+            for i in collidable_indices {
+                let star = self.stars.swap_remove(i);
+                self.animations.push(star.explode());
+            }
+            if self.planets.iter().any(|p| m.collides(p)) {
+                let explosion = m.explode();
+                self.animations.push(explosion);
+                let unlaunched_meteor = UnlaunchedMeteor::new(self.asset.clone());
+                Some(MeteorState::UNLAUNCHED(unlaunched_meteor))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        if let Some(s) = next_state {
+            self.state = s;
+        }
+
+        if let MeteorState::UNLAUNCHED(ref mut m) = self.state {
+            m.update(input_manager.mouse_coords());
+        }
+
+        for star in &mut self.stars {
+            star.update();
+        }
+
+        for animation in &mut self.animations {
+            animation.update();
+        }
+
+        self.animations.retain(Animation::is_active);
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
@@ -54,57 +124,17 @@ impl Level {
         for animation in &self.animations {
             animation.draw(None, renderer)?;
         }
-        self.meteor.draw(renderer)
-    }
-
-    pub fn process_input<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
-        match *self.meteor.state() {
-            MeteorState::UNLAUNCHED(_) => {
-                self.meteor.update_target(input_manager.mouse_coords());
-                if input_manager.did_click_mouse(MouseButton::Left) {
-                    self.meteor.launch();
-                }
-            }
-            MeteorState::LAUNCHED(_) => {
-                if input_manager.did_press_key(Keycode::R) {
-                    let explosion = self.meteor.explode();
-                    self.animations.push(explosion);
-                }
-            }
+        match self.state {
+            MeteorState::LAUNCHED(ref m) => m.draw(renderer),
+            MeteorState::UNLAUNCHED(ref m) => m.draw(renderer),
         }
     }
 
-    fn update_meteor(&mut self) {
-        self.meteor.update(&self.planets);
-        if self.planets.iter().any(|p| self.meteor.collides(p)) {
-            let explosion = self.meteor.explode();
-            self.animations.push(explosion);
-        }
-    }
-
-    fn update_stars(&mut self) {
-        let collidable_indices = self.stars
-            .iter()
-            .enumerate()
-            .filter(|&(_, s)| self.meteor.collides(s))
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
-
-        for i in collidable_indices {
-            let star = self.stars.swap_remove(i);
-            self.animations.push(star.explode());
-        }
-
-        for star in &mut self.stars {
-            star.update();
-        }
-    }
-
-    fn update_animations(&mut self) {
-        for animation in &mut self.animations {
-            animation.update();
-        }
-
-        self.animations.retain(Animation::is_active);
+    fn launch(&self, target: glm::IVec2) -> LaunchedMeteor {
+        const FACTOR: f64 = 50.;
+        let asset = self.asset.clone();
+        let offset = target - glm::to_ivec2(asset.center());
+        let velocity = glm::to_dvec2(offset) / FACTOR;
+        LaunchedMeteor::new(asset, self.explosion.clone(), self.max_coords, velocity)
     }
 }
