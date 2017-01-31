@@ -1,13 +1,10 @@
-use super::asset_manager::{Animation, AnimationAsset, Asset, AssetManager, TextureAsset};
+use super::asset_manager::{Animation, AnimationAsset, Asset, Drawable, AssetManager, TextureAsset};
 use super::meteor::{UnlaunchedMeteor, LaunchedMeteor};
 use super::planet::{Planet, PlanetKind};
 use super::star::Star;
 
 use glm;
-use moho::errors::*;
 use moho::input_manager::{EventPump, InputManager};
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
@@ -52,7 +49,7 @@ impl Level {
         }
     }
 
-    pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
+    pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) -> Vec<Drawable> {
         let next_state = match self.state {
             MeteorState::UNLAUNCHED(_) if input_manager.did_click_mouse(MouseButton::Left) => {
                 let meteor = self.launch(input_manager.mouse_coords());
@@ -112,22 +109,26 @@ impl Level {
         }
 
         self.animations.retain(Animation::is_active);
-    }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        for star in &self.stars {
-            star.draw(renderer)?;
-        }
+        let mut drawables: Vec<Drawable> = vec![];
         for planet in &self.planets {
-            planet.draw(renderer)?;
+            drawables.append(&mut planet.drawables());
         }
-        for animation in &self.animations {
-            animation.asset.draw(renderer)?;
+
+        for star in &self.stars {
+            drawables.append(&mut star.drawables());
         }
+
         match self.state {
-            MeteorState::LAUNCHED(ref m) => m.draw(renderer),
-            MeteorState::UNLAUNCHED(ref m) => m.draw(renderer),
+            MeteorState::LAUNCHED(ref m) => drawables.append(&mut m.drawables()),
+            MeteorState::UNLAUNCHED(ref m) => drawables.append(&mut m.drawables()),
         }
+
+        for animation in &self.animations {
+            drawables.push(Drawable::Asset(&animation.asset));
+        }
+
+        drawables
     }
 
     fn launch(&self, target: glm::IVec2) -> LaunchedMeteor {

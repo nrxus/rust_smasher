@@ -1,12 +1,9 @@
-use super::asset_manager::{Asset, AssetManager, TextureAsset};
+use super::asset_manager::{Asset, AssetManager, Drawable, TextureAsset};
 use super::collidable::Collidable;
 use super::shape::{Circle, Intersect};
 
 use glm;
 use glm::ext::normalize_to;
-use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
 use num_traits::Zero;
 
 use std::cmp;
@@ -65,9 +62,8 @@ impl Planet {
         }
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.gravity_asset.draw(renderer)?;
-        self.planet_asset.draw(renderer)
+    pub fn drawables(&self) -> Vec<Drawable> {
+        vec![Drawable::Asset(&self.gravity_asset), Drawable::Asset(&self.planet_asset)]
     }
 
     fn load_assets(kind: PlanetKind, asset_manager: &AssetManager) -> (Asset, Asset) {

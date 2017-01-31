@@ -1,11 +1,8 @@
-use super::asset_manager::{Animation, AssetManager, AnimationAsset};
+use super::asset_manager::{Animation, AssetManager, AnimationAsset, Drawable};
 use super::collidable::Collidable;
 use super::shape::{Intersect, Rectangle};
 
 use glm;
-use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
 
 pub struct Star {
     body: Rectangle,
@@ -41,8 +38,8 @@ impl Star {
         self.animation.update();
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.animation.asset.draw(renderer)
+    pub fn drawables(&self) -> Vec<Drawable> {
+        vec![Drawable::Asset(&self.animation.asset)]
     }
 }
 

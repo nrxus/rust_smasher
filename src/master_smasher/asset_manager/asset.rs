@@ -2,6 +2,21 @@ use glm;
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
+use sdl2::rect;
+
+pub enum Drawable<'a> {
+    Asset(&'a Asset),
+    Rectangles(&'a [rect::Rect]),
+}
+
+impl<'a> Drawable<'a> {
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        match *self {
+            Drawable::Asset(ref a) => a.draw(renderer),
+            Drawable::Rectangles(ref r) => renderer.fill_rects(r),
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Asset {

@@ -1,10 +1,7 @@
-use master_smasher::asset_manager::Asset;
+use master_smasher::asset_manager::{Asset, Drawable};
 
 use glm;
 use glm::ext::normalize_to;
-use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
 use sdl2::rect;
 
 pub struct UnlaunchedMeteor {
@@ -36,8 +33,7 @@ impl UnlaunchedMeteor {
         }
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.asset.draw(renderer)?;
-        renderer.fill_rects(&self.rects)
+    pub fn drawables(&self) -> Vec<Drawable> {
+        vec![Drawable::Asset(&self.asset), Drawable::Rectangles(&self.rects)]
     }
 }

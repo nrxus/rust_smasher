@@ -1,12 +1,9 @@
-use master_smasher::asset_manager::{Animation, Asset};
+use master_smasher::asset_manager::{Animation, Asset, Drawable};
 use master_smasher::collidable::Collidable;
 use master_smasher::planet::Planet;
 use master_smasher::shape::{Circle, Intersect, Shape};
 
 use glm;
-use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
 
 use std::cmp;
 
@@ -47,8 +44,8 @@ impl LaunchedMeteor {
         self.displace();
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.asset.draw(renderer)
+    pub fn drawables(&self) -> Vec<Drawable> {
+        vec![Drawable::Asset(&self.asset)]
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

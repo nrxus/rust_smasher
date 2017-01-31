@@ -3,6 +3,7 @@ pub mod asset;
 
 pub use self::animation::Animation;
 pub use self::asset::Asset;
+pub use self::asset::Drawable;
 
 use glm;
 use moho::errors::*;

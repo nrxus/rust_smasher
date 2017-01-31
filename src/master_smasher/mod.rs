@@ -10,8 +10,8 @@ use self::asset_manager::AssetManager;
 use self::level::Level;
 
 use moho::errors::*;
-use moho::input_manager::*;
-use moho::resource_manager::*;
+use moho::input_manager::InputManager;
+use moho::resource_manager::{ResourceManager, Texture};
 use moho::MohoEngine;
 use sdl2::keyboard::Keycode;
 
@@ -39,29 +39,28 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
     pub fn run(&mut self) -> Result<()> {
         while !self.game_quit() {
-            self.update();
-            self.draw()?;
+            self.update()?;
         }
         Ok(())
     }
 
-    fn update(&mut self) {
+    fn update(&mut self) -> Result<()> {
         self.input_manager.update();
         if self.game_quit() {
-            return;
+            return Ok(());
         }
-        self.level.update(&self.input_manager);
+
+        let drawables = self.level.update(&self.input_manager);
+        self.renderer.clear();
+        self.renderer.draw(self.background.id, None, None, None)?;
+        for drawable in drawables {
+            drawable.draw(&mut self.renderer)?;
+        }
+        self.renderer.present();
+        Ok(())
     }
 
     fn game_quit(&self) -> bool {
         self.input_manager.game_quit() || self.input_manager.is_key_down(Keycode::Escape)
-    }
-
-    fn draw(&mut self) -> Result<()> {
-        self.renderer.clear();
-        self.renderer.draw(self.background.id, None, None, None)?;
-        self.level.draw(&mut self.renderer)?;
-        self.renderer.present();
-        Ok(())
     }
 }
