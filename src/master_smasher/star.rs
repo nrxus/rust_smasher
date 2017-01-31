@@ -41,7 +41,7 @@ impl Star {
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.animation.draw(None, renderer)
+        self.animation.draw(renderer)
     }
 }
 

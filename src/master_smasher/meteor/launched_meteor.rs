@@ -48,7 +48,7 @@ impl LaunchedMeteor {
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.asset.draw(None, Some(self.max_coords), renderer)
+        self.asset.draw(None, renderer)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

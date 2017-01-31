@@ -32,13 +32,10 @@ impl Asset {
                    self.dst_rect.y + self.dst_rect.w / 2)
     }
 
-    pub fn draw<R>(&self,
-                   src: Option<glm::DVec4>,
-                   wrapping: Option<glm::UVec2>,
-                   renderer: &mut ResourceManager<R>)
-                   -> Result<()>
+    pub fn draw<R>(&self, src: Option<glm::DVec4>, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        renderer.draw(self.texture_id, Some(self.dst_rect), src, wrapping)
+        let max = renderer.output_size()?;
+        renderer.draw(self.texture_id, Some(self.dst_rect), src, Some(max))
     }
 }

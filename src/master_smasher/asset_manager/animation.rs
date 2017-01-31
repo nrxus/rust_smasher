@@ -39,14 +39,11 @@ impl Animation {
         self.animator.is_active()
     }
 
-    pub fn draw<R>(&self,
-                   wrapping: Option<glm::UVec2>,
-                   renderer: &mut ResourceManager<R>)
-                   -> Result<()>
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
         let src = Some(self.src_rect());
-        self.asset.draw(src, wrapping, renderer)
+        self.asset.draw(src, renderer)
     }
 
     fn src_rect(&self) -> glm::DVec4 {
