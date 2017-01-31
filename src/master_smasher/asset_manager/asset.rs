@@ -1,25 +1,5 @@
 use glm;
-use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
-use sdl2::rect;
-
-pub enum Drawable<'a> {
-    Asset(&'a Asset),
-    Rectangles(&'a [rect::Rect]),
-}
-
-impl<'a> Drawable<'a> {
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        match *self {
-            Drawable::Asset(ref a) => {
-                let max = Some(renderer.output_size()?);
-                renderer.draw(a.texture_id, Some(a.dst_rect), a.src_rect, max)
-            }
-            Drawable::Rectangles(ref r) => renderer.fill_rects(r),
-        }
-    }
-}
+use moho::resource_manager::Texture;
 
 #[derive(Clone)]
 pub struct Asset {
@@ -29,9 +9,13 @@ pub struct Asset {
 }
 
 impl Asset {
-    pub fn from_texture(texture: &Texture) -> Asset {
-        let rect = glm::ivec4(0, 0, texture.dims.x as i32, texture.dims.y as i32);
-        Asset::new(texture.id, rect)
+    pub fn from_texture(texture: &Texture, center: glm::IVec2) -> Asset {
+        Asset::centered_on(texture.id, center, texture.dims)
+    }
+
+    pub fn centered_on(texture_id: usize, center: glm::IVec2, dims: glm::UVec2) -> Asset {
+        let rect = Self::rectify(center, dims);
+        Asset::new(texture_id, rect)
     }
 
     pub fn new(texture_id: usize, dst_rect: glm::IVec4) -> Asset {
@@ -42,13 +26,25 @@ impl Asset {
         }
     }
 
-    pub fn set_center(&mut self, center: glm::IVec2) {
-        self.dst_rect.x = center.x - self.dst_rect.z / 2;
-        self.dst_rect.y = center.y - self.dst_rect.w / 2;
+    pub fn center_on(&mut self, center: glm::IVec2) {
+        self.dst_rect = Self::rectify(center, self.dims());
+    }
+
+    pub fn resize(&mut self, dims: glm::UVec2) {
+        self.dst_rect = Self::rectify(self.center(), dims);
     }
 
     pub fn center(&self) -> glm::IVec2 {
         glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
                    self.dst_rect.y + self.dst_rect.w / 2)
+    }
+
+    pub fn dims(&self) -> glm::UVec2 {
+        glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
+    }
+
+    fn rectify(center: glm::IVec2, dims: glm::UVec2) -> glm::IVec4 {
+        let dims = glm::to_ivec2(dims);
+        glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y)
     }
 }

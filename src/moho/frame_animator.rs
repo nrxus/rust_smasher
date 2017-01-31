@@ -36,6 +36,10 @@ impl FrameAnimator {
         }
     }
 
+    pub fn num_frames(&self) -> u32 {
+        self.max
+    }
+
     fn advance(&mut self, instant: Instant) {
         self.current = (self.current + 1) % self.max;
         self.instant = if self.current > 0 || self.repeat {

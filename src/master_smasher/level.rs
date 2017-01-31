@@ -32,11 +32,10 @@ impl Level {
         let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, asset_manager);
         let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, asset_manager);
         let star = Star::new(star_center, asset_manager);
-        let mut asset = asset_manager.get_asset(TextureAsset::Meteor);
-        asset.set_center(meteor_center);
+        let asset = asset_manager.get_asset(TextureAsset::Meteor, meteor_center);
         let unlaunched_meteor = UnlaunchedMeteor::new(asset.clone());
         let state = MeteorState::UNLAUNCHED(unlaunched_meteor);
-        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge, meteor_center);
 
         Level {
             planets: vec![blue_planet, white_planet],

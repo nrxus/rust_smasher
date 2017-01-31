@@ -3,6 +3,7 @@ use super::collidable::Collidable;
 use super::shape::{Circle, Intersect};
 
 use glm;
+use glm::GenNum;
 use glm::ext::normalize_to;
 use num_traits::Zero;
 
@@ -29,13 +30,10 @@ impl Planet {
                kind: PlanetKind,
                asset_manager: &AssetManager)
                -> Self {
-        let (mut planet_asset, mut gravity_asset) = Self::load_assets(kind, asset_manager);
-        gravity_asset.dst_rect.z = gravity_radius as i32 * 2;
-        gravity_asset.dst_rect.w = gravity_radius as i32 * 2;
-        planet_asset.set_center(center);
-        gravity_asset.set_center(center);
-        let rect = planet_asset.dst_rect;
-        let planet_radius = cmp::min(rect.z, rect.w) as f64 / 2.;
+        let (planet_asset, mut gravity_asset) = Self::load_assets(kind, center, asset_manager);
+        gravity_asset.resize(glm::UVec2::from_s((gravity_radius * 2.) as u32));
+        let dims = planet_asset.dims();
+        let planet_radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let center = glm::to_dvec2(center);
         let body = Circle {
             center: center,
@@ -66,14 +64,17 @@ impl Planet {
         vec![Drawable::Asset(&self.gravity_asset), Drawable::Asset(&self.planet_asset)]
     }
 
-    fn load_assets(kind: PlanetKind, asset_manager: &AssetManager) -> (Asset, Asset) {
+    fn load_assets(kind: PlanetKind,
+                   center: glm::IVec2,
+                   asset_manager: &AssetManager)
+                   -> (Asset, Asset) {
         let (planet, ring) = match kind {
             PlanetKind::RED => (TextureAsset::RedPlanet, TextureAsset::RedRing),
             PlanetKind::BLUE => (TextureAsset::BluePlanet, TextureAsset::BlueRing),
             PlanetKind::WHITE => (TextureAsset::WhitePlanet, TextureAsset::WhiteRing),
         };
 
-        (asset_manager.get_asset(planet), asset_manager.get_asset(ring))
+        (asset_manager.get_asset(planet, center), asset_manager.get_asset(ring, center))
     }
 }
 

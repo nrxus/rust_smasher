@@ -12,14 +12,13 @@ pub struct Star {
 
 impl Star {
     pub fn new(center: glm::IVec2, asset_manager: &AssetManager) -> Self {
-        let mut animation = asset_manager.get_animation(AnimationAsset::Star);
-        animation.asset.set_center(center);
-        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall);
-        let rect = animation.asset.dst_rect;
+        let animation = asset_manager.get_animation(AnimationAsset::Star, center);
+        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall, center);
+        let dims = glm::to_dvec2(animation.asset.dims());
 
         let body = Rectangle {
             center: glm::to_dvec2(center),
-            dims: glm::dvec2(rect.z as f64, rect.w as f64),
+            dims: dims,
         };
 
         Star {
@@ -29,8 +28,7 @@ impl Star {
         }
     }
 
-    pub fn explode(mut self) -> Animation {
-        self.explosion.asset.set_center(glm::to_ivec2(self.body.center));
+    pub fn explode(self) -> Animation {
         self.explosion
     }
 

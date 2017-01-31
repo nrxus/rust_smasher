@@ -22,7 +22,7 @@ impl LaunchedMeteor {
                velocity: glm::DVec2)
                -> Self {
         let center = glm::to_dvec2(asset.center());
-        let dims = glm::ivec2(asset.dst_rect.z, asset.dst_rect.w);
+        let dims = glm::to_ivec2(asset.dims());
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
 
         let body = Circle {
@@ -58,7 +58,7 @@ impl LaunchedMeteor {
 
     pub fn explode(&mut self) -> Animation {
         let mut explosion = self.explosion.clone();
-        explosion.asset.set_center(glm::to_ivec2(self.body.center));
+        explosion.asset.center_on(glm::to_ivec2(self.body.center));
         explosion
     }
 
@@ -73,6 +73,6 @@ impl LaunchedMeteor {
         let max_coords = glm::to_dvec2(self.max_coords);
         self.body.center = self.body.center + self.velocity;
         self.body.center = (self.body.center + max_coords) % max_coords;
-        self.asset.set_center(glm::to_ivec2(self.body.center));
+        self.asset.center_on(glm::to_ivec2(self.body.center));
     }
 }
