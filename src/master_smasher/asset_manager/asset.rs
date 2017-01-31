@@ -12,7 +12,10 @@ pub enum Drawable<'a> {
 impl<'a> Drawable<'a> {
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match *self {
-            Drawable::Asset(ref a) => a.draw(renderer),
+            Drawable::Asset(ref a) => {
+                let max = Some(renderer.output_size()?);
+                renderer.draw(a.texture_id, Some(a.dst_rect), a.src_rect, max)
+            }
             Drawable::Rectangles(ref r) => renderer.fill_rects(r),
         }
     }
@@ -20,7 +23,7 @@ impl<'a> Drawable<'a> {
 
 #[derive(Clone)]
 pub struct Asset {
-    texture_id: usize,
+    pub texture_id: usize,
     pub dst_rect: glm::IVec4,
     pub src_rect: Option<glm::DVec4>,
 }
@@ -47,15 +50,5 @@ impl Asset {
     pub fn center(&self) -> glm::IVec2 {
         glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
                    self.dst_rect.y + self.dst_rect.w / 2)
-    }
-
-    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        let max = renderer.output_size()?;
-        renderer.draw(self.texture_id,
-                      Some(self.dst_rect),
-                      self.src_rect,
-                      Some(max))
     }
 }
