@@ -1,4 +1,4 @@
-use master_smasher::asset_manager::{Asset, Drawable};
+use master_smasher::drawable::{Asset, Drawable};
 
 use glm;
 use glm::ext::normalize_to;

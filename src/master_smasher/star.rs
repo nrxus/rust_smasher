@@ -1,4 +1,4 @@
-use super::asset_manager::{Animation, AssetManager, AnimationAsset, Drawable};
+use super::drawable::{Animation, AssetManager, AnimationAsset, Drawable};
 use super::collidable::Collidable;
 use super::shape::{Intersect, Rectangle};
 

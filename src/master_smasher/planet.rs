@@ -1,4 +1,4 @@
-use super::asset_manager::{Asset, AssetManager, Drawable, TextureAsset};
+use super::drawable::{Asset, AssetManager, Drawable, TextureAsset};
 use super::collidable::Collidable;
 use super::shape::{Circle, Intersect};
 

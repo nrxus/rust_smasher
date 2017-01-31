@@ -1,12 +1,12 @@
-mod asset_manager;
 mod collidable;
+mod drawable;
 mod meteor;
 mod level;
 mod planet;
 mod shape;
 mod star;
 
-use self::asset_manager::AssetManager;
+use self::drawable::AssetManager;
 use self::level::Level;
 
 use moho::errors::*;

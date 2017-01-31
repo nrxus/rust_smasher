@@ -1,4 +1,4 @@
-use master_smasher::asset_manager::{Animation, Asset, Drawable};
+use master_smasher::drawable::{Animation, Asset, Drawable};
 use master_smasher::collidable::Collidable;
 use master_smasher::planet::Planet;
 use master_smasher::shape::{Circle, Intersect, Shape};

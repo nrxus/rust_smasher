@@ -1,4 +1,4 @@
-use super::asset_manager::{Animation, AnimationAsset, Asset, Drawable, AssetManager, TextureAsset};
+use super::drawable::{Animation, AnimationAsset, Asset, Drawable, AssetManager, TextureAsset};
 use super::meteor::{UnlaunchedMeteor, LaunchedMeteor};
 use super::planet::{Planet, PlanetKind};
 use super::star::Star;
