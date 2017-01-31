@@ -48,7 +48,7 @@ impl Level {
         }
     }
 
-    pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) -> Vec<Drawable> {
+    pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
         let next_state = match self.state {
             MeteorState::UNLAUNCHED(_) if input_manager.did_click_mouse(MouseButton::Left) => {
                 let meteor = self.launch(input_manager.mouse_coords());
@@ -108,7 +108,9 @@ impl Level {
         }
 
         self.animations.retain(Animation::is_active);
+    }
 
+    pub fn drawables(&self) -> Vec<Drawable> {
         let mut drawables: Vec<Drawable> = vec![];
         for planet in &self.planets {
             drawables.append(&mut planet.drawables());

@@ -50,7 +50,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
             return Ok(());
         }
 
-        let drawables = self.level.update(&self.input_manager);
+        self.level.update(&self.input_manager);
+        let drawables = self.level.drawables();
         self.renderer.clear();
         self.renderer.draw(self.background.id, None, None, None)?;
         for drawable in drawables {
