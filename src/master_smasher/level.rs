@@ -122,7 +122,7 @@ impl Level {
             planet.draw(renderer)?;
         }
         for animation in &self.animations {
-            animation.draw(renderer)?;
+            animation.asset.draw(renderer)?;
         }
         match self.state {
             MeteorState::LAUNCHED(ref m) => m.draw(renderer),

@@ -66,8 +66,8 @@ impl Planet {
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.gravity_asset.draw(None, renderer)?;
-        self.planet_asset.draw(None, renderer)
+        self.gravity_asset.draw(renderer)?;
+        self.planet_asset.draw(renderer)
     }
 
     fn load_assets(kind: PlanetKind, asset_manager: &AssetManager) -> (Asset, Asset) {

@@ -48,7 +48,7 @@ impl LaunchedMeteor {
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.asset.draw(None, renderer)
+        self.asset.draw(renderer)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool
@@ -61,7 +61,7 @@ impl LaunchedMeteor {
 
     pub fn explode(&mut self) -> Animation {
         let mut explosion = self.explosion.clone();
-        explosion.set_center(glm::to_ivec2(self.body.center));
+        explosion.asset.set_center(glm::to_ivec2(self.body.center));
         explosion
     }
 

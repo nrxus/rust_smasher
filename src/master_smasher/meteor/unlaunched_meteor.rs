@@ -37,7 +37,7 @@ impl UnlaunchedMeteor {
     }
 
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        self.asset.draw(None, renderer)?;
+        self.asset.draw(renderer)?;
         renderer.fill_rects(&self.rects)
     }
 }

@@ -7,6 +7,7 @@ use moho::resource_manager::{ResourceManager, Texture};
 pub struct Asset {
     texture_id: usize,
     pub dst_rect: glm::IVec4,
+    pub src_rect: Option<glm::DVec4>,
 }
 
 impl Asset {
@@ -19,6 +20,7 @@ impl Asset {
         Asset {
             texture_id: texture_id,
             dst_rect: dst_rect,
+            src_rect: None,
         }
     }
 
@@ -32,10 +34,13 @@ impl Asset {
                    self.dst_rect.y + self.dst_rect.w / 2)
     }
 
-    pub fn draw<R>(&self, src: Option<glm::DVec4>, renderer: &mut ResourceManager<R>) -> Result<()>
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
         let max = renderer.output_size()?;
-        renderer.draw(self.texture_id, Some(self.dst_rect), src, Some(max))
+        renderer.draw(self.texture_id,
+                      Some(self.dst_rect),
+                      self.src_rect,
+                      Some(max))
     }
 }
