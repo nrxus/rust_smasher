@@ -4,7 +4,7 @@ use serde_yaml;
 
 use std::fs::File;
 
-#[derive(Debug,Deserialize,Clone)]
+#[derive(Debug,Deserialize)]
 pub enum PlanetKind {
     RED,
     BLUE,

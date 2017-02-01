@@ -42,15 +42,12 @@ impl Level {
     pub fn new(data: LevelData, window_size: glm::UVec2, asset_manager: &AssetManager) -> Level {
         let planets = data.planets
             .iter()
-            .map(|p| {
-                let center = glm::ivec2(p.x, p.y);
-                Planet::new(center, p.strength, p.ring, p.kind.clone(), asset_manager)
-            })
+            .map(|p| Planet::new(p, asset_manager))
             .collect::<Vec<_>>();
 
         let stars = data.stars
             .iter()
-            .map(|s| Star::new(glm::ivec2(s.x, s.y), asset_manager))
+            .map(|s| Star::new(s, asset_manager))
             .collect::<Vec<_>>();
 
         let meteor_center = glm::ivec2(data.meteor.x, data.meteor.y);

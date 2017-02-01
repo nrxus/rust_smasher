@@ -1,4 +1,5 @@
 use super::collidable::Collidable;
+use super::level_data::ObjectData;
 use master_smasher::drawable::{Animation, AssetManager, AnimationAsset, Drawable};
 use master_smasher::shape::{Intersect, Rectangle};
 
@@ -11,7 +12,8 @@ pub struct Star {
 }
 
 impl Star {
-    pub fn new(center: glm::IVec2, asset_manager: &AssetManager) -> Self {
+    pub fn new(data: &ObjectData, asset_manager: &AssetManager) -> Self {
+        let center = glm::ivec2(data.x, data.y);
         let animation = asset_manager.get_animation(AnimationAsset::Star, center);
         let explosion = asset_manager.get_animation(AnimationAsset::ExplosionSmall, center);
         let dims = glm::to_dvec2(animation.asset.dims());
