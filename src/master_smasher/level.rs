@@ -99,15 +99,7 @@ impl Level {
             m.update(input_manager.mouse_coords());
         }
 
-        for star in &mut self.stars {
-            star.update();
-        }
-
-        for animation in &mut self.animations {
-            animation.update();
-        }
-
-        self.animations.retain(Animation::is_active);
+        self.update_animations();
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
@@ -130,6 +122,18 @@ impl Level {
         }
 
         drawables
+    }
+
+    fn update_animations(&mut self) {
+        for star in &mut self.stars {
+            star.update();
+        }
+
+        for animation in &mut self.animations {
+            animation.update();
+        }
+
+        self.animations.retain(Animation::is_active);
     }
 
     fn launch(&self, target: glm::IVec2) -> LaunchedMeteor {
