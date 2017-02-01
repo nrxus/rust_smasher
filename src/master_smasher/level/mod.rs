@@ -1,16 +1,22 @@
+mod unlaunched_meteor;
+mod launched_meteor;
+mod star;
+mod planet;
+mod level_data;
+mod collidable;
+
 use super::drawable::{Animation, AnimationAsset, Asset, Drawable, AssetManager, TextureAsset};
-use super::meteor::{UnlaunchedMeteor, LaunchedMeteor};
-use super::planet::{Planet, PlanetKind};
-use super::star::Star;
-use super::super::errors::*;
+use self::unlaunched_meteor::UnlaunchedMeteor;
+use self::launched_meteor::LaunchedMeteor;
+use self::planet::Planet;
+use self::star::Star;
+use self::level_data::LevelData;
+use errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
-use serde_yaml;
-
-use std::fs::File;
 
 pub enum MeteorState {
     UNLAUNCHED(UnlaunchedMeteor),
@@ -27,36 +33,12 @@ pub struct Level {
     asset: Asset,
 }
 
-#[derive(Debug,Deserialize)]
-pub struct ObjectData {
-    x: i32,
-    y: i32,
-}
-
-#[derive(Debug,Deserialize)]
-pub struct PlanetData {
-    x: i32,
-    y: i32,
-    ring: f64,
-    strength: f64,
-    kind: PlanetKind,
-}
-
-#[derive(Debug,Deserialize)]
-pub struct LevelData {
-    meteor: ObjectData,
-    stars: Vec<ObjectData>,
-    planets: Vec<PlanetData>,
-}
-
-impl LevelData {
-    pub fn load(path: &'static str) -> Result<LevelData> {
-        let f = File::open(path)?;
-        Ok(serde_yaml::from_reader(&f)?)
-    }
-}
-
 impl Level {
+    pub fn load(path: &'static str, size: glm::UVec2, asset_mngr: &AssetManager) -> Result<Level> {
+        let data = LevelData::load(path)?;
+        Ok(Level::new(data, size, asset_mngr))
+    }
+
     pub fn new(data: LevelData, window_size: glm::UVec2, asset_manager: &AssetManager) -> Level {
         let planets = data.planets
             .iter()

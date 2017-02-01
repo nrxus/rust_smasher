@@ -1,6 +1,7 @@
-use super::drawable::{Asset, AssetManager, Drawable, TextureAsset};
+use master_smasher::drawable::{Asset, AssetManager, Drawable, TextureAsset};
+use master_smasher::shape::{Circle, Intersect};
 use super::collidable::Collidable;
-use super::shape::{Circle, Intersect};
+use super::level_data::PlanetKind;
 
 use glm;
 use glm::GenNum;
@@ -8,13 +9,6 @@ use glm::ext::normalize_to;
 use num_traits::Zero;
 
 use std::cmp;
-
-#[derive(Debug,Deserialize,Clone)]
-pub enum PlanetKind {
-    RED,
-    BLUE,
-    WHITE,
-}
 
 pub struct Planet {
     body: Circle,

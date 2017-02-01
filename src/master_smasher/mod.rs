@@ -1,13 +1,9 @@
-mod collidable;
 mod drawable;
-mod meteor;
 mod level;
-mod planet;
 mod shape;
-mod star;
 
 use self::drawable::AssetManager;
-use self::level::{Level, LevelData};
+use self::level::Level;
 
 use errors::*;
 use moho::input_manager::InputManager;
@@ -28,8 +24,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
                -> Result<Self> {
         let asset_manager = AssetManager::new(&renderer)?;
         let background = renderer.load_texture("resources/background_game.png")?;
-        let data = LevelData::load("levels/level_1.lvl")?;
-        let level = Level::new(data, renderer.output_size()?, &asset_manager);
+        let window_size = renderer.output_size()?;
+        let level = Level::load("levels/level_1.lvl", window_size, &asset_manager)?;
         Ok(MasterSmasher {
             level: level,
             background: background,

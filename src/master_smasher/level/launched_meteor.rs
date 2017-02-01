@@ -1,7 +1,7 @@
 use master_smasher::drawable::{Animation, Asset, Drawable};
-use master_smasher::collidable::Collidable;
-use master_smasher::planet::Planet;
 use master_smasher::shape::{Circle, Intersect, Shape};
+use super::collidable::Collidable;
+use super::planet::Planet;
 
 use glm;
 

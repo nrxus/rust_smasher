@@ -1,6 +1,6 @@
-use super::drawable::{Animation, AssetManager, AnimationAsset, Drawable};
 use super::collidable::Collidable;
-use super::shape::{Intersect, Rectangle};
+use master_smasher::drawable::{Animation, AssetManager, AnimationAsset, Drawable};
+use master_smasher::shape::{Intersect, Rectangle};
 
 use glm;
 
