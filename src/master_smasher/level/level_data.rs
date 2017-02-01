@@ -6,9 +6,9 @@ use std::fs::File;
 
 #[derive(Debug,Deserialize)]
 pub enum PlanetKind {
-    RED,
-    BLUE,
-    WHITE,
+    RED { ring: f64, strength: f64 },
+    BLUE { ring: f64, strength: f64 },
+    WHITE { ring: f64, strength: f64 },
 }
 
 #[derive(Debug,Deserialize)]
@@ -21,8 +21,6 @@ pub struct ObjectData {
 pub struct PlanetData {
     pub x: i32,
     pub y: i32,
-    pub ring: f64,
-    pub strength: f64,
     pub kind: PlanetKind,
 }
 

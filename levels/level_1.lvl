@@ -4,14 +4,10 @@ meteor:
 planets:
   - x: 346
     y: 298
-    ring: 175
-    strength: 400
-    kind: WHITE
+    kind: {WHITE:{ring: 175, strength: 400}}
   - x: 840
     y: 478
-    ring: 215
-    strength: 700
-    kind: BLUE
+    kind: {BLUE:{ring: 215, strength: 700}}
 stars:
   - x: 500
     y: 130
