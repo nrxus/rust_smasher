@@ -99,7 +99,7 @@ impl<R: Renderer> ResourceManager<R> {
             .iter()
             .filter_map(|&r| r)
             .map(|r| self.draw_raw(id, Some(r), src))
-            .fold(Ok(()), |res, x| { if res.is_err() { res } else { x } })
+            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })
     }
 
     fn draw_raw(&mut self,
