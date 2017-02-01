@@ -2,11 +2,15 @@ use super::drawable::{Animation, AnimationAsset, Asset, Drawable, AssetManager, 
 use super::meteor::{UnlaunchedMeteor, LaunchedMeteor};
 use super::planet::{Planet, PlanetKind};
 use super::star::Star;
+use super::super::errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
+use serde_yaml;
+
+use std::fs::File;
 
 pub enum MeteorState {
     UNLAUNCHED(UnlaunchedMeteor),
@@ -23,23 +27,59 @@ pub struct Level {
     asset: Asset,
 }
 
+#[derive(Debug,Deserialize)]
+pub struct ObjectData {
+    x: i32,
+    y: i32,
+}
+
+#[derive(Debug,Deserialize)]
+pub struct PlanetData {
+    x: i32,
+    y: i32,
+    ring: f64,
+    strength: f64,
+    kind: PlanetKind,
+}
+
+#[derive(Debug,Deserialize)]
+pub struct LevelData {
+    meteor: ObjectData,
+    stars: Vec<ObjectData>,
+    planets: Vec<PlanetData>,
+}
+
+impl LevelData {
+    pub fn load(path: &'static str) -> Result<LevelData> {
+        let f = File::open(path)?;
+        Ok(serde_yaml::from_reader(&f)?)
+    }
+}
+
 impl Level {
-    pub fn new(window_size: glm::UVec2, asset_manager: &AssetManager) -> Level {
-        let blue_center = glm::ivec2(840, 478);
-        let white_center = glm::ivec2(346, 298);
-        let meteor_center = glm::ivec2(130, 402);
-        let star_center = glm::ivec2(500, 130);
-        let blue_planet = Planet::new(blue_center, 700., 215., PlanetKind::BLUE, asset_manager);
-        let white_planet = Planet::new(white_center, 400., 175., PlanetKind::WHITE, asset_manager);
-        let star = Star::new(star_center, asset_manager);
+    pub fn new(data: LevelData, window_size: glm::UVec2, asset_manager: &AssetManager) -> Level {
+        let planets = data.planets
+            .iter()
+            .map(|p| {
+                let center = glm::ivec2(p.x, p.y);
+                Planet::new(center, p.strength, p.ring, p.kind.clone(), asset_manager)
+            })
+            .collect::<Vec<_>>();
+
+        let stars = data.stars
+            .iter()
+            .map(|s| Star::new(glm::ivec2(s.x, s.y), asset_manager))
+            .collect::<Vec<_>>();
+
+        let meteor_center = glm::ivec2(data.meteor.x, data.meteor.y);
         let asset = asset_manager.get_asset(TextureAsset::Meteor, meteor_center);
         let unlaunched_meteor = UnlaunchedMeteor::new(asset.clone());
         let state = MeteorState::UNLAUNCHED(unlaunched_meteor);
         let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge, meteor_center);
 
         Level {
-            planets: vec![blue_planet, white_planet],
-            stars: vec![star],
+            planets: planets,
+            stars: stars,
             animations: Vec::new(),
             state: state,
             max_coords: window_size,

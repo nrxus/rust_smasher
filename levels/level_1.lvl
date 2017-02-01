@@ -1,0 +1,21 @@
+meteor:
+  x: 130
+  y: 402
+planets:
+  - x: 346
+    y: 298
+    ring: 175
+    strength: 400
+    kind: WHITE
+  - x: 840
+    y: 478
+    ring: 215
+    strength: 700
+    kind: BLUE
+stars:
+  - x: 500
+    y: 130
+  - x: 590
+    y: 90
+  - x: 666
+    y: 50

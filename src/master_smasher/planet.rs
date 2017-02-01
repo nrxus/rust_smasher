@@ -9,6 +9,7 @@ use num_traits::Zero;
 
 use std::cmp;
 
+#[derive(Debug,Deserialize,Clone)]
 pub enum PlanetKind {
     RED,
     BLUE,

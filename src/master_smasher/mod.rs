@@ -7,9 +7,9 @@ mod shape;
 mod star;
 
 use self::drawable::AssetManager;
-use self::level::Level;
+use self::level::{Level, LevelData};
 
-use moho::errors::*;
+use errors::*;
 use moho::input_manager::InputManager;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::MohoEngine;
@@ -28,7 +28,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
                -> Result<Self> {
         let asset_manager = AssetManager::new(&renderer)?;
         let background = renderer.load_texture("resources/background_game.png")?;
-        let level = Level::new(renderer.output_size()?, &asset_manager);
+        let data = LevelData::load("levels/level_1.lvl")?;
+        let level = Level::new(data, renderer.output_size()?, &asset_manager);
         Ok(MasterSmasher {
             level: level,
             background: background,
