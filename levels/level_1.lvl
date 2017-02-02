@@ -8,6 +8,12 @@ planets:
   - x: 840
     y: 478
     kind: {BLUE:{ring: 215, strength: 700}}
+  - x: 496
+    y: 540
+    kind: DEAD
+  - x: 469
+    y: 285
+    kind: DEAD
 stars:
   - x: 500
     y: 130

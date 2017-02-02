@@ -9,6 +9,7 @@ pub enum PlanetKind {
     RED { ring: f64, strength: f64 },
     BLUE { ring: f64, strength: f64 },
     WHITE { ring: f64, strength: f64 },
+    DEAD,
 }
 
 #[derive(Debug,Deserialize)]

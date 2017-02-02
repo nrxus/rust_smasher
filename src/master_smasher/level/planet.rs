@@ -99,6 +99,7 @@ impl Planet {
                 });
                 (TextureAsset::WhitePlanet, ring)
             }
+            PlanetKind::DEAD => (TextureAsset::DeadPlanet, None),
         };
         let planet = asset_manager.get_asset(planet, center);
 
