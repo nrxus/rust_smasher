@@ -1,5 +1,6 @@
-use master_smasher::drawable::{Asset, AssetManager, Drawable, TextureAsset};
+use master_smasher::drawable::{Asset, Drawable};
 use master_smasher::shape::{Circle, Intersect};
+use super::world::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
 
@@ -23,8 +24,8 @@ pub struct Planet {
 }
 
 impl Planet {
-    pub fn new(data: &PlanetData, asset_manager: &AssetManager) -> Self {
-        let (asset, ring) = Self::load_assets(data, asset_manager);
+    pub fn new(data: &PlanetData, textures: &WorldAssets) -> Self {
+        let (asset, ring) = Self::load_assets(data, textures);
         let dims = asset.dims();
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
         let center = glm::dvec2(data.x as f64, data.y as f64);
@@ -66,42 +67,31 @@ impl Planet {
         drawables
     }
 
-    fn load_assets(data: &PlanetData, asset_manager: &AssetManager) -> (Asset, Option<Ring>) {
+    fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Asset, Option<Ring>) {
         let center = glm::ivec2(data.x, data.y);
         let (planet, ring) = match data.kind {
             PlanetKind::RED { ring, strength } => {
-                let mut asset = asset_manager.get_asset(TextureAsset::RedRing, center);
-                asset.resize(glm::UVec2::from_s((ring * 2.) as u32));
-                let ring = Some(Ring {
-                    radius: ring,
-                    strength: strength,
-                    asset: asset,
-                });
-                (TextureAsset::RedPlanet, ring)
+                (textures.red_planet, Some((textures.red_ring, ring, strength)))
             }
             PlanetKind::BLUE { ring, strength } => {
-                let mut asset = asset_manager.get_asset(TextureAsset::BlueRing, center);
-                asset.resize(glm::UVec2::from_s((ring * 2.) as u32));
-                let ring = Some(Ring {
-                    radius: ring,
-                    strength: strength,
-                    asset: asset,
-                });
-                (TextureAsset::BluePlanet, ring)
+                (textures.blue_planet, Some((textures.blue_ring, ring, strength)))
             }
             PlanetKind::WHITE { ring, strength } => {
-                let mut asset = asset_manager.get_asset(TextureAsset::WhiteRing, center);
-                asset.resize(glm::UVec2::from_s((ring * 2.) as u32));
-                let ring = Some(Ring {
-                    radius: ring,
-                    strength: strength,
-                    asset: asset,
-                });
-                (TextureAsset::WhitePlanet, ring)
+                (textures.white_planet, Some((textures.white_ring, ring, strength)))
             }
-            PlanetKind::DEAD => (TextureAsset::DeadPlanet, None),
+            PlanetKind::DEAD => (textures.dead_planet, None),
         };
-        let planet = asset_manager.get_asset(planet, center);
+
+        let planet = Asset::from_texture(&planet, center);
+        let ring = ring.map(|(t, r, s)| {
+            let dims = glm::UVec2::from_s((r * 2.) as u32);
+            let asset = Asset::centered_on(t.id, center, dims);
+            Ring {
+                asset: asset,
+                radius: r,
+                strength: s,
+            }
+        });
 
         (planet, ring)
     }

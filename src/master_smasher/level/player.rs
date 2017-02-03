@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, Drawable};
+use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
