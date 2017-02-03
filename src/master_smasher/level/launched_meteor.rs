@@ -56,7 +56,7 @@ impl LaunchedMeteor {
         collidable.collides(&self.body)
     }
 
-    pub fn explode(&mut self) -> Animation {
+    pub fn explode(&self) -> Animation {
         let mut explosion = self.explosion.clone();
         explosion.asset.center_on(glm::to_ivec2(self.body.center));
         explosion
