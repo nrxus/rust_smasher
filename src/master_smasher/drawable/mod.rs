@@ -1,9 +1,9 @@
 pub mod animation;
 pub mod asset;
 pub mod asset_manager;
+pub mod animation_loader;
 
-mod animation_loader;
-
+pub use self::animation_loader::AnimationData;
 pub use self::asset_manager::{AnimationAsset, AssetManager, TextureAsset};
 pub use self::animation::Animation;
 pub use self::asset::Asset;

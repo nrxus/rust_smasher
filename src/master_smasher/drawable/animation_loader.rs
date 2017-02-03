@@ -52,12 +52,3 @@ pub fn load_small_explosion<R: Renderer>(resource_manager: &ResourceManager<R>)
 
     AnimationData::new(PATH, FRAMES, DURATION_MS, false, resource_manager)
 }
-
-pub fn load_large_explosion<R: Renderer>(resource_manager: &ResourceManager<R>)
-                                         -> Result<AnimationData> {
-    static PATH: &'static str = "resources/explosion_large.png";
-    const FRAMES: u32 = 8;
-    const DURATION_MS: u64 = 80;
-
-    AnimationData::new(PATH, FRAMES, DURATION_MS, false, resource_manager)
-}

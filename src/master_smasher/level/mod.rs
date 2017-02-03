@@ -8,13 +8,15 @@ mod player;
 
 use super::drawable::{Animation, Drawable, AssetManager};
 use self::planet::Planet;
-use self::player::{Player, MeteorState};
+use self::player::{MeteorState, Player, PlayerAssets};
 use self::star::Star;
 use self::level_data::LevelData;
 use errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 
 pub struct Level {
     planets: Vec<Planet>,
@@ -24,24 +26,35 @@ pub struct Level {
 }
 
 impl Level {
-    pub fn load(path: &'static str, size: glm::UVec2, asset_mngr: &AssetManager) -> Result<Level> {
+    pub fn load<R>(path: &'static str,
+                   size: glm::UVec2,
+                   resource_manager: &ResourceManager<R>)
+                   -> Result<Level>
+        where R: Renderer
+    {
         let data = LevelData::load(path)?;
-        Ok(Level::new(data, size, asset_mngr))
+        let asset_manager = AssetManager::new(resource_manager)?;
+        let player_assets = PlayerAssets::new(resource_manager)?;
+        Ok(Level::new(data, size, player_assets, asset_manager))
     }
 
-    pub fn new(data: LevelData, window_size: glm::UVec2, asset_manager: &AssetManager) -> Level {
+    pub fn new(data: LevelData,
+               window_size: glm::UVec2,
+               player_assets: PlayerAssets,
+               asset_manager: AssetManager)
+               -> Level {
         let planets = data.planets
             .iter()
-            .map(|p| Planet::new(p, asset_manager))
+            .map(|p| Planet::new(p, &asset_manager))
             .collect::<Vec<_>>();
 
         let stars = data.stars
             .iter()
-            .map(|s| Star::new(s, asset_manager))
+            .map(|s| Star::new(s, &asset_manager))
             .collect::<Vec<_>>();
 
         let meteor_center = glm::ivec2(data.meteor.x, data.meteor.y);
-        let player = Player::new(asset_manager, meteor_center, window_size);
+        let player = Player::new(player_assets, meteor_center, window_size);
 
         Level {
             planets: planets,

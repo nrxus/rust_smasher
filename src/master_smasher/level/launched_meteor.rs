@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, Asset, Drawable};
+use master_smasher::drawable::{Asset, Drawable};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::planet::Planet;
@@ -9,18 +9,13 @@ use std::cmp;
 
 pub struct LaunchedMeteor {
     asset: Asset,
-    explosion: Animation,
     body: Circle,
     velocity: glm::DVec2,
     max_coords: glm::UVec2,
 }
 
 impl LaunchedMeteor {
-    pub fn new(asset: Asset,
-               explosion: Animation,
-               max_coords: glm::UVec2,
-               velocity: glm::DVec2)
-               -> Self {
+    pub fn new(asset: Asset, max_coords: glm::UVec2, velocity: glm::DVec2) -> Self {
         let center = glm::to_dvec2(asset.center());
         let dims = glm::to_ivec2(asset.dims());
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
@@ -32,7 +27,6 @@ impl LaunchedMeteor {
 
         LaunchedMeteor {
             asset: asset,
-            explosion: explosion,
             body: body,
             velocity: velocity,
             max_coords: max_coords,
@@ -56,10 +50,8 @@ impl LaunchedMeteor {
         collidable.collides(&self.body)
     }
 
-    pub fn explode(&self) -> Animation {
-        let mut explosion = self.explosion.clone();
-        explosion.asset.center_on(glm::to_ivec2(self.body.center));
-        explosion
+    pub fn center(&self) -> glm::DVec2 {
+        self.body.center
     }
 
     fn pull(&mut self, planets: &[Planet]) {

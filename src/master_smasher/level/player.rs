@@ -1,13 +1,46 @@
-use master_smasher::drawable::{Animation, AnimationAsset, Asset, Drawable, AssetManager,
-                               TextureAsset};
+use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
 
 use glm;
+use moho::errors::*;
 use moho::input_manager::{EventPump, InputManager};
+use moho::resource_manager::{ResourceManager, Texture};
+use moho::renderer::Renderer;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
+
+#[derive(Clone)]
+pub struct PlayerAssets {
+    meteor: Texture,
+    explosion: AnimationData,
+}
+
+impl PlayerAssets {
+    pub fn new<R: Renderer>(resource_manager: &ResourceManager<R>) -> Result<Self> {
+        let meteor = resource_manager.load_texture("resources/meteor.png")?;
+        let explosion_path = "resources/explosion_large.png";
+        let explosion = AnimationData::new(explosion_path, 8, 80, false, resource_manager)?;
+        let assets = PlayerAssets {
+            meteor: meteor,
+            explosion: explosion,
+        };
+        Ok(assets)
+    }
+
+    pub fn meteor(&self, center: glm::IVec2) -> Asset {
+        Asset::from_texture(&self.meteor, center)
+    }
+
+    pub fn explosion(&self, center: glm::IVec2) -> Animation {
+        let dims = self.explosion.texture.dims;
+        let animator = self.explosion.animator.clone();
+        let dims = glm::uvec2(dims.x / animator.num_frames(), dims.y);
+        let asset = Asset::centered_on(self.explosion.texture.id, center, dims);
+        Animation::new(asset, self.explosion.sheet.clone(), animator)
+    }
+}
 
 pub enum MeteorState {
     UNLAUNCHED(UnlaunchedMeteor),
@@ -18,21 +51,20 @@ pub enum MeteorState {
 pub struct Player {
     pub state: MeteorState,
     max_coords: glm::UVec2,
-    explosion: Animation,
-    asset: Asset,
+    assets: PlayerAssets,
+    initial_center: glm::IVec2,
 }
 
 impl Player {
-    pub fn new(asset_manager: &AssetManager, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
-        let asset = asset_manager.get_asset(TextureAsset::Meteor, center);
-        let explosion = asset_manager.get_animation(AnimationAsset::ExplosionLarge, center);
+    pub fn new(assets: PlayerAssets, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
+        let asset = assets.meteor(center);
         let meteor = UnlaunchedMeteor::new(asset.clone());
         let state = MeteorState::UNLAUNCHED(meteor);
         Player {
-            max_coords: max_coords,
-            asset: asset,
             state: state,
-            explosion: explosion,
+            max_coords: max_coords,
+            assets: assets,
+            initial_center: center,
         }
     }
 
@@ -44,7 +76,7 @@ impl Player {
                 Some(MeteorState::LAUNCHED(self.launch(target)))
             }
             MeteorState::LAUNCHED(ref m) if input_manager.did_press_key(Keycode::R) => {
-                let mut explosion = m.explode();
+                let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
                 explosion.update();
                 Some(MeteorState::EXPLODED(explosion))
             }
@@ -55,7 +87,7 @@ impl Player {
             MeteorState::LAUNCHED(ref mut m) => {
                 m.update(planets);
                 if planets.iter().any(|p| m.collides(p)) {
-                    let mut explosion = m.explode();
+                    let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
                     explosion.update();
                     Some(MeteorState::EXPLODED(explosion))
                 } else {
@@ -67,7 +99,7 @@ impl Player {
                 if a.is_active() {
                     None
                 } else {
-                    let mut meteor = UnlaunchedMeteor::new(self.asset.clone());
+                    let mut meteor = UnlaunchedMeteor::new(self.assets.meteor(self.initial_center));
                     meteor.update(target);
                     Some(MeteorState::UNLAUNCHED(meteor))
                 }
@@ -89,9 +121,9 @@ impl Player {
 
     fn launch(&self, target: glm::IVec2) -> LaunchedMeteor {
         const FACTOR: f64 = 50.;
-        let asset = self.asset.clone();
+        let asset = self.assets.meteor(self.initial_center);
         let offset = target - glm::to_ivec2(asset.center());
         let velocity = glm::to_dvec2(offset) / FACTOR;
-        LaunchedMeteor::new(asset, self.explosion.clone(), self.max_coords, velocity)
+        LaunchedMeteor::new(asset, self.max_coords, velocity)
     }
 }

@@ -15,12 +15,10 @@ pub enum TextureAsset {
     RedRing,
     WhiteRing,
     BlueRing,
-    Meteor,
 }
 
 pub enum AnimationAsset {
     ExplosionSmall,
-    ExplosionLarge,
     Star,
 }
 
@@ -32,10 +30,8 @@ pub struct AssetManager {
     red_ring: Texture,
     white_ring: Texture,
     blue_ring: Texture,
-    meteor: Texture,
 
     explosion_small: AnimationData,
-    explosion_large: AnimationData,
     star: AnimationData,
 }
 
@@ -45,7 +41,6 @@ impl AssetManager {
     {
         let star = load_star(resource_manager)?;
         let explosion_small = load_small_explosion(resource_manager)?;
-        let explosion_large = load_large_explosion(resource_manager)?;
         let red_planet = resource_manager.load_texture("resources/red_planet.png")?;
         let white_planet = resource_manager.load_texture("resources/white_planet.png")?;
         let blue_planet = resource_manager.load_texture("resources/blue_planet.png")?;
@@ -53,12 +48,10 @@ impl AssetManager {
         let red_ring = resource_manager.load_texture("resources/red_ring.png")?;
         let white_ring = resource_manager.load_texture("resources/white_ring.png")?;
         let blue_ring = resource_manager.load_texture("resources/blue_ring.png")?;
-        let meteor = resource_manager.load_texture("resources/meteor.png")?;
 
         let manager = AssetManager {
             star: star,
             explosion_small: explosion_small,
-            explosion_large: explosion_large,
             red_planet: red_planet,
             white_planet: white_planet,
             blue_planet: blue_planet,
@@ -66,7 +59,6 @@ impl AssetManager {
             red_ring: red_ring,
             white_ring: white_ring,
             blue_ring: blue_ring,
-            meteor: meteor,
         };
         Ok(manager)
     }
@@ -80,7 +72,6 @@ impl AssetManager {
             TextureAsset::RedRing => &self.red_ring,
             TextureAsset::WhiteRing => &self.white_ring,
             TextureAsset::BlueRing => &self.blue_ring,
-            TextureAsset::Meteor => &self.meteor,
         };
         Asset::from_texture(texture, center)
     }
@@ -89,7 +80,6 @@ impl AssetManager {
         let data = match kind {
             AnimationAsset::Star => &self.star,
             AnimationAsset::ExplosionSmall => &self.explosion_small,
-            AnimationAsset::ExplosionLarge => &self.explosion_large,
         };
         let dims = data.texture.dims;
         let dims = glm::uvec2(dims.x / data.animator.num_frames(), dims.y);

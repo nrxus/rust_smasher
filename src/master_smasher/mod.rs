@@ -22,10 +22,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
     pub fn new(renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self> {
-        let asset_manager = AssetManager::new(&renderer)?;
         let background = renderer.load_texture("resources/background_game.png")?;
         let window_size = renderer.output_size()?;
-        let level = Level::load("levels/level_1.lvl", window_size, &asset_manager)?;
+        let level = Level::load("levels/level_1.lvl", window_size, &renderer)?;
         Ok(MasterSmasher {
             level: level,
             background: background,
