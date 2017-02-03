@@ -9,7 +9,7 @@ mod player;
 use super::drawable::{Animation, Drawable, AssetManager};
 use self::planet::Planet;
 use self::player::{MeteorState, Player, PlayerAssets};
-use self::star::Star;
+use self::star::{Star, StarAssets};
 use self::level_data::LevelData;
 use errors::*;
 
@@ -35,12 +35,14 @@ impl Level {
         let data = LevelData::load(path)?;
         let asset_manager = AssetManager::new(resource_manager)?;
         let player_assets = PlayerAssets::new(resource_manager)?;
-        Ok(Level::new(data, size, player_assets, asset_manager))
+        let star_assets = StarAssets::new(resource_manager)?;
+        Ok(Level::new(data, size, player_assets, star_assets, asset_manager))
     }
 
     pub fn new(data: LevelData,
                window_size: glm::UVec2,
                player_assets: PlayerAssets,
+               star_assets: StarAssets,
                asset_manager: AssetManager)
                -> Level {
         let planets = data.planets
@@ -50,7 +52,7 @@ impl Level {
 
         let stars = data.stars
             .iter()
-            .map(|s| Star::new(s, &asset_manager))
+            .map(|s| Star::new(s, star_assets.clone()))
             .collect::<Vec<_>>();
 
         let meteor_center = glm::ivec2(data.meteor.x, data.meteor.y);

@@ -35,20 +35,3 @@ impl AnimationData {
         Ok(data)
     }
 }
-
-pub fn load_star<R: Renderer>(resource_manager: &ResourceManager<R>) -> Result<AnimationData> {
-    static PATH: &'static str = "resources/star.png";
-    const FRAMES: u32 = 2;
-    const DURATION_MS: u64 = 150;
-
-    AnimationData::new(PATH, FRAMES, DURATION_MS, true, resource_manager)
-}
-
-pub fn load_small_explosion<R: Renderer>(resource_manager: &ResourceManager<R>)
-                                         -> Result<AnimationData> {
-    static PATH: &'static str = "resources/explosion_small.png";
-    const FRAMES: u32 = 10;
-    const DURATION_MS: u64 = 100;
-
-    AnimationData::new(PATH, FRAMES, DURATION_MS, false, resource_manager)
-}

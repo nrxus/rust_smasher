@@ -1,5 +1,7 @@
 use super::asset::Asset;
+use super::animation_loader::AnimationData;
 
+use glm;
 use moho::frame_animator::FrameAnimator;
 use moho::tile_sheet::TileSheet;
 
@@ -11,6 +13,14 @@ pub struct Animation {
 }
 
 impl Animation {
+    pub fn start(data: &AnimationData, center: glm::IVec2) -> Animation {
+        let dims = data.texture.dims;
+        let animator = data.animator.clone();
+        let dims = glm::uvec2(dims.x / animator.num_frames(), dims.y);
+        let asset = Asset::centered_on(data.texture.id, center, dims);
+        Self::new(asset, data.sheet.clone(), animator)
+    }
+
     pub fn new(asset: Asset, sheet: TileSheet, animator: FrameAnimator) -> Self {
         Animation {
             asset: asset,

@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
+use master_smasher::drawable::{Animation, AnimationData, Drawable};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
@@ -34,11 +34,7 @@ impl PlayerAssets {
     }
 
     pub fn explosion(&self, center: glm::IVec2) -> Animation {
-        let dims = self.explosion.texture.dims;
-        let animator = self.explosion.animator.clone();
-        let dims = glm::uvec2(dims.x / animator.num_frames(), dims.y);
-        let asset = Asset::centered_on(self.explosion.texture.id, center, dims);
-        Animation::new(asset, self.explosion.sheet.clone(), animator)
+        Animation::start(&self.explosion, center)
     }
 }
 

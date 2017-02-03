@@ -1,5 +1,3 @@
-use super::animation::Animation;
-use super::animation_loader::*;
 use super::asset::Asset;
 
 use glm;
@@ -17,11 +15,6 @@ pub enum TextureAsset {
     BlueRing,
 }
 
-pub enum AnimationAsset {
-    ExplosionSmall,
-    Star,
-}
-
 pub struct AssetManager {
     red_planet: Texture,
     white_planet: Texture,
@@ -30,17 +23,12 @@ pub struct AssetManager {
     red_ring: Texture,
     white_ring: Texture,
     blue_ring: Texture,
-
-    explosion_small: AnimationData,
-    star: AnimationData,
 }
 
 impl AssetManager {
     pub fn new<R>(resource_manager: &ResourceManager<R>) -> Result<Self>
         where R: Renderer
     {
-        let star = load_star(resource_manager)?;
-        let explosion_small = load_small_explosion(resource_manager)?;
         let red_planet = resource_manager.load_texture("resources/red_planet.png")?;
         let white_planet = resource_manager.load_texture("resources/white_planet.png")?;
         let blue_planet = resource_manager.load_texture("resources/blue_planet.png")?;
@@ -50,8 +38,6 @@ impl AssetManager {
         let blue_ring = resource_manager.load_texture("resources/blue_ring.png")?;
 
         let manager = AssetManager {
-            star: star,
-            explosion_small: explosion_small,
             red_planet: red_planet,
             white_planet: white_planet,
             blue_planet: blue_planet,
@@ -74,16 +60,5 @@ impl AssetManager {
             TextureAsset::BlueRing => &self.blue_ring,
         };
         Asset::from_texture(texture, center)
-    }
-
-    pub fn get_animation(&self, kind: AnimationAsset, center: glm::IVec2) -> Animation {
-        let data = match kind {
-            AnimationAsset::Star => &self.star,
-            AnimationAsset::ExplosionSmall => &self.explosion_small,
-        };
-        let dims = data.texture.dims;
-        let dims = glm::uvec2(dims.x / data.animator.num_frames(), dims.y);
-        let asset = Asset::centered_on(data.texture.id, center, dims);
-        Animation::new(asset, data.sheet.clone(), data.animator.clone())
     }
 }

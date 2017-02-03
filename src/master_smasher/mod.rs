@@ -2,7 +2,6 @@ mod drawable;
 mod level;
 mod shape;
 
-use self::drawable::AssetManager;
 use self::level::Level;
 
 use errors::*;
