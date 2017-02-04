@@ -19,7 +19,6 @@ impl LaunchedMeteor {
         let center = glm::to_dvec2(asset.center());
         let dims = glm::to_ivec2(asset.dims());
         let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-
         let body = Circle {
             center: center,
             radius: radius,
@@ -34,7 +33,7 @@ impl LaunchedMeteor {
     }
 
     pub fn update(&mut self, planets: &[Planet]) {
-        self.pull(planets);
+        self.velocity = self.velocity + self.acceleration(planets);
         self.displace();
     }
 
@@ -54,11 +53,10 @@ impl LaunchedMeteor {
         self.body.center
     }
 
-    fn pull(&mut self, planets: &[Planet]) {
-        for planet in planets {
-            let acceleration = planet.pull_vector(self.body.center, self.body.radius);
-            self.velocity = self.velocity + acceleration / 50.;
-        }
+    fn acceleration(&self, planets: &[Planet]) -> glm::DVec2 {
+        planets.iter()
+            .map(|p| p.pull_vector(self.body.center, self.body.radius))
+            .fold(glm::dvec2(0., 0.), |c, a| c + a) / 50.
     }
 
     fn displace(&mut self) {
