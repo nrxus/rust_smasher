@@ -5,10 +5,12 @@ mod planet;
 mod level_data;
 mod collidable;
 mod player;
+mod player_assets;
 mod world;
 
 use self::level_data::LevelData;
-use self::player::{MeteorState, Player, PlayerAssets};
+use self::player::{MeteorState, Player};
+use self::player_assets::PlayerAssets;
 use self::world::{World, WorldAssets};
 use super::drawable::Drawable;
 use errors::*;

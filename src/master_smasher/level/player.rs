@@ -1,42 +1,13 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
+use master_smasher::drawable::{Animation, Drawable};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
+use super::player_assets::PlayerAssets;
 
 use glm;
-use moho::errors::*;
 use moho::input_manager::{EventPump, InputManager};
-use moho::resource_manager::{ResourceManager, Texture};
-use moho::renderer::Renderer;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
-
-#[derive(Clone)]
-pub struct PlayerAssets {
-    meteor: Texture,
-    explosion: AnimationData,
-}
-
-impl PlayerAssets {
-    pub fn new<R: Renderer>(resource_manager: &ResourceManager<R>) -> Result<Self> {
-        let meteor = resource_manager.load_texture("resources/meteor.png")?;
-        let explosion_path = "resources/explosion_large.png";
-        let explosion = AnimationData::new(explosion_path, 8, 80, false, resource_manager)?;
-        let assets = PlayerAssets {
-            meteor: meteor,
-            explosion: explosion,
-        };
-        Ok(assets)
-    }
-
-    pub fn meteor(&self, center: glm::IVec2) -> Asset {
-        Asset::from_texture(&self.meteor, center)
-    }
-
-    pub fn explosion(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.explosion, center)
-    }
-}
 
 pub enum MeteorState {
     UNLAUNCHED(UnlaunchedMeteor),
