@@ -7,11 +7,13 @@ mod collidable;
 mod player;
 mod player_assets;
 mod world;
+mod world_assets;
 
 use self::level_data::LevelData;
 use self::player::{MeteorState, Player};
 use self::player_assets::PlayerAssets;
-use self::world::{World, WorldAssets};
+use self::world::World;
+use self::world_assets::WorldAssets;
 use super::drawable::Drawable;
 use errors::*;
 

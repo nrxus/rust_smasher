@@ -1,6 +1,6 @@
 use master_smasher::drawable::{Asset, Drawable};
 use master_smasher::shape::{Circle, Intersect};
-use super::world::WorldAssets;
+use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
 
