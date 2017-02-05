@@ -29,6 +29,7 @@ pub struct PlanetData {
 pub struct LevelData {
     pub meteor: ObjectData,
     pub stars: Vec<ObjectData>,
+    pub enemies: Vec<ObjectData>,
     pub planets: Vec<PlanetData>,
 }
 

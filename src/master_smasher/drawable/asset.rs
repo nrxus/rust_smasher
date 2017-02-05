@@ -30,10 +30,6 @@ impl Asset {
         self.dst_rect = Self::rectify(center, self.dims());
     }
 
-    pub fn resize(&mut self, dims: glm::UVec2) {
-        self.dst_rect = Self::rectify(self.center(), dims);
-    }
-
     pub fn center(&self) -> glm::IVec2 {
         glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
                    self.dst_rect.y + self.dst_rect.w / 2)

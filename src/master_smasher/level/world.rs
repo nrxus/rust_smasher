@@ -10,6 +10,7 @@ use glm;
 pub struct World {
     pub planets: Vec<Planet>,
     pub stars: Vec<Star>,
+    pub enemies: Vec<Star>,
     pub explosions: Vec<Animation>,
     pub explosion_data: AnimationData,
 }
@@ -26,9 +27,15 @@ impl World {
             .map(|s| Star::new(s, &assets.star))
             .collect::<Vec<_>>();
 
+        let enemies = data.enemies
+            .iter()
+            .map(|s| Star::new(s, &assets.enemy))
+            .collect::<Vec<_>>();
+
         World {
             planets: planets,
             stars: stars,
+            enemies: enemies,
             explosions: Vec::new(),
             explosion_data: assets.explosion,
         }
@@ -46,11 +53,27 @@ impl World {
             let center = glm::to_ivec2(star.center());
             self.explosions.push(Animation::start(&self.explosion_data, center));
         }
+
+        let collidable_indices = self.enemies
+            .iter()
+            .enumerate()
+            .filter(|&(_, s)| meteor.collides(s))
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>();
+        for i in collidable_indices {
+            let enemy = self.enemies.swap_remove(i);
+            let center = glm::to_ivec2(enemy.center());
+            self.explosions.push(Animation::start(&self.explosion_data, center));
+        }
     }
 
     pub fn update(&mut self) {
         for star in &mut self.stars {
             star.update();
+        }
+
+        for enemy in &mut self.enemies {
+            enemy.update();
         }
 
         for animation in &mut self.explosions {
@@ -63,7 +86,8 @@ impl World {
     pub fn drawables(&self) -> Vec<Drawable> {
         let planets = self.planets.iter().map(Planet::drawables).flat_map(|v| v.into_iter());
         let stars = self.stars.iter().map(Star::drawables).flat_map(|v| v.into_iter());
+        let enemies = self.enemies.iter().map(Star::drawables).flat_map(|v| v.into_iter());
         let explosions = self.explosions.iter().map(|a| &a.asset).map(Drawable::Asset);
-        planets.chain(stars).chain(explosions).collect()
+        planets.chain(stars).chain(enemies).chain(explosions).collect()
     }
 }

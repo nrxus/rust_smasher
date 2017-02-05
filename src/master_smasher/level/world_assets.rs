@@ -16,6 +16,7 @@ pub struct WorldAssets {
 
     pub star: AnimationData,
     pub explosion: AnimationData,
+    pub enemy: AnimationData,
 }
 
 impl WorldAssets {
@@ -29,8 +30,10 @@ impl WorldAssets {
         let blue_ring = resource_manager.load_texture("resources/blue_ring.png")?;
 
         let star_path = "resources/star.png";
+        let enemy_path = "resources/spaceship.png";
         let explosion_path = "resources/explosion_small.png";
         let star = AnimationData::new(star_path, 2, 150, true, resource_manager)?;
+        let enemy = AnimationData::new(enemy_path, 2, 100, true, resource_manager)?;
         let explosion = AnimationData::new(explosion_path, 10, 100, false, resource_manager)?;
         let assets = WorldAssets {
             red_planet: red_planet,
@@ -41,6 +44,7 @@ impl WorldAssets {
             white_ring: white_ring,
             blue_ring: blue_ring,
             star: star,
+            enemy: enemy,
             explosion: explosion,
         };
         Ok(assets)
