@@ -42,29 +42,26 @@ impl World {
     }
 
     pub fn collide(&mut self, meteor: &LaunchedMeteor) {
-        let collidable_indices = self.stars
-            .iter()
-            .enumerate()
-            .filter(|&(_, s)| meteor.collides(s))
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
-        for i in collidable_indices {
-            let star = self.stars.swap_remove(i);
-            let center = glm::to_ivec2(star.center());
-            self.explosions.push(Animation::start(&self.explosion_data, center));
-        }
+        let explosion = &self.explosion_data;
+        let explosions = &mut self.explosions;
 
-        let collidable_indices = self.enemies
-            .iter()
-            .enumerate()
-            .filter(|&(_, s)| meteor.collides(s))
-            .map(|(i, _)| i)
-            .collect::<Vec<_>>();
-        for i in collidable_indices {
-            let enemy = self.enemies.swap_remove(i);
-            let center = glm::to_ivec2(enemy.center());
-            self.explosions.push(Animation::start(&self.explosion_data, center));
-        }
+        self.stars.retain(|s| if meteor.collides(s) {
+            let center = glm::to_ivec2(s.center());
+            let animation = Animation::start(explosion, center);
+            explosions.push(animation);
+            false
+        } else {
+            true
+        });
+
+        self.enemies.retain(|e| if meteor.collides(e) {
+            let center = glm::to_ivec2(e.center());
+            let animation = Animation::start(explosion, center);
+            explosions.push(animation);
+            false
+        } else {
+            true
+        });
     }
 
     pub fn update(&mut self) {
