@@ -31,10 +31,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn load_texture(&self, path: &'static str) -> Result<Texture> {
-        match self.load_cached_texture(path) {
-            Some(texture) => Ok(texture),
-            None => self.load_new_texture(path),
-        }
+        self.load_cached_texture(path).map_or(self.load_new_texture(path), |t| Ok(t))
     }
 
     pub fn draw(&mut self,
@@ -68,10 +65,7 @@ impl<R: Renderer> ResourceManager<R> {
 
     fn load_cached_texture(&self, path: &'static str) -> Option<Texture> {
         let cache = self.texture_cache.borrow();
-        match cache.get(path) {
-            Some(texture) => Some(*texture),
-            None => None,
-        }
+        cache.get(path).map(|&t| t)
     }
 
     fn load_new_texture(&self, path: &'static str) -> Result<Texture> {
@@ -109,18 +103,14 @@ impl<R: Renderer> ResourceManager<R> {
                 -> Result<()> {
         let cache = self.data_cache.borrow();
         let data = cache.get(&id).ok_or("texture not loaded")?;
-        let src = match src {
-            None => None,
-            Some(r) => {
-                let dims = glm::to_dvec2(data.dims);
-                let rect = glm::dvec4(r.x * dims.x, r.y * dims.y, r.z * dims.x, r.w * dims.y);
-                Some(Self::get_rect(glm::to_ivec4(rect)))
-            }
-        };
-        let dst = match dst {
-            None => None,
-            Some(r) => Some(Self::get_rect(r)),
-        };
+        let src = src.map(|r| {
+                glm::ivec4((r.x * data.dims.x as f64) as i32,
+                           (r.y * data.dims.y as f64) as i32,
+                           (r.z * data.dims.x as f64) as i32,
+                           (r.w * data.dims.y as f64) as i32)
+            })
+            .map(Self::get_rect);
+        let dst = dst.map(Self::get_rect);
         self.renderer.copy(&data.texture, src, dst)
     }
 
