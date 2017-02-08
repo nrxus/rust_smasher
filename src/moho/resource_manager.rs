@@ -31,7 +31,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn load_texture(&self, path: &'static str) -> Result<Texture> {
-        self.load_cached_texture(path).map_or(self.load_new_texture(path), |t| Ok(t))
+        self.load_cached_texture(path).map_or_else(|| self.load_new_texture(path), Ok)
     }
 
     pub fn draw(&mut self,
@@ -65,7 +65,7 @@ impl<R: Renderer> ResourceManager<R> {
 
     fn load_cached_texture(&self, path: &'static str) -> Option<Texture> {
         let cache = self.texture_cache.borrow();
-        cache.get(path).map(|&t| t)
+        cache.get(path).cloned()
     }
 
     fn load_new_texture(&self, path: &'static str) -> Result<Texture> {

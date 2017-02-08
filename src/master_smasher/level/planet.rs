@@ -42,27 +42,20 @@ impl Planet {
     }
 
     pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
-        match self.ring {
-            Some(ref r) => {
-                let dist = self.body.center - point;
-                let len = glm::length(dist);
-                if len > (r.radius + radius) {
-                    glm::DVec2::zero()
-                } else {
-                    let force = r.strength / (len.powf(0.8));
-                    normalize_to(dist, force)
-                }
+        self.ring.as_ref().map_or(glm::DVec2::zero(), |r| {
+            let dist = self.body.center - point;
+            let len = glm::length(dist);
+            if len > (r.radius + radius) {
+                glm::DVec2::zero()
+            } else {
+                let force = r.strength / (len.powf(0.8));
+                normalize_to(dist, force)
             }
-            None => glm::DVec2::zero(),
-        }
+        })
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        let mut drawables = vec![];
-        match self.ring {
-            Some(ref r) => drawables.push(Drawable::Asset(&r.asset)),
-            None => {}
-        }
+        let mut drawables = self.ring.as_ref().map_or(vec![], |r| vec![Drawable::Asset(&r.asset)]);
         drawables.push(Drawable::Asset(&self.asset));
         drawables
     }
