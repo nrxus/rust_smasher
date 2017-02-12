@@ -18,11 +18,12 @@ pub struct MasterSmasher<E: MohoEngine> {
 }
 
 impl<E: MohoEngine> MasterSmasher<E> {
-    pub fn new(renderer: ResourceManager<E::Renderer>,
+    pub fn new(mut renderer: ResourceManager<E::Renderer>,
                input_manager: InputManager<E::EventPump>)
                -> Result<Self> {
         let background = renderer.load_texture("resources/background_game.png")?;
         let window_size = renderer.output_size()?;
+        renderer.wrap_coords = Some(window_size);
         let level = Level::load("levels/level_1.lvl", window_size, &renderer)?;
         Ok(MasterSmasher {
             level: level,
@@ -48,7 +49,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         self.level.update(&self.input_manager);
         let drawables = self.level.drawables();
         self.renderer.clear();
-        self.renderer.draw(self.background.id, None, None, None)?;
+        self.renderer.draw(self.background.id, None, None)?;
         for drawable in drawables {
             drawable.draw(&mut self.renderer)?;
         }

@@ -19,10 +19,7 @@ pub enum Drawable<'a> {
 impl<'a> Drawable<'a> {
     pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         match *self {
-            Drawable::Asset(a) => {
-                let max = Some(renderer.output_size()?);
-                renderer.draw(a.texture_id, Some(a.dst_rect), a.src_rect, max)
-            }
+            Drawable::Asset(a) => renderer.draw(a.texture_id, Some(a.dst_rect), a.src_rect),
             Drawable::Rectangles(r) => renderer.fill_rects(r),
         }
     }

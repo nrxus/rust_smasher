@@ -16,6 +16,7 @@ pub struct Texture {
 }
 
 pub struct ResourceManager<R: Renderer> {
+    pub wrap_coords: Option<glm::UVec2>,
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
     data_cache: RefCell<HashMap<usize, TextureData<R>>>,
     renderer: R,
@@ -24,6 +25,7 @@ pub struct ResourceManager<R: Renderer> {
 impl<R: Renderer> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
+            wrap_coords: None,
             texture_cache: RefCell::new(HashMap::new()),
             data_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
@@ -37,10 +39,9 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn draw(&mut self,
                 id: usize,
                 dst: Option<glm::IVec4>,
-                src: Option<glm::DVec4>,
-                wrapping_coords: Option<glm::UVec2>)
+                src: Option<glm::DVec4>)
                 -> Result<()> {
-        match (dst, wrapping_coords) {
+        match (dst, self.wrap_coords) {
             (Some(d), Some(w)) => self.draw_and_wrap(id, d, src, w),
             _ => self.draw_raw(id, dst, src),
         }
