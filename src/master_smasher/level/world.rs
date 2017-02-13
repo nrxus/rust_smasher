@@ -65,6 +65,10 @@ impl World {
     }
 
     pub fn update(&mut self) {
+        for planet in &mut self.planets {
+            planet.update();
+        }
+
         for star in &mut self.stars {
             star.update();
         }

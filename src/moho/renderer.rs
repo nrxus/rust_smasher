@@ -8,15 +8,21 @@ use sdl2::render::Texture as SdlTexture;
 
 use std::path::Path;
 
-pub struct TextureData<R: Renderer> {
-    pub texture: R::Texture,
-    pub dims: glm::UVec2,
+pub trait ImageDims {
+    fn dims(&self) -> glm::UVec2;
+}
+
+impl ImageDims for SdlTexture {
+    fn dims(&self) -> glm::UVec2 {
+        let query = self.query();
+        glm::uvec2(query.width, query.height)
+    }
 }
 
 pub trait Renderer {
-    type Texture;
+    type Texture: ImageDims;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<Self>> where Self: Sized;
+    fn load_texture(&self, path: &Path) -> Result<Self::Texture>;
     fn output_size(&self) -> Result<(u32, u32)>;
 
     // Drawing methods
@@ -33,13 +39,8 @@ pub trait Renderer {
 impl Renderer for SdlRenderer<'static> {
     type Texture = SdlTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<Self>> {
-        let texture = LoadTexture::load_texture(self, path)?;
-        let query = texture.query();
-        Ok(TextureData {
-            texture: texture,
-            dims: glm::uvec2(query.width, query.height),
-        })
+    fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
+        Ok(LoadTexture::load_texture(self, path)?)
     }
 
     fn output_size(&self) -> Result<(u32, u32)> {

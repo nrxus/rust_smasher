@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use glm;
 use sdl2::rect;
 
-use renderer::{Renderer, TextureData};
+use renderer::{ImageDims, Renderer};
 use window_wrapper::*;
 use errors::*;
 
@@ -18,7 +18,7 @@ pub struct Texture {
 pub struct ResourceManager<R: Renderer> {
     pub wrap_coords: Option<glm::UVec2>,
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    data_cache: RefCell<HashMap<usize, TextureData<R>>>,
+    data_cache: RefCell<HashMap<usize, R::Texture>>,
     renderer: R,
 }
 
@@ -77,7 +77,7 @@ impl<R: Renderer> ResourceManager<R> {
         let texture_data = self.renderer.load_texture(texture_path)?;
         let texture = Texture {
             id: id,
-            dims: texture_data.dims,
+            dims: texture_data.dims(),
         };
         cache.insert(path, texture);
         data_cache.insert(id, texture_data);
@@ -103,16 +103,14 @@ impl<R: Renderer> ResourceManager<R> {
                 src: Option<glm::DVec4>)
                 -> Result<()> {
         let cache = self.data_cache.borrow();
-        let data = cache.get(&id).ok_or("texture not loaded")?;
+        let texture = cache.get(&id).ok_or("texture not loaded")?;
         let src = src.map(|r| {
-                glm::ivec4((r.x * data.dims.x as f64) as i32,
-                           (r.y * data.dims.y as f64) as i32,
-                           (r.z * data.dims.x as f64) as i32,
-                           (r.w * data.dims.y as f64) as i32)
-            })
-            .map(Self::get_rect);
+            let dims = glm::to_dvec2(texture.dims());
+            glm::to_ivec4(glm::dvec4(r.x * dims.x, r.y * dims.y, r.z * dims.x, r.w * dims.y))
+        });
+        let src = src.map(Self::get_rect);
         let dst = dst.map(Self::get_rect);
-        self.renderer.copy(&data.texture, src, dst)
+        self.renderer.copy(&texture, src, dst)
     }
 
     fn get_rect(rect: glm::IVec4) -> rect::Rect {

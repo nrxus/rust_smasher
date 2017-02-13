@@ -26,6 +26,11 @@ impl Asset {
         }
     }
 
+    pub fn zoom(&mut self, zoom: glm::DVec2) {
+        let dims = glm::to_dvec2(self.dims()) * zoom;
+        self.dst_rect = Self::rectify(self.center(), glm::to_uvec2(dims));
+    }
+
     pub fn center_on(&mut self, center: glm::IVec2) {
         self.dst_rect = Self::rectify(center, self.dims());
     }

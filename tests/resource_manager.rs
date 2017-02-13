@@ -51,6 +51,12 @@ struct MockTexture {
     path: String,
 }
 
+impl ImageDims for MockTexture {
+    fn dims(&self) -> glm::UVec2 {
+        glm::uvec2(50, 50)
+    }
+}
+
 struct RendererTracker {
     load_count: u16,
     last_src: Option<rect::Rect>,
@@ -75,15 +81,12 @@ struct MockRenderer {
 impl Renderer for MockRenderer {
     type Texture = MockTexture;
 
-    fn load_texture(&self, path: &Path) -> Result<TextureData<MockRenderer>> {
+    fn load_texture(&self, path: &Path) -> Result<MockTexture> {
         self.tracker.borrow_mut().load_count += 1;
         match self.error {
             None => {
                 let texture = MockTexture { path: path.to_str().unwrap_or("").into() };
-                Ok(TextureData {
-                    texture: texture,
-                    dims: glm::uvec2(48, 60),
-                })
+                Ok(texture)
             }
             Some(ref e) => Err(e.clone().into()),
         }

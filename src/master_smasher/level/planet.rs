@@ -15,6 +15,39 @@ struct Ring {
     radius: f64,
     strength: f64,
     asset: Asset,
+    moving: Asset,
+}
+
+impl Ring {
+    pub fn new(radius: f64, strength: f64, asset: Asset) -> Self {
+        Ring {
+            radius: radius,
+            strength: strength,
+            asset: asset.clone(),
+            moving: asset,
+        }
+    }
+
+    pub fn update(&mut self) {
+        let moving_radius = self.moving.dims().x as f64 / 2.;
+        let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
+        let zoom = 1. / 2_f64.powf(pull / 500.);
+        self.moving.zoom(glm::DVec2::from_s(zoom));
+    }
+
+    pub fn drawables(&self) -> Vec<Drawable> {
+        vec![Drawable::Asset(&self.asset), Drawable::Asset(&self.moving)]
+    }
+
+    pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
+        let len = glm::length(dist);
+        if len > (self.radius + radius) {
+            glm::DVec2::zero()
+        } else {
+            let force = self.strength / (len.powf(0.8));
+            normalize_to(dist, force)
+        }
+    }
 }
 
 pub struct Planet {
@@ -41,21 +74,22 @@ impl Planet {
         }
     }
 
-    pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
-        self.ring.as_ref().map_or(glm::DVec2::zero(), |r| {
-            let dist = self.body.center - point;
-            let len = glm::length(dist);
-            if len > (r.radius + radius) {
-                glm::DVec2::zero()
-            } else {
-                let force = r.strength / (len.powf(0.8));
-                normalize_to(dist, force)
+    pub fn update(&mut self) {
+        if let Some(ref mut r) = self.ring {
+            if r.moving.dims().x / 2 < self.body.radius as u32 {
+                r.moving = r.asset.clone();
             }
-        })
+            r.update()
+        }
+    }
+
+    pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
+        self.ring.as_ref().map_or(glm::DVec2::zero(),
+                                  |r| r.pull_vector(self.body.center - point, radius))
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        let mut drawables = self.ring.as_ref().map_or(vec![], |r| vec![Drawable::Asset(&r.asset)]);
+        let mut drawables = self.ring.as_ref().map_or(vec![], |r| r.drawables());
         drawables.push(Drawable::Asset(&self.asset));
         drawables
     }
@@ -79,11 +113,7 @@ impl Planet {
         let ring = ring.map(|(t, r, s)| {
             let dims = glm::UVec2::from_s((r * 2.) as u32);
             let asset = Asset::centered_on(t.id, center, dims);
-            Ring {
-                asset: asset,
-                radius: r,
-                strength: s,
-            }
+            Ring::new(r, s, asset)
         });
 
         (planet, ring)
