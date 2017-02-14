@@ -1,5 +1,5 @@
 use super::asset::Asset;
-use super::animation_loader::AnimationData;
+use super::animation_data::AnimationData;
 
 use glm;
 use moho::frame_animator::FrameAnimator;
