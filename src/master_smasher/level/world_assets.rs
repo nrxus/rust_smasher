@@ -1,6 +1,6 @@
 use master_smasher::drawable::{Animation, AnimationData};
 
-use glm;
+use glm::{self, GenNum};
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
@@ -57,6 +57,6 @@ impl WorldAssets {
     }
 
     pub fn enemy(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.enemy, center, glm::DVec2::one())
+        Animation::start(&self.enemy, center, glm::DVec2::from_s(0.75))
     }
 }
