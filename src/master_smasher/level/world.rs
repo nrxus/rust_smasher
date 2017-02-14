@@ -6,6 +6,7 @@ use super::world_assets::WorldAssets;
 use master_smasher::drawable::{Animation, AnimationData, Drawable};
 
 use glm;
+use num_traits::One;
 
 pub struct World {
     pub planets: Vec<Planet>,
@@ -47,7 +48,7 @@ impl World {
 
         self.stars.retain(|s| if meteor.collides(s) {
             let center = glm::to_ivec2(s.center());
-            let animation = Animation::start(explosion, center);
+            let animation = Animation::start(explosion, center, glm::DVec2::one());
             explosions.push(animation);
             false
         } else {
@@ -56,7 +57,7 @@ impl World {
 
         self.enemies.retain(|e| if meteor.collides(e) {
             let center = glm::to_ivec2(e.center());
-            let animation = Animation::start(explosion, center);
+            let animation = Animation::start(explosion, center, glm::DVec2::one());
             explosions.push(animation);
             false
         } else {

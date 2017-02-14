@@ -4,6 +4,7 @@ use glm;
 use moho::errors::*;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::renderer::Renderer;
+use num_traits::One;
 
 #[derive(Clone)]
 pub struct PlayerAssets {
@@ -28,6 +29,6 @@ impl PlayerAssets {
     }
 
     pub fn explosion(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.explosion, center)
+        Animation::start(&self.explosion, center, glm::DVec2::one())
     }
 }
