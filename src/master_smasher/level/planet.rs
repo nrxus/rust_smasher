@@ -4,8 +4,7 @@ use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
 
-use glm;
-use glm::GenNum;
+use glm::{self, GenNum};
 use glm::ext::normalize_to;
 use num_traits::Zero;
 

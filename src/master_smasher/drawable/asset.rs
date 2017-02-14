@@ -13,6 +13,11 @@ impl Asset {
         Asset::centered_on(texture.id, center, texture.dims)
     }
 
+    pub fn scaled_texture(texture: &Texture, center: glm::IVec2, scale: glm::DVec2) -> Asset {
+        let dims = glm::to_uvec2(glm::to_dvec2(texture.dims) * scale);
+        Asset::centered_on(texture.id, center, dims)
+    }
+
     pub fn centered_on(texture_id: usize, center: glm::IVec2, dims: glm::UVec2) -> Asset {
         let rect = Self::rectify(center, dims);
         Asset::new(texture_id, rect)
