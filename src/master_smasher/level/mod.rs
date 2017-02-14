@@ -46,8 +46,7 @@ impl Level {
                world_assets: WorldAssets)
                -> Level {
         let world = World::new(&data, world_assets);
-        let meteor_center = glm::ivec2(data.meteor.x, data.meteor.y);
-        let player = Player::new(player_assets, meteor_center, window_size);
+        let player = Player::new(player_assets, (&data.meteor).into(), window_size);
 
         Level {
             world: world,

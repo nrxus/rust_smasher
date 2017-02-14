@@ -1,5 +1,6 @@
 use errors::*;
 
+use glm;
 use serde_yaml;
 
 use std::fs::File;
@@ -16,6 +17,12 @@ pub enum PlanetKind {
 pub struct ObjectData {
     pub x: i32,
     pub y: i32,
+}
+
+impl<'a> From<&'a ObjectData> for glm::IVec2 {
+    fn from(data: &ObjectData) -> glm::IVec2 {
+        glm::ivec2(data.x, data.y)
+    }
 }
 
 #[derive(Debug,Deserialize)]

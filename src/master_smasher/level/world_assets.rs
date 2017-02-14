@@ -1,8 +1,10 @@
-use master_smasher::drawable::AnimationData;
+use master_smasher::drawable::{Animation, AnimationData};
 
+use glm;
 use moho::errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
+use num_traits::One;
 
 #[derive(Clone)]
 pub struct WorldAssets {
@@ -48,5 +50,13 @@ impl WorldAssets {
             explosion: explosion,
         };
         Ok(assets)
+    }
+
+    pub fn star(&self, center: glm::IVec2) -> Animation {
+        Animation::start(&self.star, center, glm::DVec2::one())
+    }
+
+    pub fn enemy(&self, center: glm::IVec2) -> Animation {
+        Animation::start(&self.enemy, center, glm::DVec2::one())
     }
 }

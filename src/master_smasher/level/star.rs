@@ -1,10 +1,8 @@
 use super::collidable::Collidable;
-use super::level_data::ObjectData;
-use master_smasher::drawable::{Animation, AnimationData, Drawable};
+use master_smasher::drawable::{Animation, Drawable};
 use master_smasher::shape::{Intersect, Rectangle};
 
 use glm;
-use num_traits::One;
 
 pub struct Star {
     body: Rectangle,
@@ -12,13 +10,11 @@ pub struct Star {
 }
 
 impl Star {
-    pub fn new(data: &ObjectData, animation: &AnimationData) -> Self {
-        let center = glm::ivec2(data.x, data.y);
-        let animation = Animation::start(animation, center, glm::DVec2::one());
+    pub fn new(animation: Animation) -> Self {
         let dims = glm::to_dvec2(animation.asset.dims());
 
         let body = Rectangle {
-            center: glm::to_dvec2(center),
+            center: glm::to_dvec2(animation.asset.center()),
             dims: dims,
         };
 
