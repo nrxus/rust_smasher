@@ -1,23 +1,15 @@
 use std::time::Duration;
 
-#[derive(Default)]
-struct Info {
-    current: u32,
-    elapsed: Option<Duration>,
+#[derive(Default, Clone)]
+struct FrameInfo {
+    frame: u32,
+    elapsed: Duration,
 }
 
-impl Info {
-    fn restarted() -> Self {
-        Self::new(0, Some(Duration::default()))
-    }
-
-    fn elapsed(current: u32, elapsed: Duration) -> Self {
-        Self::new(current, Some(elapsed))
-    }
-
-    fn new(current: u32, elapsed: Option<Duration>) -> Self {
-        Info {
-            current: current,
+impl FrameInfo {
+    fn new(frame: u32, elapsed: Duration) -> Self {
+        FrameInfo {
+            frame: frame,
             elapsed: elapsed,
         }
     }
@@ -28,8 +20,7 @@ pub struct FrameAnimator {
     max: u32,
     duration: Duration,
     repeat: bool,
-    current: u32,
-    elapsed: Option<Duration>,
+    current: Option<FrameInfo>,
 }
 
 impl FrameAnimator {
@@ -38,41 +29,40 @@ impl FrameAnimator {
             max: max,
             duration: duration,
             repeat: repeat,
-            current: 0,
-            elapsed: None,
+            current: None,
         }
     }
 
     pub fn frame(&self) -> u32 {
-        self.current
+        self.current.as_ref().map_or(0, |i| i.frame)
     }
 
     pub fn is_active(&self) -> bool {
-        self.elapsed.is_some()
+        self.current.is_some()
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        let info = self.elapsed
-            .map_or(Info::restarted(), |d| self.advance(d + delta));
-        self.current = info.current;
-        self.elapsed = info.elapsed;
+        self.current =
+            self.current.as_ref().map_or(Some(FrameInfo::default()), |i| self.advance(i, delta));
     }
 
     pub fn num_frames(&self) -> u32 {
         self.max
     }
 
-    fn advance(&self, elapsed: Duration) -> Info {
-        elapsed.checked_sub(self.duration)
-            .map_or(Info::elapsed(self.current, elapsed), |r| self.next(r))
+    fn advance(&self, current: &FrameInfo, delta: Duration) -> Option<FrameInfo> {
+        let elapsed = current.elapsed + delta;
+        let remaining = elapsed.checked_sub(self.duration);
+        remaining.map_or(Some(FrameInfo::new(current.frame, elapsed)),
+                         |r| self.next(current, r))
     }
 
-    fn next(&self, remaining: Duration) -> Info {
-        let current = (self.current + 1) % self.max;
-        if current > 0 || self.repeat {
-            Info::elapsed(current, remaining)
+    fn next(&self, current: &FrameInfo, remaining: Duration) -> Option<FrameInfo> {
+        let frame = (current.frame + 1) % self.max;
+        if frame > 0 || self.repeat {
+            Some(FrameInfo::new(frame, remaining))
         } else {
-            Info::default()
+            None
         }
     }
 }
