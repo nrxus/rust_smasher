@@ -9,6 +9,8 @@ use moho::input_manager::{EventPump, InputManager};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
+use std::time::Duration;
+
 pub enum MeteorState {
     UNLAUNCHED(UnlaunchedMeteor),
     LAUNCHED(LaunchedMeteor),
@@ -35,7 +37,10 @@ impl Player {
         }
     }
 
-    pub fn update<E: EventPump>(&mut self, planets: &[Planet], input_manager: &InputManager<E>) {
+    pub fn update<E: EventPump>(&mut self,
+                                planets: &[Planet],
+                                delta: Duration,
+                                input_manager: &InputManager<E>) {
         let target = input_manager.mouse_coords();
 
         let next_state = match self.state {
@@ -44,7 +49,7 @@ impl Player {
             }
             MeteorState::LAUNCHED(ref m) if input_manager.did_press_key(Keycode::R) => {
                 let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
-                explosion.update();
+                explosion.update(delta);
                 Some(MeteorState::EXPLODED(explosion))
             }
             MeteorState::UNLAUNCHED(ref mut m) => {
@@ -55,14 +60,14 @@ impl Player {
                 m.update(planets);
                 if planets.iter().any(|p| m.collides(p)) {
                     let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
-                    explosion.update();
+                    explosion.update(delta);
                     Some(MeteorState::EXPLODED(explosion))
                 } else {
                     None
                 }
             }
             MeteorState::EXPLODED(ref mut a) => {
-                a.update();
+                a.update(delta);
                 if a.is_active() {
                     None
                 } else {

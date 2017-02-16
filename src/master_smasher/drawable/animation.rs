@@ -5,6 +5,8 @@ use glm;
 use moho::frame_animator::FrameAnimator;
 use moho::tile_sheet::TileSheet;
 
+use std::time::Duration;
+
 #[derive(Clone)]
 pub struct Animation {
     pub asset: Asset,
@@ -28,8 +30,8 @@ impl Animation {
         }
     }
 
-    pub fn update(&mut self) {
-        self.animator.animate();
+    pub fn update(&mut self, delta: Duration) {
+        self.animator.animate(delta);
         let frame = self.animator.frame();
         let src_rect = self.sheet.uv(frame);
         self.asset.src_rect = Some(src_rect);

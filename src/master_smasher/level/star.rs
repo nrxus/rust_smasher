@@ -4,6 +4,8 @@ use master_smasher::shape::{Intersect, Rectangle};
 
 use glm;
 
+use std::time::Duration;
+
 pub struct Star {
     body: Rectangle,
     animation: Animation,
@@ -24,8 +26,8 @@ impl Star {
         }
     }
 
-    pub fn update(&mut self) {
-        self.animation.update();
+    pub fn update(&mut self, delta: Duration) {
+        self.animation.update(delta);
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {

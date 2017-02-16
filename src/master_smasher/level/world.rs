@@ -8,6 +8,8 @@ use master_smasher::drawable::{Animation, AnimationData, Drawable};
 use glm;
 use num_traits::One;
 
+use std::time::Duration;
+
 pub struct World {
     pub planets: Vec<Planet>,
     pub stars: Vec<Star>,
@@ -54,21 +56,21 @@ impl World {
         });
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, delta: Duration) {
         for planet in &mut self.planets {
             planet.update();
         }
 
         for star in &mut self.stars {
-            star.update();
+            star.update(delta);
         }
 
         for enemy in &mut self.enemies {
-            enemy.update();
+            enemy.update(delta);
         }
 
         for animation in &mut self.explosions {
-            animation.update();
+            animation.update(delta);
         }
 
         self.explosions.retain(Animation::is_active);

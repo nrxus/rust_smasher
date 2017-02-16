@@ -28,7 +28,7 @@ impl FrameAnimator {
         self.instant.is_some()
     }
 
-    pub fn animate(&mut self) {
+    pub fn animate(&mut self, delta: Duration) {
         match self.instant {
             None => self.restart(),
             Some(instant) if instant.elapsed() >= self.duration => self.advance(instant),
