@@ -1,5 +1,28 @@
 use std::time::Duration;
 
+#[derive(Default)]
+struct Info {
+    current: u32,
+    elapsed: Option<Duration>,
+}
+
+impl Info {
+    fn restarted() -> Self {
+        Self::new(0, Some(Duration::default()))
+    }
+
+    fn elapsed(current: u32, elapsed: Duration) -> Self {
+        Self::new(current, Some(elapsed))
+    }
+
+    fn new(current: u32, elapsed: Option<Duration>) -> Self {
+        Info {
+            current: current,
+            elapsed: elapsed,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct FrameAnimator {
     max: u32,
@@ -29,35 +52,27 @@ impl FrameAnimator {
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        match self.elapsed {
-            None => self.restart(),
-            Some(duration) => {
-                let elapsed = duration + delta;
-                if elapsed >= self.duration {
-                    self.advance(elapsed);
-                } else {
-                    self.elapsed = Some(elapsed);
-                }
-            }
-        }
+        let info = self.elapsed
+            .map_or(Info::restarted(), |d| self.advance(d + delta));
+        self.current = info.current;
+        self.elapsed = info.elapsed;
     }
 
     pub fn num_frames(&self) -> u32 {
         self.max
     }
 
-    fn advance(&mut self, elapsed: Duration) {
-        let remaining = elapsed - self.duration;
-        self.current = (self.current + 1) % self.max;
-        self.elapsed = if self.current > 0 || self.repeat {
-            Some(remaining)
-        } else {
-            None
-        };
+    fn advance(&self, elapsed: Duration) -> Info {
+        elapsed.checked_sub(self.duration)
+            .map_or(Info::elapsed(self.current, elapsed), |r| self.next(r))
     }
 
-    fn restart(&mut self) {
-        self.current = 0;
-        self.elapsed = Some(Duration::new(0, 0));
+    fn next(&self, remaining: Duration) -> Info {
+        let current = (self.current + 1) % self.max;
+        if current > 0 || self.repeat {
+            Info::elapsed(current, remaining)
+        } else {
+            Info::default()
+        }
     }
 }
