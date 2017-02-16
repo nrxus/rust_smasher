@@ -41,19 +41,16 @@ impl FrameAnimator {
         self.current.as_ref().map(|c| c.frame)
     }
 
-    pub fn animate(&mut self, delta: Duration) {
-        self.current =
-            self.current.as_ref().map_or(Some(FrameInfo::default()), |i| self.advance(i, delta));
-    }
-
     pub fn num_frames(&self) -> u32 {
         self.max
     }
 
-    fn advance(&self, current: &FrameInfo, delta: Duration) -> Option<FrameInfo> {
-        let elapsed = current.elapsed + delta;
-        elapsed.checked_sub(self.duration)
-            .map_or(Some(current.elapse(elapsed)), |r| self.next(current, r))
+    pub fn animate(&mut self, delta: Duration) {
+        self.current = self.current.as_ref().map_or(Some(Default::default()), |frame| {
+            let elapsed = frame.elapsed + delta;
+            elapsed.checked_sub(self.duration)
+                .map_or(Some(frame.elapse(elapsed)), |r| self.next(frame, r))
+        });
     }
 
     fn next(&self, current: &FrameInfo, remaining: Duration) -> Option<FrameInfo> {
