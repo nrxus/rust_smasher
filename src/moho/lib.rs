@@ -17,6 +17,7 @@ pub mod input_manager;
 pub mod renderer;
 pub mod resource_manager;
 pub mod tile_sheet;
+pub mod timer;
 pub mod window_wrapper;
 
 pub mod errors {
