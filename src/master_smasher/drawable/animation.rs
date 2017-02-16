@@ -32,12 +32,13 @@ impl Animation {
 
     pub fn update(&mut self, delta: Duration) {
         self.animator.animate(delta);
-        let frame = self.animator.frame();
-        let src_rect = self.sheet.uv(frame);
-        self.asset.src_rect = Some(src_rect);
+        if let Some(frame) = self.animator.frame() {
+            let src_rect = self.sheet.uv(frame);
+            self.asset.src_rect = Some(src_rect);
+        }
     }
 
     pub fn is_active(&self) -> bool {
-        self.animator.is_active()
+        self.animator.frame().is_some()
     }
 }

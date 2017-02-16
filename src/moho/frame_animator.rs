@@ -37,12 +37,8 @@ impl FrameAnimator {
         }
     }
 
-    pub fn frame(&self) -> u32 {
-        self.current.as_ref().map_or(0, |i| i.frame)
-    }
-
-    pub fn is_active(&self) -> bool {
-        self.current.is_some()
+    pub fn frame(&self) -> Option<u32> {
+        self.current.as_ref().map(|c| c.frame)
     }
 
     pub fn animate(&mut self, delta: Duration) {
