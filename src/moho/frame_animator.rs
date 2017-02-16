@@ -13,6 +13,10 @@ impl FrameInfo {
             elapsed: elapsed,
         }
     }
+
+    fn elapse(&self, elapsed: Duration) -> Self {
+        FrameInfo::new(self.frame, elapsed)
+    }
 }
 
 #[derive(Clone)]
@@ -52,9 +56,8 @@ impl FrameAnimator {
 
     fn advance(&self, current: &FrameInfo, delta: Duration) -> Option<FrameInfo> {
         let elapsed = current.elapsed + delta;
-        let remaining = elapsed.checked_sub(self.duration);
-        remaining.map_or(Some(FrameInfo::new(current.frame, elapsed)),
-                         |r| self.next(current, r))
+        elapsed.checked_sub(self.duration)
+            .map_or(Some(current.elapse(elapsed)), |r| self.next(current, r))
     }
 
     fn next(&self, current: &FrameInfo, remaining: Duration) -> Option<FrameInfo> {
