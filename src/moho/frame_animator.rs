@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 #[derive(Clone)]
 pub struct FrameAnimator {
@@ -6,7 +6,7 @@ pub struct FrameAnimator {
     duration: Duration,
     repeat: bool,
     current: u32,
-    instant: Option<Instant>,
+    elapsed: Option<Duration>,
 }
 
 impl FrameAnimator {
@@ -16,7 +16,7 @@ impl FrameAnimator {
             duration: duration,
             repeat: repeat,
             current: 0,
-            instant: None,
+            elapsed: None,
         }
     }
 
@@ -25,14 +25,20 @@ impl FrameAnimator {
     }
 
     pub fn is_active(&self) -> bool {
-        self.instant.is_some()
+        self.elapsed.is_some()
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        match self.instant {
+        match self.elapsed {
             None => self.restart(),
-            Some(instant) if instant.elapsed() >= self.duration => self.advance(instant),
-            _ => {}
+            Some(duration) => {
+                let elapsed = duration + delta;
+                if elapsed >= self.duration {
+                    self.advance(elapsed);
+                } else {
+                    self.elapsed = Some(elapsed);
+                }
+            }
         }
     }
 
@@ -40,10 +46,11 @@ impl FrameAnimator {
         self.max
     }
 
-    fn advance(&mut self, instant: Instant) {
+    fn advance(&mut self, elapsed: Duration) {
+        let remaining = elapsed - self.duration;
         self.current = (self.current + 1) % self.max;
-        self.instant = if self.current > 0 || self.repeat {
-            Some(instant + self.duration)
+        self.elapsed = if self.current > 0 || self.repeat {
+            Some(remaining)
         } else {
             None
         };
@@ -51,6 +58,6 @@ impl FrameAnimator {
 
     fn restart(&mut self) {
         self.current = 0;
-        self.instant = Some(Instant::now());
+        self.elapsed = Some(Duration::new(0, 0));
     }
 }
