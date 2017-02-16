@@ -110,7 +110,7 @@ impl<R: Renderer> ResourceManager<R> {
         });
         let src = src.map(Self::get_rect);
         let dst = dst.map(Self::get_rect);
-        self.renderer.copy(&texture, src, dst)
+        self.renderer.copy(texture, src, dst)
     }
 
     fn get_rect(rect: glm::IVec4) -> rect::Rect {

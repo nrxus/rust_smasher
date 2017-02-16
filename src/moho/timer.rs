@@ -20,6 +20,12 @@ pub struct Timer {
     last_update: Instant,
 }
 
+impl Default for Timer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Timer {
     pub fn new() -> Self {
         let now = Instant::now();
