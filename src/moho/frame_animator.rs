@@ -59,17 +59,19 @@ impl FrameAnimator {
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        self.current = self.current.as_ref().map_or(Some(Default::default()), |frame| {
-            let elapsed = frame.elapsed + delta;
-            elapsed.checked_sub(self.duration)
-                .map_or(Some(frame.elapse(elapsed)), |r| self.next(frame, r))
-        });
+        self.current = self.current.as_ref().map_or(Some(Default::default()),
+                                                    |f| self.next(f.frame, f.elapsed + delta));
     }
 
-    fn next(&self, current: &FrameInfo, remaining: Duration) -> Option<FrameInfo> {
-        let frame = (current.frame + 1) % self.max;
-        if frame > 0 || self.repeat {
-            Some(FrameInfo::new(frame, remaining))
+    fn next(&self, current: u32, elapsed: Duration) -> Option<FrameInfo> {
+        let mut frame = current;
+        let mut remaining = elapsed;
+        while remaining >= self.duration {
+            frame += 1;
+            remaining = remaining - self.duration;
+        }
+        if frame < self.max || self.repeat {
+            Some(FrameInfo::new(frame % self.max, remaining))
         } else {
             None
         }
@@ -99,5 +101,57 @@ mod test {
         animator.start();
         assert!(animator.frame().is_some());
         assert_eq!(animator.frame().unwrap(), 0);
+    }
+
+    #[test]
+    fn animate() {
+        let mut animator = FrameAnimator::started(6, Duration::from_secs(5), true);
+
+        animator.animate(Duration::from_secs(5));
+        assert_eq!(animator.frame().unwrap(), 1);
+
+        animator.animate(Duration::from_secs(3));
+        assert_eq!(animator.frame().unwrap(), 1);
+
+        animator.animate(Duration::from_secs(4));
+        assert_eq!(animator.frame().unwrap(), 2);
+
+        animator.animate(Duration::from_secs(4));
+        assert_eq!(animator.frame().unwrap(), 3);
+
+        animator.animate(Duration::from_secs(10));
+        assert_eq!(animator.frame().unwrap(), 5);
+    }
+
+    #[test]
+    fn repeat() {
+        let mut animator = FrameAnimator::started(2, Duration::from_secs(2), true);
+
+        animator.animate(Duration::from_secs(2));
+        assert_eq!(animator.frame().unwrap(), 1);
+
+        animator.animate(Duration::from_secs(2));
+        assert_eq!(animator.frame().unwrap(), 0);
+
+        animator.animate(Duration::from_secs(4));
+        assert_eq!(animator.frame().unwrap(), 0);
+    }
+
+    #[test]
+    fn no_repeat() {
+        let mut animator = FrameAnimator::started(2, Duration::from_secs(2), false);
+
+        animator.animate(Duration::from_secs(2));
+        assert_eq!(animator.frame().unwrap(), 1);
+
+        animator.animate(Duration::from_secs(3));
+        assert!(animator.frame().is_none());
+
+        animator.start();
+        animator.animate(Duration::from_secs(1));
+        assert_eq!(animator.frame().unwrap(), 0);
+
+        animator.animate(Duration::from_secs(3));
+        assert!(animator.frame().is_none())
     }
 }
