@@ -39,7 +39,7 @@ impl World {
 
         self.stars.retain(|s| if meteor.collides(s) {
             let center = glm::to_ivec2(s.center());
-            let animation = Animation::start(explosion, center, glm::DVec2::one());
+            let animation = Animation::from_data(explosion, center, glm::DVec2::one());
             explosions.push(animation);
             false
         } else {
@@ -48,7 +48,7 @@ impl World {
 
         self.enemies.retain(|e| if meteor.collides(e) {
             let center = glm::to_ivec2(e.center());
-            let animation = Animation::start(explosion, center, glm::DVec2::one());
+            let animation = Animation::from_data(explosion, center, glm::DVec2::one());
             explosions.push(animation);
             false
         } else {

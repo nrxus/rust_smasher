@@ -53,10 +53,10 @@ impl WorldAssets {
     }
 
     pub fn star(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.star, center, glm::DVec2::one())
+        Animation::from_data(&self.star, center, glm::DVec2::one())
     }
 
     pub fn enemy(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.enemy, center, glm::DVec2::from_s(0.75))
+        Animation::from_data(&self.enemy, center, glm::DVec2::from_s(0.75))
     }
 }

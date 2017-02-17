@@ -29,6 +29,6 @@ impl PlayerAssets {
     }
 
     pub fn explosion(&self, center: glm::IVec2) -> Animation {
-        Animation::start(&self.explosion, center, glm::DVec2::one())
+        Animation::from_data(&self.explosion, center, glm::DVec2::one())
     }
 }

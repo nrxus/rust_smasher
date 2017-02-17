@@ -15,7 +15,7 @@ pub struct Animation {
 }
 
 impl Animation {
-    pub fn start(data: &AnimationData, center: glm::IVec2, scale: glm::DVec2) -> Animation {
+    pub fn from_data(data: &AnimationData, center: glm::IVec2, scale: glm::DVec2) -> Animation {
         let animator = data.animator.clone();
         let scale = glm::dvec2(1. / animator.num_frames() as f64, 1.) * scale;
         let asset = Asset::scaled_texture(&data.texture, center, scale);
