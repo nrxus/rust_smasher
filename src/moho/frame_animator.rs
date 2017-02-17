@@ -37,6 +37,19 @@ impl FrameAnimator {
         }
     }
 
+    pub fn started(max: u32, duration: Duration, repeat: bool) -> FrameAnimator {
+        FrameAnimator {
+            max: max,
+            duration: duration,
+            repeat: repeat,
+            current: Some(Default::default()),
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.current = Some(Default::default());
+    }
+
     pub fn frame(&self) -> Option<u32> {
         self.current.as_ref().map(|c| c.frame)
     }
@@ -60,5 +73,31 @@ impl FrameAnimator {
         } else {
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new_animator() {
+        let animator = FrameAnimator::new(3, Duration::from_secs(5), true);
+        assert!(animator.frame().is_none());
+    }
+
+    #[test]
+    fn started_animator() {
+        let animator = FrameAnimator::started(3, Duration::from_secs(5), true);
+        assert!(animator.frame().is_some());
+        assert_eq!(animator.frame().unwrap(), 0);
+    }
+
+    #[test]
+    fn start() {
+        let mut animator = FrameAnimator::new(3, Duration::from_secs(5), true);
+        animator.start();
+        assert!(animator.frame().is_some());
+        assert_eq!(animator.frame().unwrap(), 0);
     }
 }
