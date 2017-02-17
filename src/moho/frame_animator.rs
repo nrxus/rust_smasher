@@ -13,10 +13,6 @@ impl FrameInfo {
             elapsed: elapsed,
         }
     }
-
-    fn elapse(&self, elapsed: Duration) -> Self {
-        FrameInfo::new(self.frame, elapsed)
-    }
 }
 
 #[derive(Clone)]
@@ -130,11 +126,11 @@ mod test {
         animator.animate(Duration::from_secs(2));
         assert_eq!(animator.frame().unwrap(), 1);
 
-        animator.animate(Duration::from_secs(2));
+        animator.animate(Duration::from_secs(3));
         assert_eq!(animator.frame().unwrap(), 0);
 
-        animator.animate(Duration::from_secs(4));
-        assert_eq!(animator.frame().unwrap(), 0);
+        animator.animate(Duration::from_secs(1));
+        assert_eq!(animator.frame().unwrap(), 1);
     }
 
     #[test]
