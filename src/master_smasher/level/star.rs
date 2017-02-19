@@ -26,7 +26,7 @@ impl Star {
         }
     }
 
-    pub fn update(&mut self, delta: Duration) {
+    pub fn animate(&mut self, delta: Duration) {
         self.animation.update(delta);
     }
 

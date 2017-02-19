@@ -56,17 +56,17 @@ impl World {
         });
     }
 
-    pub fn update(&mut self, delta: Duration) {
+    pub fn animate(&mut self, delta: Duration) {
         for planet in &mut self.planets {
             planet.update();
         }
 
         for star in &mut self.stars {
-            star.update(delta);
+            star.animate(delta);
         }
 
         for enemy in &mut self.enemies {
-            enemy.update(delta);
+            enemy.animate(delta);
         }
 
         for animation in &mut self.explosions {

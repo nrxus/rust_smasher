@@ -33,15 +33,6 @@ impl FrameAnimator {
         }
     }
 
-    pub fn started(max: u32, duration: Duration, repeat: bool) -> FrameAnimator {
-        FrameAnimator {
-            max: max,
-            duration: duration,
-            repeat: repeat,
-            current: Some(Default::default()),
-        }
-    }
-
     pub fn start(&mut self) {
         self.current = Some(Default::default());
     }
@@ -84,13 +75,6 @@ mod test {
     }
 
     #[test]
-    fn started_animator() {
-        let animator = FrameAnimator::started(3, Duration::from_secs(5), true);
-        assert!(animator.frame().is_some());
-        assert_eq!(animator.frame().unwrap(), 0);
-    }
-
-    #[test]
     fn start() {
         let mut animator = FrameAnimator::new(3, Duration::from_secs(5), true);
         animator.start();
@@ -100,7 +84,8 @@ mod test {
 
     #[test]
     fn animate() {
-        let mut animator = FrameAnimator::started(6, Duration::from_secs(5), true);
+        let mut animator = FrameAnimator::new(6, Duration::from_secs(5), true);
+        animator.start();
 
         animator.animate(Duration::from_secs(5));
         assert_eq!(animator.frame().unwrap(), 1);
@@ -120,7 +105,8 @@ mod test {
 
     #[test]
     fn repeat() {
-        let mut animator = FrameAnimator::started(2, Duration::from_secs(2), true);
+        let mut animator = FrameAnimator::new(2, Duration::from_secs(2), true);
+        animator.start();
 
         animator.animate(Duration::from_secs(2));
         assert_eq!(animator.frame().unwrap(), 1);
@@ -134,7 +120,8 @@ mod test {
 
     #[test]
     fn no_repeat() {
-        let mut animator = FrameAnimator::started(2, Duration::from_secs(2), false);
+        let mut animator = FrameAnimator::new(2, Duration::from_secs(2), false);
+        animator.start();
 
         animator.animate(Duration::from_secs(2));
         assert_eq!(animator.frame().unwrap(), 1);

@@ -56,14 +56,17 @@ impl Level {
         }
     }
 
-    pub fn update<E: EventPump>(&mut self, delta: Duration, input_manager: &InputManager<E>) {
-        self.player.update(&self.world.planets, delta, input_manager);
+    pub fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>) {
+        self.player.update(&self.world.planets, input_manager);
 
         if let MeteorState::LAUNCHED(ref m) = self.player.state {
             self.world.collide(m);
         }
+    }
 
-        self.world.update(delta);
+    pub fn animate(&mut self, delta: Duration) {
+        self.player.animate(delta);
+        self.world.animate(delta);
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {

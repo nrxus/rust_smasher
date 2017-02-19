@@ -53,7 +53,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
             return Ok(());
         }
 
-        self.level.update(delta, &self.input_manager);
+        self.level.update(&self.input_manager);
+        self.level.animate(delta);
         let drawables = self.level.drawables();
         Self::draw(self.background.id, &drawables, &mut self.renderer)
     }

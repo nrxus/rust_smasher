@@ -37,10 +37,7 @@ impl Player {
         }
     }
 
-    pub fn update<E: EventPump>(&mut self,
-                                planets: &[Planet],
-                                delta: Duration,
-                                input_manager: &InputManager<E>) {
+    pub fn update<E: EventPump>(&mut self, planets: &[Planet], input_manager: &InputManager<E>) {
         let target = input_manager.mouse_coords();
 
         let next_state = match self.state {
@@ -49,7 +46,6 @@ impl Player {
             }
             MeteorState::LAUNCHED(ref m) if input_manager.did_press_key(Keycode::R) => {
                 let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
-                explosion.update(delta);
                 Some(MeteorState::EXPLODED(explosion))
             }
             MeteorState::UNLAUNCHED(ref mut m) => {
@@ -59,15 +55,12 @@ impl Player {
             MeteorState::LAUNCHED(ref mut m) => {
                 m.update(planets);
                 if planets.iter().any(|p| m.collides(p)) {
-                    let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
-                    explosion.update(delta);
-                    Some(MeteorState::EXPLODED(explosion))
+                    Some(MeteorState::EXPLODED(self.assets.explosion(glm::to_ivec2(m.center()))))
                 } else {
                     None
                 }
             }
             MeteorState::EXPLODED(ref mut a) => {
-                a.update(delta);
                 if a.is_active() {
                     None
                 } else {
@@ -80,6 +73,12 @@ impl Player {
 
         if let Some(s) = next_state {
             self.state = s;
+        }
+    }
+
+    pub fn animate(&mut self, delta: Duration) {
+        if let MeteorState::EXPLODED(ref mut a) = self.state {
+            a.update(delta);
         }
     }
 
