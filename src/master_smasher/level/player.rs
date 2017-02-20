@@ -41,11 +41,11 @@ impl Player {
         let target = input_manager.mouse_coords();
 
         let next_state = match self.state {
-            MeteorState::UNLAUNCHED(_) if input_manager.did_click_mouse(MouseButton::Left) => {
-                Some(MeteorState::LAUNCHED(self.launch(target)))
+            MeteorState::UNLAUNCHED(ref m) if input_manager.did_click_mouse(MouseButton::Left) => {
+                Some(m.next(self.max_coords))
             }
             MeteorState::LAUNCHED(ref m) if input_manager.did_press_key(Keycode::R) => {
-                let mut explosion = self.assets.explosion(glm::to_ivec2(m.center()));
+                let explosion = self.assets.explosion(glm::to_ivec2(m.center()));
                 Some(MeteorState::EXPLODED(explosion))
             }
             MeteorState::UNLAUNCHED(ref mut m) => {
@@ -88,13 +88,5 @@ impl Player {
             MeteorState::UNLAUNCHED(ref m) => m.drawables(),
             MeteorState::EXPLODED(ref a) => vec![Drawable::Asset(&a.asset)],
         }
-    }
-
-    fn launch(&self, target: glm::IVec2) -> LaunchedMeteor {
-        const FACTOR: f64 = 50.;
-        let asset = self.assets.meteor(self.initial_center);
-        let offset = target - glm::to_ivec2(asset.center());
-        let velocity = glm::to_dvec2(offset) / FACTOR;
-        LaunchedMeteor::new(asset, self.max_coords, velocity)
     }
 }

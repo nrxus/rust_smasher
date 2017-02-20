@@ -1,4 +1,6 @@
 use master_smasher::drawable::{Asset, Drawable};
+use super::MeteorState;
+use super::launched_meteor::LaunchedMeteor;
 
 use glm;
 use glm::ext::normalize_to;
@@ -7,6 +9,7 @@ use sdl2::rect;
 pub struct UnlaunchedMeteor {
     asset: Asset,
     rects: [rect::Rect; 10],
+    target: glm::IVec2,
 }
 
 impl UnlaunchedMeteor {
@@ -15,10 +18,12 @@ impl UnlaunchedMeteor {
         UnlaunchedMeteor {
             asset: asset,
             rects: rects,
+            target: glm::ivec2(0, 0),
         }
     }
 
     pub fn update(&mut self, target: glm::IVec2) {
+        self.target = target;
         let target = glm::to_dvec2(target);
         let center = glm::to_dvec2(self.asset.center());
         let distance = target - center;
@@ -35,5 +40,13 @@ impl UnlaunchedMeteor {
 
     pub fn drawables(&self) -> Vec<Drawable> {
         vec![Drawable::Asset(&self.asset), Drawable::Rectangles(&self.rects)]
+    }
+
+    pub fn next(&self, max_coords: glm::UVec2) -> MeteorState {
+        const FACTOR: f64 = 50.;
+        let asset = self.asset.clone();
+        let offset = self.target - glm::to_ivec2(asset.center());
+        let velocity = glm::to_dvec2(offset) / FACTOR;
+        MeteorState::LAUNCHED(LaunchedMeteor::new(asset, max_coords, velocity))
     }
 }

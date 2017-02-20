@@ -42,10 +42,6 @@ impl Animation {
         }
     }
 
-    pub fn start(&mut self) {
-        self.animator.start();
-    }
-
     pub fn is_active(&self) -> bool {
         self.animator.frame().is_some()
     }
