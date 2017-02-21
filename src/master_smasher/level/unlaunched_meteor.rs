@@ -42,7 +42,7 @@ impl UnlaunchedMeteor {
         vec![Drawable::Asset(&self.asset), Drawable::Rectangles(&self.rects)]
     }
 
-    pub fn next(&self, max_coords: glm::UVec2) -> MeteorState {
+    pub fn launch(&self, max_coords: glm::UVec2) -> MeteorState {
         const FACTOR: f64 = 50.;
         let asset = self.asset.clone();
         let offset = self.target - glm::to_ivec2(asset.center());

@@ -1,15 +1,13 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset};
+use master_smasher::drawable::AnimationData;
 
-use glm;
 use moho::errors::*;
 use moho::resource_manager::{ResourceManager, Texture};
 use moho::renderer::Renderer;
-use num_traits::One;
 
 #[derive(Clone)]
 pub struct PlayerAssets {
-    meteor: Texture,
-    explosion: AnimationData,
+    pub meteor: Texture,
+    pub explosion: AnimationData,
 }
 
 impl PlayerAssets {
@@ -22,13 +20,5 @@ impl PlayerAssets {
             explosion: explosion,
         };
         Ok(assets)
-    }
-
-    pub fn meteor(&self, center: glm::IVec2) -> Asset {
-        Asset::from_texture(&self.meteor, center)
-    }
-
-    pub fn explosion(&self, center: glm::IVec2) -> Animation {
-        Animation::from_data(&self.explosion, center, glm::DVec2::one())
     }
 }

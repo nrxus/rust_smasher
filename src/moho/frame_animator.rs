@@ -54,7 +54,7 @@ impl FrameAnimator {
         let mut remaining = elapsed;
         while remaining >= self.duration {
             frame += 1;
-            remaining = remaining - self.duration;
+            remaining -= self.duration;
         }
         if frame < self.max || self.repeat {
             Some(FrameInfo::new(frame % self.max, remaining))

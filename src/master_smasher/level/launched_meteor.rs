@@ -1,9 +1,11 @@
-use master_smasher::drawable::{Asset, Drawable};
+use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::planet::Planet;
+use super::MeteorState;
 
 use glm;
+use num_traits::One;
 
 use std::cmp;
 
@@ -49,8 +51,10 @@ impl LaunchedMeteor {
         collidable.collides(&self.body)
     }
 
-    pub fn center(&self) -> glm::DVec2 {
-        self.body.center
+    pub fn explode(&self, explosion: AnimationData) -> MeteorState {
+        let center = glm::to_ivec2(self.body.center);
+        let explosion = Animation::from_data(explosion, center, glm::DVec2::one());
+        MeteorState::EXPLODED(explosion)
     }
 
     fn acceleration(&self, planets: &[Planet]) -> glm::DVec2 {

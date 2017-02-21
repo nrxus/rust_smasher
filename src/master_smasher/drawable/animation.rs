@@ -15,11 +15,10 @@ pub struct Animation {
 }
 
 impl Animation {
-    pub fn from_data(data: &AnimationData, center: glm::IVec2, scale: glm::DVec2) -> Animation {
-        let animator = data.animator.clone();
-        let scale = glm::dvec2(1. / animator.num_frames() as f64, 1.) * scale;
+    pub fn from_data(data: AnimationData, center: glm::IVec2, scale: glm::DVec2) -> Animation {
+        let scale = glm::dvec2(1. / data.animator.num_frames() as f64, 1.) * scale;
         let asset = Asset::scaled_texture(&data.texture, center, scale);
-        Self::new(asset, data.sheet.clone(), animator)
+        Self::new(asset, data.sheet.clone(), data.animator)
     }
 
     pub fn new(asset: Asset, sheet: TileSheet, animator: FrameAnimator) -> Self {

@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, Drawable};
+use master_smasher::drawable::{Animation, Asset, Drawable};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
@@ -26,7 +26,7 @@ pub struct Player {
 
 impl Player {
     pub fn new(assets: PlayerAssets, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
-        let asset = assets.meteor(center);
+        let asset = Asset::from_texture(&assets.meteor, center);
         let meteor = UnlaunchedMeteor::new(asset.clone());
         let state = MeteorState::UNLAUNCHED(meteor);
         Player {
@@ -42,11 +42,10 @@ impl Player {
 
         let next_state = match self.state {
             MeteorState::UNLAUNCHED(ref m) if input_manager.did_click_mouse(MouseButton::Left) => {
-                Some(m.next(self.max_coords))
+                Some(m.launch(self.max_coords))
             }
             MeteorState::LAUNCHED(ref m) if input_manager.did_press_key(Keycode::R) => {
-                let explosion = self.assets.explosion(glm::to_ivec2(m.center()));
-                Some(MeteorState::EXPLODED(explosion))
+                Some(m.explode(self.assets.explosion.clone()))
             }
             MeteorState::UNLAUNCHED(ref mut m) => {
                 m.update(target);
@@ -55,7 +54,7 @@ impl Player {
             MeteorState::LAUNCHED(ref mut m) => {
                 m.update(planets);
                 if planets.iter().any(|p| m.collides(p)) {
-                    Some(MeteorState::EXPLODED(self.assets.explosion(glm::to_ivec2(m.center()))))
+                    Some(m.explode(self.assets.explosion.clone()))
                 } else {
                     None
                 }
@@ -64,7 +63,8 @@ impl Player {
                 if a.is_active() {
                     None
                 } else {
-                    let mut meteor = UnlaunchedMeteor::new(self.assets.meteor(self.initial_center));
+                    let asset = Asset::from_texture(&self.assets.meteor, self.initial_center);
+                    let mut meteor = UnlaunchedMeteor::new(asset);
                     meteor.update(target);
                     Some(MeteorState::UNLAUNCHED(meteor))
                 }
