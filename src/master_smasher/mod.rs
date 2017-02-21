@@ -3,7 +3,6 @@ mod level;
 mod shape;
 
 use self::level::Level;
-use self::drawable::Drawable;
 
 use errors::*;
 use moho::input_manager::InputManager;
@@ -42,36 +41,34 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();
-            self.update(game_time.since_update)?;
+            self.update();
+            self.draw(game_time.since_update)?;
         }
         Ok(())
     }
 
-    fn update(&mut self, delta: Duration) -> Result<()> {
+    fn update(&mut self) {
         self.input_manager.update();
         if self.game_quit() {
-            return Ok(());
+            return;
         }
 
         self.level.update(&self.input_manager);
-        self.level.animate(delta);
-        let drawables = self.level.drawables();
-        Self::draw(self.background.id, &drawables, &mut self.renderer)
     }
 
     fn game_quit(&self) -> bool {
         self.input_manager.game_quit() || self.input_manager.is_key_down(Keycode::Escape)
     }
 
-    fn draw<R>(bg: usize, drawables: &[Drawable], renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        renderer.clear();
-        renderer.draw(bg, None, None)?;
+    fn draw(&mut self, delta: Duration) -> Result<()> {
+        self.level.animate(delta);
+        let drawables = self.level.drawables();
+        self.renderer.clear();
+        self.renderer.draw(self.background.id, None, None)?;
         for drawable in drawables {
-            drawable.draw(renderer)?;
+            drawable.draw(&mut self.renderer)?;
         }
-        renderer.present();
+        self.renderer.present();
         Ok(())
     }
 }
