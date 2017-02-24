@@ -31,7 +31,7 @@ impl Star {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(&self.animation.asset)]
+        vec![Drawable::Asset(self.animation.asset)]
     }
 
     pub fn center(&self) -> glm::DVec2 {

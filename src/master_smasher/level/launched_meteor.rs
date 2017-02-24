@@ -40,7 +40,7 @@ impl LaunchedMeteor {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(&self.asset)]
+        vec![Drawable::Asset(self.asset)]
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

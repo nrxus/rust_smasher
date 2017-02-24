@@ -80,7 +80,7 @@ impl World {
         let planets = self.planets.iter().map(Planet::drawables).flat_map(|v| v.into_iter());
         let stars = self.stars.iter().map(Star::drawables).flat_map(|v| v.into_iter());
         let enemies = self.enemies.iter().map(Star::drawables).flat_map(|v| v.into_iter());
-        let explosions = self.explosions.iter().map(|a| &a.asset).map(Drawable::Asset);
+        let explosions = self.explosions.iter().map(|a| a.asset).map(Drawable::Asset);
         planets.chain(stars).chain(enemies).chain(explosions).collect()
     }
 }

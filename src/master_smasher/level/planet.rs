@@ -36,7 +36,7 @@ impl Ring {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(&self.asset), Drawable::Asset(&self.moving)]
+        vec![Drawable::Asset(self.asset), Drawable::Asset(self.moving)]
     }
 
     pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
@@ -90,7 +90,7 @@ impl Planet {
 
     pub fn drawables(&self) -> Vec<Drawable> {
         let mut drawables = self.ring.as_ref().map_or(vec![], |r| r.drawables());
-        drawables.push(Drawable::Asset(&self.asset));
+        drawables.push(Drawable::Asset(self.asset));
         drawables
     }
 

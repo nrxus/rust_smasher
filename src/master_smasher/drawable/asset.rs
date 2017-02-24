@@ -1,7 +1,7 @@
 use glm;
 use moho::resource_manager::Texture;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Asset {
     pub texture_id: usize,
     pub dst_rect: glm::IVec4,

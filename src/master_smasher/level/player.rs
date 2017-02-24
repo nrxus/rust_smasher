@@ -86,7 +86,7 @@ impl Player {
         match self.state {
             MeteorState::LAUNCHED(ref m) => m.drawables(),
             MeteorState::UNLAUNCHED(ref m) => m.drawables(),
-            MeteorState::EXPLODED(ref a) => vec![Drawable::Asset(&a.asset)],
+            MeteorState::EXPLODED(ref a) => vec![Drawable::Asset(a.asset)],
         }
     }
 }
