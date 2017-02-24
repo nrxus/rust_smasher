@@ -15,7 +15,7 @@ struct Ring {
     radius: f64,
     strength: f64,
     asset: Asset,
-    moving: Asset,
+    zoom: f64,
 }
 
 impl Ring {
@@ -24,19 +24,21 @@ impl Ring {
             radius: radius,
             strength: strength,
             asset: asset.clone(),
-            moving: asset,
+            zoom: 1.,
         }
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        let moving_radius = self.moving.dims().x as f64 / 2.;
+        let moving_radius = self.asset.dims().x as f64 * self.zoom / 2.;
         let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
         let zoom = 1. / 2_f64.powf(pull / 500.);
-        self.moving.zoom(glm::DVec2::from_s(zoom));
+        self.zoom *= zoom;
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(self.asset), Drawable::Asset(self.moving)]
+        let mut moving = self.asset.clone();
+        moving.zoom(glm::DVec2::from_s(self.zoom));
+        vec![Drawable::Asset(self.asset), Drawable::Asset(moving)]
     }
 
     pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
@@ -76,8 +78,8 @@ impl Planet {
 
     pub fn animate(&mut self, delta: Duration) {
         if let Some(ref mut r) = self.ring {
-            if r.moving.dims().x / 2 < self.body.radius as u32 {
-                r.moving = r.asset.clone();
+            if r.asset.dims().x as f64 * r.zoom / 2. < self.body.radius {
+                r.zoom = 1.;
             }
             r.animate(delta)
         }
