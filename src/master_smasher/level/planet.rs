@@ -9,6 +9,7 @@ use glm::ext::normalize_to;
 use num_traits::Zero;
 
 use std::cmp;
+use std::time::Duration;
 
 struct Ring {
     radius: f64,
@@ -27,7 +28,7 @@ impl Ring {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn animate(&mut self, delta: Duration) {
         let moving_radius = self.moving.dims().x as f64 / 2.;
         let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
         let zoom = 1. / 2_f64.powf(pull / 500.);
@@ -73,12 +74,12 @@ impl Planet {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn animate(&mut self, delta: Duration) {
         if let Some(ref mut r) = self.ring {
             if r.moving.dims().x / 2 < self.body.radius as u32 {
                 r.moving = r.asset.clone();
             }
-            r.update()
+            r.animate(delta)
         }
     }
 

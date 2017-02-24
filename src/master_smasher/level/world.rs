@@ -58,7 +58,7 @@ impl World {
 
     pub fn animate(&mut self, delta: Duration) {
         for planet in &mut self.planets {
-            planet.update();
+            planet.animate(delta);
         }
 
         for star in &mut self.stars {
