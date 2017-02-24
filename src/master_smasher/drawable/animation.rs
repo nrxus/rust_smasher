@@ -12,6 +12,7 @@ pub struct Animation {
     pub asset: Asset,
     sheet: TileSheet,
     animator: FrameAnimator,
+    active: bool,
 }
 
 impl Animation {
@@ -26,22 +27,25 @@ impl Animation {
             asset: asset,
             sheet: sheet,
             animator: animator,
+            active: true,
         }
     }
 
     pub fn update(&mut self, delta: Duration) {
         if self.is_active() {
             self.animator.animate(delta);
-        } else {
+        } else if self.active {
             self.animator.start();
         }
         if let Some(frame) = self.animator.frame() {
             let src_rect = self.sheet.uv(frame);
             self.asset.src_rect = Some(src_rect);
+        } else {
+            self.active = false;
         }
     }
 
     pub fn is_active(&self) -> bool {
-        self.animator.frame().is_some()
+        self.active && self.animator.frame().is_some()
     }
 }
