@@ -39,7 +39,7 @@ impl UnlaunchedMeteor {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(self.asset), Drawable::Rectangles(&self.rects)]
+        vec![Drawable::Asset(self.asset), Drawable::Rectangles(self.rects.to_vec())]
     }
 
     pub fn launch(&self, max_coords: glm::UVec2) -> MeteorState {
