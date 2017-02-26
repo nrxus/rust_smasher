@@ -27,7 +27,7 @@ pub struct Player {
 impl Player {
     pub fn new(assets: PlayerAssets, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
         let asset = Asset::from_texture(&assets.meteor, center);
-        let meteor = UnlaunchedMeteor::new(asset.clone());
+        let meteor = UnlaunchedMeteor::new(asset);
         let state = MeteorState::UNLAUNCHED(meteor);
         Player {
             state: state,

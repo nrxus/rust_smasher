@@ -23,7 +23,7 @@ impl Ring {
         Ring {
             radius: radius,
             strength: strength,
-            asset: asset.clone(),
+            asset: asset,
             zoom: 1.,
         }
     }

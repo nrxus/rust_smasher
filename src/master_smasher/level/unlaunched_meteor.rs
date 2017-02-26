@@ -8,45 +8,43 @@ use sdl2::rect;
 
 pub struct UnlaunchedMeteor {
     asset: Asset,
-    rects: [rect::Rect; 10],
     target: glm::IVec2,
 }
 
 impl UnlaunchedMeteor {
     pub fn new(asset: Asset) -> Self {
-        let rects = [rect::Rect::new(0, 0, 5, 5); 10];
         UnlaunchedMeteor {
             asset: asset,
-            rects: rects,
             target: glm::ivec2(0, 0),
         }
     }
 
     pub fn update(&mut self, target: glm::IVec2) {
         self.target = target;
-        let target = glm::to_dvec2(target);
+    }
+
+    pub fn drawables(&self) -> Vec<Drawable> {
+        let target = glm::to_dvec2(self.target);
         let center = glm::to_dvec2(self.asset.center());
         let distance = target - center;
         let offset = self.asset.dst_rect.z / 2 + 10;
         let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = center + offset_vector;
-        let step = (target - anchor_point) / (self.rects.len() as f64);
+        let step = (target - anchor_point) / 10.;
 
-        for (i, rect) in self.rects.iter_mut().enumerate() {
-            let point = glm::to_ivec2(anchor_point + (step * i as f64));
-            rect.center_on((point.x, point.y));
-        }
-    }
+        let rects = (0..10)
+            .map(|i| anchor_point + (step * i as f64))
+            .map(|p| (p.x as i32, p.y as i32))
+            .map(|p| rect::Rect::from_center(p, 5, 5))
+            .collect();
 
-    pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(self.asset), Drawable::Rectangles(self.rects.to_vec())]
+        vec![Drawable::Asset(self.asset), Drawable::Rectangles(rects)]
     }
 
     pub fn launch(&self, max_coords: glm::UVec2) -> MeteorState {
         const FACTOR: f64 = 50.;
-        let asset = self.asset.clone();
-        let offset = self.target - glm::to_ivec2(asset.center());
+        let offset = self.target - glm::to_ivec2(self.asset.center());
         let velocity = glm::to_dvec2(offset) / FACTOR;
-        MeteorState::LAUNCHED(LaunchedMeteor::new(asset, max_coords, velocity))
+        MeteorState::LAUNCHED(LaunchedMeteor::new(self.asset, max_coords, velocity))
     }
 }
