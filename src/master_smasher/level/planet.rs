@@ -30,9 +30,10 @@ impl Ring {
 
     pub fn animate(&mut self, delta: Duration) {
         const K: f64 = 0.166;
+        const NANO_IN_SEC: f64 = 1000000000.;
         let moving_radius = self.asset.dims().x as f64 * self.zoom / 2.;
         let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
-        let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / 1000000000.;
+        let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / NANO_IN_SEC;
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
     }
 
