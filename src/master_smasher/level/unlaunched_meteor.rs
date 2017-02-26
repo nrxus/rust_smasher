@@ -24,18 +24,21 @@ impl UnlaunchedMeteor {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
+        const NUM_RECTS: u32 = 10;
+        const SIDE_LEN: u32 = 5;
+
         let target = glm::to_dvec2(self.target);
         let center = glm::to_dvec2(self.asset.center());
         let distance = target - center;
         let offset = self.asset.dst_rect.z / 2 + 10;
         let offset_vector = normalize_to(distance, offset as f64);
         let anchor_point = center + offset_vector;
-        let step = (target - anchor_point) / 10.;
+        let step = (target - anchor_point) / NUM_RECTS as f64;
 
-        let rects = (0..10)
+        let rects = (0..NUM_RECTS)
             .map(|i| anchor_point + (step * i as f64))
             .map(|p| (p.x as i32, p.y as i32))
-            .map(|p| rect::Rect::from_center(p, 5, 5))
+            .map(|p| rect::Rect::from_center(p, SIDE_LEN, SIDE_LEN))
             .collect();
 
         vec![Drawable::Asset(self.asset), Drawable::Rectangles(rects)]
