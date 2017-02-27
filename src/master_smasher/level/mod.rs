@@ -8,6 +8,7 @@ mod player;
 mod player_assets;
 mod world;
 mod world_assets;
+mod interpolate;
 
 use self::level_data::LevelData;
 use self::player::{MeteorState, Player};
