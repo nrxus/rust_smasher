@@ -39,7 +39,7 @@ impl LaunchedMeteor {
         self.displace();
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
+    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
         vec![Drawable::Asset(self.asset)]
     }
 

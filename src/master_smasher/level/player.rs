@@ -84,7 +84,7 @@ impl Player {
 
     pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
         match self.state {
-            MeteorState::LAUNCHED(ref m) => m.drawables(),
+            MeteorState::LAUNCHED(ref m) => m.drawables(interpolation),
             MeteorState::UNLAUNCHED(ref m) => m.drawables(interpolation),
             MeteorState::EXPLODED(ref a) => vec![Drawable::Asset(a.asset)],
         }
