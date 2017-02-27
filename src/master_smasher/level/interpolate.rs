@@ -7,7 +7,7 @@ pub trait Interpolate {
 impl Interpolate for glm::IVec2 {
     fn interpolate(&self, next: glm::IVec2, interpolation: f64) -> glm::IVec2 {
         let delta = next - *self;
-        *self + glm::to_ivec2((glm::to_dvec2(delta) * interpolation))
+        *self + glm::to_ivec2(glm::to_dvec2(delta) * interpolation)
     }
 }
 
