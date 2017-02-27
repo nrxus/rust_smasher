@@ -69,8 +69,8 @@ impl Level {
         self.world.animate(delta);
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
+    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
         let world = self.world.drawables().into_iter();
-        world.chain(self.player.drawables().into_iter()).collect()
+        world.chain(self.player.drawables(interpolation).into_iter()).collect()
     }
 }

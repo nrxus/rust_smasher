@@ -55,7 +55,12 @@ impl<E: MohoEngine> MasterSmasher<E> {
                 delta -= update_duration;
                 loops += 1;
             }
-            self.draw(game_time.since_update)?;
+            if self.game_quit() {
+                break;
+            }
+            self.level.animate(game_time.since_update);
+            let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
+            self.draw(interpolation)?;
         }
         Ok(())
     }
@@ -64,9 +69,8 @@ impl<E: MohoEngine> MasterSmasher<E> {
         self.level.update(&self.input_manager);
     }
 
-    fn draw(&mut self, delta: Duration) -> Result<()> {
-        self.level.animate(delta);
-        let drawables = self.level.drawables();
+    fn draw(&mut self, interpolation: f64) -> Result<()> {
+        let drawables = self.level.drawables(interpolation);
         self.renderer.clear();
         self.renderer.draw(self.background.id, None, None)?;
         for drawable in drawables {
