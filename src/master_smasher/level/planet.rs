@@ -38,7 +38,7 @@ impl Ring {
     }
 
     pub fn drawables(&self) -> Vec<Drawable> {
-        let mut moving = self.asset.clone();
+        let mut moving = self.asset;
         moving.zoom(glm::DVec2::from_s(self.zoom));
         vec![Drawable::Asset(self.asset), Drawable::Asset(moving)]
     }
