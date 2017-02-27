@@ -2,6 +2,7 @@ use super::{Intersect, Line, Shape, Rectangle};
 
 use glm;
 
+#[derive(Clone, Copy)]
 pub struct Circle {
     pub radius: f64,
     pub center: glm::DVec2,
