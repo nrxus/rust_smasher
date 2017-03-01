@@ -1,7 +1,7 @@
 use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
-use super::interpolate::State;
+use super::interpolate::*;
 use super::planet::Planet;
 use super::MeteorState;
 
@@ -11,10 +11,9 @@ use num_traits::One;
 use std::cmp;
 
 pub struct LaunchedMeteor {
-    body: State<Circle>,
+    body: State<Wrapped<Circle>>,
     texture: usize,
     velocity: glm::DVec2,
-    max_coords: glm::DVec2,
 }
 
 impl LaunchedMeteor {
@@ -26,13 +25,18 @@ impl LaunchedMeteor {
             center: center,
             radius: radius,
         };
-        let body = State::new(circle);
+        let wrapped = Wrapped {
+            actual: circle,
+            unwrapped: None,
+            wrapping: glm::to_dvec2(max_coords),
+        };
+
+        let body = State::new(wrapped);
 
         LaunchedMeteor {
             texture: asset.texture_id,
             body: body,
             velocity: velocity,
-            max_coords: glm::to_dvec2(max_coords),
         }
     }
 
@@ -42,7 +46,7 @@ impl LaunchedMeteor {
     }
 
     pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
-        let body = self.body.interpolated(interpolation);
+        let body = self.body.interpolated(interpolation).actual;
         let diameter = (body.radius * 2.) as u32;
         let center = glm::to_ivec2(body.center);
         let dims = glm::UVec2::from_s(diameter);
@@ -55,29 +59,24 @@ impl LaunchedMeteor {
               C: Collidable<S, Circle>,
               Circle: Intersect<S>
     {
-        collidable.collides(&self.body.current)
+        collidable.collides(&self.body.current.actual)
     }
 
     pub fn explode(&self, explosion: AnimationData) -> MeteorState {
-        let center = glm::to_ivec2(self.body.current.center);
+        let center = glm::to_ivec2(self.body.current.actual.center);
         let explosion = Animation::from_data(explosion, center, glm::DVec2::one());
         MeteorState::EXPLODED(explosion)
     }
 
     fn acceleration(&self, planets: &[Planet]) -> glm::DVec2 {
+        let body = self.body.current.actual;
         planets.iter()
-            .map(|p| p.pull_vector(self.body.current.center, self.body.current.radius))
+            .map(|p| p.pull_vector(body.center, body.radius))
             .fold(glm::dvec2(0., 0.), |c, a| c + a) / 50.
     }
 
     fn displace(&mut self) {
-        let mut next = self.body.current;
-        next.center = next.center + self.velocity;
-        let wrapped_center = (next.center + self.max_coords) % self.max_coords;
-        if glm::length(wrapped_center - next.center) > 1. {
-            next.center = wrapped_center;
-            self.body.update(next);
-        }
+        let next = self.body.current.displace(self.velocity);
         self.body.update(next);
     }
 }

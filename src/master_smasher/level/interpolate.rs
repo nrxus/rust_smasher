@@ -25,6 +25,54 @@ impl Interpolate for Circle {
     }
 }
 
+#[derive(Clone)]
+pub struct Wrapped<T: Clone> {
+    pub actual: T,
+    pub unwrapped: Option<T>,
+    pub wrapping: glm::DVec2,
+}
+
+impl Wrapped<Circle> {
+    pub fn displace(&self, displacement: glm::DVec2) -> Wrapped<Circle> {
+        let mut center = self.actual.center + displacement;
+        let mut unwrapped = None;
+        match center {
+            glm::DVec2 { x, y } if (x < 0.) | (y < 0.) | (x > self.wrapping.x) |
+                                   (y > self.wrapping.y) => {
+                unwrapped = Some(Circle {
+                    center: center,
+                    radius: self.actual.radius,
+                });
+                center = (center + self.wrapping) % self.wrapping;
+            }
+            _ => {}
+        }
+        Wrapped {
+            actual: Circle {
+                center: center,
+                radius: self.actual.radius,
+            },
+            unwrapped: unwrapped,
+            wrapping: self.wrapping,
+        }
+    }
+}
+
+impl<T: Clone + Interpolate> Interpolate for Wrapped<T> {
+    fn interpolate(&self, next: &Wrapped<T>, interpolation: f64) -> Wrapped<T> {
+        let interpolated = match next.unwrapped {
+            Some(ref c) => self.actual.interpolate(c, interpolation),
+            None => self.actual.interpolate(&next.actual, interpolation),
+        };
+
+        Wrapped {
+            actual: interpolated,
+            unwrapped: None,
+            wrapping: self.wrapping,
+        }
+    }
+}
+
 pub struct State<T> {
     pub old: T,
     pub current: T,
