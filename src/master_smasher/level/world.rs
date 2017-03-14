@@ -4,9 +4,12 @@ use super::planet::Planet;
 use super::star::Star;
 use super::world_assets::WorldAssets;
 use master_smasher::drawable::{Animation, AnimationData, Drawable};
+use errors::*;
 
 use glm;
 use num_traits::One;
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 
 use std::time::Duration;
 
@@ -76,11 +79,18 @@ impl World {
         self.explosions.retain(Animation::is_active);
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
         let planets = self.planets.iter().map(Planet::drawables).flat_map(|v| v.into_iter());
         let stars = self.stars.iter().map(Star::drawables).flat_map(|v| v.into_iter());
         let enemies = self.enemies.iter().map(Star::drawables).flat_map(|v| v.into_iter());
         let explosions = self.explosions.iter().map(|a| a.asset).map(Drawable::Asset);
-        planets.chain(stars).chain(enemies).chain(explosions).collect()
+        let drawables = planets.chain(stars).chain(enemies).chain(explosions);
+
+        for drawable in drawables {
+            drawable.draw(renderer)?;
+        }
+        Ok(())
     }
 }

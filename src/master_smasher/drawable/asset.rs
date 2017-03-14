@@ -1,5 +1,8 @@
+use errors::*;
+
 use glm;
-use moho::resource_manager::Texture;
+use moho::resource_manager::{ResourceManager, Texture};
+use moho::renderer::Renderer;
 
 #[derive(Clone, Copy)]
 pub struct Asset {
@@ -47,6 +50,10 @@ impl Asset {
 
     pub fn dims(&self) -> glm::UVec2 {
         glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
+    }
+
+    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.draw(self.texture_id, Some(self.dst_rect), self.src_rect).map_err(Into::into)
     }
 
     fn rectify(center: glm::IVec2, dims: glm::UVec2) -> glm::IVec4 {

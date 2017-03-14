@@ -15,7 +15,6 @@ use self::player::{MeteorState, Player};
 use self::player_assets::PlayerAssets;
 use self::world::World;
 use self::world_assets::WorldAssets;
-use super::drawable::Drawable;
 use errors::*;
 
 use glm;
@@ -70,8 +69,10 @@ impl Level {
         self.world.animate(delta);
     }
 
-    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
-        let world = self.world.drawables().into_iter();
-        world.chain(self.player.drawables(interpolation).into_iter()).collect()
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        self.world.draw(renderer)?;
+        self.player.draw(interpolation, renderer)
     }
 }

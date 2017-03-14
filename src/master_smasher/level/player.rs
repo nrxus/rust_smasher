@@ -1,11 +1,14 @@
-use master_smasher::drawable::{Animation, Asset, Drawable};
+use master_smasher::drawable::{Animation, Asset};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
 use super::player_assets::PlayerAssets;
+use errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
@@ -82,11 +85,13 @@ impl Player {
         }
     }
 
-    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
         match self.state {
-            MeteorState::LAUNCHED(ref m) => m.drawables(interpolation),
-            MeteorState::UNLAUNCHED(ref m) => m.drawables(interpolation),
-            MeteorState::EXPLODED(ref a) => vec![Drawable::Asset(a.asset)],
+            MeteorState::LAUNCHED(ref m) => m.draw(interpolation, renderer),
+            MeteorState::UNLAUNCHED(ref m) => m.draw(interpolation, renderer),
+            MeteorState::EXPLODED(ref a) => a.asset.draw(renderer),
         }
     }
 }

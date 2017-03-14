@@ -4,8 +4,11 @@ use super::collidable::Collidable;
 use super::interpolate::*;
 use super::planet::Planet;
 use super::MeteorState;
+use errors::*;
 
 use glm::{self, GenNum};
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use num_traits::One;
 
 use std::cmp;
@@ -52,6 +55,18 @@ impl LaunchedMeteor {
         let dims = glm::UVec2::from_s(diameter);
         let asset = Asset::centered_on(self.texture, center, dims);
         vec![Drawable::Asset(asset)]
+    }
+
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        let drawables = self.drawables(interpolation);
+
+        for drawable in drawables {
+            drawable.draw(renderer)?;
+        }
+
+        Ok(())
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

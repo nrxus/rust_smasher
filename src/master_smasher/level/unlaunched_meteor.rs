@@ -2,9 +2,12 @@ use master_smasher::drawable::{Asset, Drawable};
 use super::MeteorState;
 use super::interpolate::State;
 use super::launched_meteor::LaunchedMeteor;
+use errors::*;
 
 use glm;
 use glm::ext::normalize_to;
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use sdl2::rect;
 
 pub struct UnlaunchedMeteor {
@@ -29,6 +32,18 @@ impl UnlaunchedMeteor {
         let center = glm::to_dvec2(self.asset.center());
         let rects = self.target_rects(target, center);
         vec![Drawable::Asset(self.asset), Drawable::Rectangles(rects)]
+    }
+
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        let drawables = self.drawables(interpolation);
+
+        for drawable in drawables {
+            drawable.draw(renderer)?;
+        }
+
+        Ok(())
     }
 
     fn target_rects(&self, target: glm::DVec2, center: glm::DVec2) -> Vec<rect::Rect> {

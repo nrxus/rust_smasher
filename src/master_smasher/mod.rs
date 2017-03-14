@@ -70,12 +70,9 @@ impl<E: MohoEngine> MasterSmasher<E> {
     }
 
     fn draw(&mut self, interpolation: f64) -> Result<()> {
-        let drawables = self.level.drawables(interpolation);
         self.renderer.clear();
         self.renderer.draw(self.background.id, None, None)?;
-        for drawable in drawables {
-            drawable.draw(&mut self.renderer)?;
-        }
+        self.level.draw(interpolation, &mut self.renderer)?;
         self.renderer.present();
         Ok(())
     }
