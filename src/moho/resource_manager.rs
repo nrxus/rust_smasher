@@ -39,7 +39,7 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn draw(&mut self,
                 id: usize,
                 dst: Option<glm::IVec4>,
-                src: Option<glm::DVec4>)
+                src: Option<glm::UVec4>)
                 -> Result<()> {
         match (dst, self.wrap_coords) {
             (Some(d), Some(w)) => self.draw_and_wrap(id, d, src, w),
@@ -87,7 +87,7 @@ impl<R: Renderer> ResourceManager<R> {
     fn draw_and_wrap(&mut self,
                      id: usize,
                      dst: glm::IVec4,
-                     src: Option<glm::DVec4>,
+                     src: Option<glm::UVec4>,
                      wrapping_coords: glm::UVec2)
                      -> Result<()> {
         wrap_rects(dst, wrapping_coords)
@@ -100,15 +100,11 @@ impl<R: Renderer> ResourceManager<R> {
     fn draw_raw(&mut self,
                 id: usize,
                 dst: Option<glm::IVec4>,
-                src: Option<glm::DVec4>)
+                src: Option<glm::UVec4>)
                 -> Result<()> {
         let cache = self.data_cache.borrow();
         let texture = cache.get(&id).ok_or("texture not loaded")?;
-        let src = src.map(|r| {
-            let dims = glm::to_dvec2(texture.dims());
-            glm::to_ivec4(glm::dvec4(r.x * dims.x, r.y * dims.y, r.z * dims.x, r.w * dims.y))
-        });
-        let src = src.map(Self::get_rect);
+        let src = src.map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
         let dst = dst.map(Self::get_rect);
         self.renderer.copy(texture, src, dst)
     }

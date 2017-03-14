@@ -5,7 +5,7 @@ use moho::resource_manager::Texture;
 pub struct Asset {
     pub texture_id: usize,
     pub dst_rect: glm::IVec4,
-    pub src_rect: Option<glm::DVec4>,
+    pub src_rect: Option<glm::UVec4>,
 }
 
 impl Asset {

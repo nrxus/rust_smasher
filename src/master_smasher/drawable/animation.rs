@@ -38,7 +38,7 @@ impl Animation {
             self.animator.start();
         }
         if let Some(frame) = self.animator.frame() {
-            let src_rect = self.sheet.uv(frame);
+            let src_rect = self.sheet.tile(frame).src;
             self.asset.src_rect = Some(src_rect);
         } else {
             self.active = false;
