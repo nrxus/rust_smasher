@@ -25,7 +25,7 @@ impl AnimationData {
     {
         let texture = resource_manager.load_texture(path)?;
         let duration = Duration::from_millis(duration_ms);
-        let sheet = TileSheet::new(glm::uvec2(frames, 1));
+        let sheet = TileSheet::new(glm::uvec2(frames, 1), texture);
         let animator = FrameAnimator::new(frames, duration, repeat);
         let data = AnimationData {
             texture: texture,

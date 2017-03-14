@@ -1,13 +1,24 @@
 use glm;
 
+use resource_manager::Texture;
+
 #[derive(Clone)]
 pub struct TileSheet {
     tiles: glm::UVec2,
+    texture: Texture,
+}
+
+pub struct Tile {
+    pub id: usize,
+    pub src: glm::IVec4,
 }
 
 impl TileSheet {
-    pub fn new(tiles: glm::UVec2) -> TileSheet {
-        TileSheet { tiles: tiles }
+    pub fn new(tiles: glm::UVec2, texture: Texture) -> TileSheet {
+        TileSheet {
+            tiles: tiles,
+            texture: texture,
+        }
     }
 
     pub fn uv(&self, index: u32) -> glm::DVec4 {
@@ -30,7 +41,11 @@ mod tests {
 
     #[test]
     fn single_frame() {
-        let sheet = TileSheet::new(glm::uvec2(1, 1));
+        let texture = Texture {
+            id: 1,
+            dims: glm::uvec2(10, 10),
+        };
+        let sheet = TileSheet::new(glm::uvec2(1, 1), texture);
         let expected = glm::dvec4(0., 0., 1., 1.);
         let actual = sheet.uv(0);
         assert_eq!(actual, expected);
@@ -38,7 +53,11 @@ mod tests {
 
     #[test]
     fn single_row() {
-        let sheet = TileSheet::new(glm::uvec2(10, 1));
+        let texture = Texture {
+            id: 1,
+            dims: glm::uvec2(10, 10),
+        };
+        let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let expected = glm::dvec4(0.4, 0., 0.1, 1.);
         let actual = sheet.uv(4);
         assert_eq!(actual, expected);
@@ -46,7 +65,11 @@ mod tests {
 
     #[test]
     fn single_column() {
-        let sheet = TileSheet::new(glm::uvec2(1, 5));
+        let texture = Texture {
+            id: 1,
+            dims: glm::uvec2(10, 10),
+        };
+        let sheet = TileSheet::new(glm::uvec2(1, 5), texture);
         let expected = glm::dvec4(0., 0.8, 1., 0.2);
         let actual = sheet.uv(4);
         assert_eq!(actual, expected);
@@ -54,7 +77,11 @@ mod tests {
 
     #[test]
     fn mult_frames() {
-        let sheet = TileSheet::new(glm::uvec2(4, 2));
+        let texture = Texture {
+            id: 1,
+            dims: glm::uvec2(10, 10),
+        };
+        let sheet = TileSheet::new(glm::uvec2(4, 2), texture);
         let expected = glm::dvec4(0.25, 0.5, 0.25, 0.5);
         let actual = sheet.uv(5);
         assert_eq!(actual, expected);
