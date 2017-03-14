@@ -4,20 +4,34 @@ use resource_manager::Texture;
 
 #[derive(Clone)]
 pub struct TileSheet {
+    id: usize,
+    dimensions: glm::UVec2,
     tiles: glm::UVec2,
-    texture: Texture,
 }
 
 pub struct Tile {
     pub id: usize,
-    pub src: glm::IVec4,
+    pub src: glm::UVec4,
 }
 
 impl TileSheet {
     pub fn new(tiles: glm::UVec2, texture: Texture) -> TileSheet {
+        let dimensions = texture.dims / tiles;
         TileSheet {
+            id: texture.id,
+            dimensions: dimensions,
             tiles: tiles,
-            texture: texture,
+        }
+    }
+
+    pub fn tile(&self, index: u32) -> Tile {
+        let tile_pos = glm::uvec2(index % self.tiles.x, index / self.tiles.x);
+        let position = tile_pos * self.dimensions;
+        let src = glm::uvec4(position.x, position.y, self.dimensions.x, self.dimensions.y);
+
+        Tile {
+            id: self.id,
+            src: src,
         }
     }
 
@@ -49,18 +63,26 @@ mod tests {
         let expected = glm::dvec4(0., 0., 1., 1.);
         let actual = sheet.uv(0);
         assert_eq!(actual, expected);
+
+        let tile = sheet.tile(0);
+        assert_eq!(tile.id, 1);
+        assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
     }
 
     #[test]
     fn single_row() {
         let texture = Texture {
-            id: 1,
+            id: 2,
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let expected = glm::dvec4(0.4, 0., 0.1, 1.);
         let actual = sheet.uv(4);
         assert_eq!(actual, expected);
+
+        let tile = sheet.tile(4);
+        assert_eq!(tile.id, 2);
+        assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
     }
 
     #[test]
@@ -73,17 +95,25 @@ mod tests {
         let expected = glm::dvec4(0., 0.8, 1., 0.2);
         let actual = sheet.uv(4);
         assert_eq!(actual, expected);
+
+        let tile = sheet.tile(4);
+        assert_eq!(tile.id, 1);
+        assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
     }
 
     #[test]
     fn mult_frames() {
         let texture = Texture {
-            id: 1,
-            dims: glm::uvec2(10, 10),
+            id: 10,
+            dims: glm::uvec2(20, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(4, 2), texture);
         let expected = glm::dvec4(0.25, 0.5, 0.25, 0.5);
         let actual = sheet.uv(5);
         assert_eq!(actual, expected);
+
+        let tile = sheet.tile(5);
+        assert_eq!(tile.id, 10);
+        assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
     }
 }
