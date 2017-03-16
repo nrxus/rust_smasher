@@ -1,4 +1,5 @@
 use errors::*;
+use super::Drawable;
 
 use glm;
 use moho::resource_manager::{ResourceManager, Texture};
@@ -39,10 +40,6 @@ impl Asset {
         self.dst_rect = Self::rectify(self.center(), glm::to_uvec2(dims));
     }
 
-    pub fn center_on(&mut self, center: glm::IVec2) {
-        self.dst_rect = Self::rectify(center, self.dims());
-    }
-
     pub fn center(&self) -> glm::IVec2 {
         glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
                    self.dst_rect.y + self.dst_rect.w / 2)
@@ -59,5 +56,11 @@ impl Asset {
     fn rectify(center: glm::IVec2, dims: glm::UVec2) -> glm::IVec4 {
         let dims = glm::to_ivec2(dims);
         glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y)
+    }
+}
+
+impl<R: Renderer> Drawable<ResourceManager<R>> for Asset {
+    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.draw(self.texture_id, Some(self.dst_rect), self.src_rect).map_err(Into::into)
     }
 }

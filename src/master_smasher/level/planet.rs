@@ -1,4 +1,4 @@
-use master_smasher::drawable::Asset;
+use master_smasher::drawable::{Asset, Drawable, GameRenderer};
 use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
@@ -38,16 +38,6 @@ impl Ring {
         let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
         let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / NANO_IN_SEC;
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
-    }
-
-    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        let mut moving = self.asset;
-        moving.zoom(glm::DVec2::from_s(self.zoom));
-
-        self.asset.draw(renderer)?;
-        moving.draw(renderer)
     }
 
     pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
@@ -99,15 +89,6 @@ impl Planet {
                                   |r| r.pull_vector(self.body.center - point, radius))
     }
 
-    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        if let Some(ref r) = self.ring {
-            r.draw(renderer)?;
-        }
-        self.asset.draw(renderer)
-    }
-
     fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Asset, Option<Ring>) {
         let center = glm::ivec2(data.x, data.y);
         let (planet, ring) = match data.kind {
@@ -137,5 +118,24 @@ impl Planet {
 impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
     fn collides(&self, shape: &I) -> bool {
         shape.intersects(&self.body)
+    }
+}
+
+impl<R: Renderer> Drawable<ResourceManager<R>> for Planet {
+    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        if let Some(ref r) = self.ring {
+            renderer.render(r)?;
+        }
+        renderer.render(&self.asset)
+    }
+}
+
+impl<R: Renderer> Drawable<ResourceManager<R>> for Ring {
+    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        let mut moving = self.asset;
+        moving.zoom(glm::DVec2::from_s(self.zoom));
+
+        self.asset.draw(renderer)?;
+        moving.draw(renderer)
     }
 }

@@ -1,5 +1,5 @@
 use super::collidable::Collidable;
-use master_smasher::drawable::{Animation};
+use master_smasher::drawable::{Animation, Drawable};
 use master_smasher::shape::{Intersect, Rectangle};
 use errors::*;
 
@@ -36,16 +36,16 @@ impl Star {
     pub fn center(&self) -> glm::DVec2 {
         self.body.center
     }
-
-    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        self.animation.asset.draw(renderer)
-    }
 }
 
 impl<I: Intersect<Rectangle>> Collidable<Rectangle, I> for Star {
     fn collides(&self, shape: &I) -> bool {
         shape.intersects(&self.body)
+    }
+}
+
+impl<R: Renderer> Drawable<ResourceManager<R>> for Star {
+    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        self.animation.asset.draw(renderer)
     }
 }
