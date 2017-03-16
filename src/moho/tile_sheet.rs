@@ -1,6 +1,6 @@
-use glm;
-
 use resource_manager::Texture;
+
+use glm;
 
 #[derive(Clone)]
 pub struct TileSheet {
@@ -34,19 +34,6 @@ impl TileSheet {
             src: src,
         }
     }
-
-    pub fn uv(&self, index: u32) -> glm::DVec4 {
-        let x_tile = index % self.tiles.x;
-        let y_tile = index / self.tiles.x;
-
-        let tiles = glm::to_dvec2(self.tiles);
-        let x_pos = x_tile as f64 / tiles.x;
-        let y_pos = y_tile as f64 / tiles.y;
-        let x_dims = 1. / tiles.x;
-        let y_dims = 1. / tiles.y;
-
-        glm::dvec4(x_pos, y_pos, x_dims, y_dims)
-    }
 }
 
 #[cfg(test)]
@@ -60,10 +47,6 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(1, 1), texture);
-        let expected = glm::dvec4(0., 0., 1., 1.);
-        let actual = sheet.uv(0);
-        assert_eq!(actual, expected);
-
         let tile = sheet.tile(0);
         assert_eq!(tile.id, 1);
         assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
@@ -76,10 +59,6 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
-        let expected = glm::dvec4(0.4, 0., 0.1, 1.);
-        let actual = sheet.uv(4);
-        assert_eq!(actual, expected);
-
         let tile = sheet.tile(4);
         assert_eq!(tile.id, 2);
         assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
@@ -92,10 +71,6 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(1, 5), texture);
-        let expected = glm::dvec4(0., 0.8, 1., 0.2);
-        let actual = sheet.uv(4);
-        assert_eq!(actual, expected);
-
         let tile = sheet.tile(4);
         assert_eq!(tile.id, 1);
         assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
@@ -108,10 +83,6 @@ mod tests {
             dims: glm::uvec2(20, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(4, 2), texture);
-        let expected = glm::dvec4(0.25, 0.5, 0.25, 0.5);
-        let actual = sheet.uv(5);
-        assert_eq!(actual, expected);
-
         let tile = sheet.tile(5);
         assert_eq!(tile.id, 10);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
