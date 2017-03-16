@@ -116,15 +116,15 @@ fn did_press_key() {
 fn mouse_coords() {
     let streams = vec![None,
                        Some(Event::MouseMotion {
-                           timestamp: 0,
-                           window_id: 0,
-                           which: 0,
-                           mousestate: MouseState::from_sdl_state(0),
-                           x: 50,
-                           y: 30,
-                           xrel: 0,
-                           yrel: 0,
-                       })];
+                                timestamp: 0,
+                                window_id: 0,
+                                which: 0,
+                                mousestate: MouseState::from_sdl_state(0),
+                                x: 50,
+                                y: 30,
+                                xrel: 0,
+                                yrel: 0,
+                            })];
 
     let mut subject = InputManager::new(MockEventPump { streams: streams });
     subject.update();

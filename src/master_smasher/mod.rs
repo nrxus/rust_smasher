@@ -29,11 +29,11 @@ impl<E: MohoEngine> MasterSmasher<E> {
         renderer.wrap_coords = Some(window_size);
         let level = Level::load("levels/level_1.lvl", window_size, &renderer)?;
         Ok(MasterSmasher {
-            level: level,
-            background: background,
-            input_manager: input_manager,
-            renderer: renderer,
-        })
+               level: level,
+               background: background,
+               input_manager: input_manager,
+               renderer: renderer,
+           })
     }
 
     pub fn run(&mut self) -> Result<()> {

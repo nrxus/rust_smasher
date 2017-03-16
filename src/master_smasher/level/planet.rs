@@ -106,10 +106,10 @@ impl Planet {
 
         let planet = Asset::from_texture(&planet, center);
         let ring = ring.map(|(t, r, s)| {
-            let dims = glm::UVec2::from_s((r * 2.) as u32);
-            let asset = Asset::centered_on(t.id, center, dims);
-            Ring::new(r, s, asset)
-        });
+                                let dims = glm::UVec2::from_s((r * 2.) as u32);
+                                let asset = Asset::centered_on(t.id, center, dims);
+                                Ring::new(r, s, asset)
+                            });
 
         (planet, ring)
     }

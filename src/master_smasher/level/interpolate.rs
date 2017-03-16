@@ -40,9 +40,9 @@ impl Wrapped<Circle> {
             glm::DVec2 { x, y } if (x < 0.) | (y < 0.) | (x > self.wrapping.x) |
                                    (y > self.wrapping.y) => {
                 unwrapped = Some(Circle {
-                    center: center,
-                    radius: self.actual.radius,
-                });
+                                     center: center,
+                                     radius: self.actual.radius,
+                                 });
                 center = (center + self.wrapping) % self.wrapping;
             }
             _ => {}

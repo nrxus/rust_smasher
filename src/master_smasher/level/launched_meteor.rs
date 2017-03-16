@@ -68,16 +68,19 @@ impl LaunchedMeteor {
     }
 
     pub fn explode(&self, explosion: AnimationData) -> MeteorState {
-        let center = glm::to_ivec2(self.body.current.actual.center);
+        let center = glm::to_ivec2(self.body
+                                       .current
+                                       .actual
+                                       .center);
         let explosion = Animation::from_data(explosion, center, glm::DVec2::one());
         MeteorState::EXPLODED(explosion)
     }
 
     fn acceleration(&self, planets: &[Planet]) -> glm::DVec2 {
         let body = self.body.current.actual;
-        planets.iter()
-            .map(|p| p.pull_vector(body.center, body.radius))
-            .fold(glm::dvec2(0., 0.), |c, a| c + a) / 50.
+        planets.iter().map(|p| p.pull_vector(body.center, body.radius)).fold(glm::dvec2(0., 0.),
+                                                                             |c, a| c + a) /
+        50.
     }
 
     fn displace(&mut self) {

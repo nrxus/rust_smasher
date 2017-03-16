@@ -25,6 +25,10 @@ impl<R: Renderer> GameRenderer for ResourceManager<R> {
     }
 
     fn render_all<D: Drawable<ResourceManager<R>>>(&mut self, drawable: &[D]) -> Result<()> {
-        drawable.iter().map(|d| d.draw(self)).take_while(Result::is_ok).last().unwrap_or(Ok(()))
+        drawable.iter()
+            .map(|d| d.draw(self))
+            .take_while(Result::is_ok)
+            .last()
+            .unwrap_or(Ok(()))
     }
 }

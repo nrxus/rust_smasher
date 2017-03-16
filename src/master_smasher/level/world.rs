@@ -23,9 +23,18 @@ pub struct World {
 
 impl World {
     pub fn new(data: &LevelData, assets: WorldAssets) -> Self {
-        let planets = data.planets.iter().map(|p| Planet::new(p, &assets)).collect();
-        let stars = data.stars.iter().map(|s| Star::new(assets.star(s.into()))).collect();
-        let enemies = data.enemies.iter().map(|e| Star::new(assets.enemy(e.into()))).collect();
+        let planets = data.planets
+            .iter()
+            .map(|p| Planet::new(p, &assets))
+            .collect();
+        let stars = data.stars
+            .iter()
+            .map(|s| Star::new(assets.star(s.into())))
+            .collect();
+        let enemies = data.enemies
+            .iter()
+            .map(|e| Star::new(assets.enemy(e.into())))
+            .collect();
 
         World {
             planets: planets,

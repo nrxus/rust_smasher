@@ -56,7 +56,9 @@ pub fn init(name: &'static str,
         .opengl()
         .build()?;
 
-    let renderer = window.renderer().present_vsync().build()?;
+    let renderer = window.renderer()
+        .present_vsync()
+        .build()?;
     let mut resource_manager = ResourceManager::new(renderer);
     resource_manager.clear();
     resource_manager.present();
