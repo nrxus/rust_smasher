@@ -3,9 +3,12 @@ use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
+use errors::*;
 
 use glm::{self, GenNum};
 use glm::ext::normalize_to;
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use num_traits::Zero;
 
 use std::cmp;
@@ -92,10 +95,15 @@ impl Planet {
                                   |r| r.pull_vector(self.body.center - point, radius))
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
         let mut drawables = self.ring.as_ref().map_or(vec![], |r| r.drawables());
         drawables.push(Drawable::Asset(self.asset));
-        drawables
+        for drawable in drawables {
+            drawable.draw(renderer)?;
+        }
+        Ok(())
     }
 
     fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Asset, Option<Ring>) {

@@ -1,8 +1,11 @@
 use super::collidable::Collidable;
 use master_smasher::drawable::{Animation, Drawable};
 use master_smasher::shape::{Intersect, Rectangle};
+use errors::*;
 
 use glm;
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 
 use std::time::Duration;
 
@@ -30,12 +33,14 @@ impl Star {
         self.animation.update(delta);
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
-        vec![Drawable::Asset(self.animation.asset)]
-    }
-
     pub fn center(&self) -> glm::DVec2 {
         self.body.center
+    }
+
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        self.animation.asset.draw(renderer)
     }
 }
 

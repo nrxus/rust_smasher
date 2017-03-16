@@ -3,13 +3,13 @@ use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
 use super::star::Star;
 use super::world_assets::WorldAssets;
-use master_smasher::drawable::{Animation, AnimationData, Drawable};
+use master_smasher::drawable::{Animation, AnimationData, Asset};
 use errors::*;
 
 use glm;
-use num_traits::One;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
+use num_traits::One;
 
 use std::time::Duration;
 
@@ -82,15 +82,25 @@ impl World {
     pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        let planets = self.planets.iter().map(Planet::drawables).flat_map(|v| v.into_iter());
-        let stars = self.stars.iter().map(Star::drawables).flat_map(|v| v.into_iter());
-        let enemies = self.enemies.iter().map(Star::drawables).flat_map(|v| v.into_iter());
-        let explosions = self.explosions.iter().map(|a| a.asset).map(Drawable::Asset);
-        let drawables = planets.chain(stars).chain(enemies).chain(explosions);
+        self.planets
+            .iter()
+            .map(|p| p.draw(renderer))
+            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })?;
 
-        for drawable in drawables {
-            drawable.draw(renderer)?;
-        }
-        Ok(())
+        self.enemies
+            .iter()
+            .map(|e| e.draw(renderer))
+            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })?;
+
+        self.stars
+            .iter()
+            .map(|s| s.draw(renderer))
+            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })?;
+
+        self.explosions
+            .iter()
+            .map(|a| a.asset)
+            .map(|a| a.draw(renderer))
+            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })
     }
 }
