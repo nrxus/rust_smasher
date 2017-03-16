@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset, Drawable};
+use master_smasher::drawable::{Animation, AnimationData, Asset};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::interpolate::*;
@@ -48,25 +48,15 @@ impl LaunchedMeteor {
         self.displace();
     }
 
-    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
         let body = self.body.interpolated(interpolation).actual;
         let diameter = (body.radius * 2.) as u32;
         let center = glm::to_ivec2(body.center);
         let dims = glm::UVec2::from_s(diameter);
         let asset = Asset::centered_on(self.texture, center, dims);
-        vec![Drawable::Asset(asset)]
-    }
-
-    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
-        let drawables = self.drawables(interpolation);
-
-        for drawable in drawables {
-            drawable.draw(renderer)?;
-        }
-
-        Ok(())
+        asset.draw(renderer)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

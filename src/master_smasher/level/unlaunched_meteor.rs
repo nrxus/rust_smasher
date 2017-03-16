@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Asset, Drawable};
+use master_smasher::drawable::Asset;
 use super::MeteorState;
 use super::interpolate::State;
 use super::launched_meteor::LaunchedMeteor;
@@ -27,23 +27,15 @@ impl UnlaunchedMeteor {
         self.target.update(target);
     }
 
-    pub fn drawables(&self, interpolation: f64) -> Vec<Drawable> {
-        let target = glm::to_dvec2(self.target.interpolated(interpolation));
-        let center = glm::to_dvec2(self.asset.center());
-        let rects = self.target_rects(target, center);
-        vec![Drawable::Asset(self.asset), Drawable::Rectangles(rects)]
-    }
-
     pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        let drawables = self.drawables(interpolation);
+        let target = glm::to_dvec2(self.target.interpolated(interpolation));
+        let center = glm::to_dvec2(self.asset.center());
+        let rects = self.target_rects(target, center);
 
-        for drawable in drawables {
-            drawable.draw(renderer)?;
-        }
-
-        Ok(())
+        self.asset.draw(renderer)?;
+        renderer.fill_rects(&rects).map_err(Into::into)
     }
 
     fn target_rects(&self, target: glm::DVec2, center: glm::DVec2) -> Vec<rect::Rect> {
