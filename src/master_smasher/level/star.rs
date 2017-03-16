@@ -1,5 +1,5 @@
 use super::collidable::Collidable;
-use master_smasher::drawable::{Animation, Drawable};
+use master_smasher::drawable::{Animation};
 use master_smasher::shape::{Intersect, Rectangle};
 use errors::*;
 

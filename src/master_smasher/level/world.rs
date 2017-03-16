@@ -3,7 +3,7 @@ use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
 use super::star::Star;
 use super::world_assets::WorldAssets;
-use master_smasher::drawable::{Animation, AnimationData, Asset};
+use master_smasher::drawable::{Animation, AnimationData};
 use errors::*;
 
 use glm;

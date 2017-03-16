@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Asset, Drawable};
+use master_smasher::drawable::Asset;
 use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
@@ -40,10 +40,14 @@ impl Ring {
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
     }
 
-    pub fn drawables(&self) -> Vec<Drawable> {
+    pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
         let mut moving = self.asset;
         moving.zoom(glm::DVec2::from_s(self.zoom));
-        vec![Drawable::Asset(self.asset), Drawable::Asset(moving)]
+
+        self.asset.draw(renderer)?;
+        moving.draw(renderer)
     }
 
     pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
@@ -98,12 +102,10 @@ impl Planet {
     pub fn draw<R>(&self, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        let mut drawables = self.ring.as_ref().map_or(vec![], |r| r.drawables());
-        drawables.push(Drawable::Asset(self.asset));
-        for drawable in drawables {
-            drawable.draw(renderer)?;
+        if let Some(ref r) = self.ring {
+            r.draw(renderer)?;
         }
-        Ok(())
+        self.asset.draw(renderer)
     }
 
     fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Asset, Option<Ring>) {
