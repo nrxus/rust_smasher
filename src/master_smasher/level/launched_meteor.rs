@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset};
+use master_smasher::drawable::{Animation, AnimationData, Asset, GameRenderer};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::interpolate::*;
@@ -56,7 +56,7 @@ impl LaunchedMeteor {
         let center = glm::to_ivec2(body.center);
         let dims = glm::UVec2::from_s(diameter);
         let asset = Asset::centered_on(self.texture, center, dims);
-        asset.draw(renderer)
+        renderer.render(&asset)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

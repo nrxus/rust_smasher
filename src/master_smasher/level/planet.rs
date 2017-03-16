@@ -134,8 +134,7 @@ impl<R: Renderer> Drawable<ResourceManager<R>> for Ring {
     fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let mut moving = self.asset;
         moving.zoom(glm::DVec2::from_s(self.zoom));
-
-        self.asset.draw(renderer)?;
-        moving.draw(renderer)
+        renderer.render(&self.asset)?;
+        renderer.render(&moving)
     }
 }

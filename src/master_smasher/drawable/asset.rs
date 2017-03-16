@@ -49,10 +49,6 @@ impl Asset {
         glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
     }
 
-    pub fn draw<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.texture_id, Some(self.dst_rect), self.src_rect).map_err(Into::into)
-    }
-
     fn rectify(center: glm::IVec2, dims: glm::UVec2) -> glm::IVec4 {
         let dims = glm::to_ivec2(dims);
         glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y)

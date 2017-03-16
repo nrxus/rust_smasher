@@ -85,11 +85,6 @@ impl<R: Renderer> Drawable<ResourceManager<R>> for World {
         renderer.render_all(&self.planets)?;
         renderer.render_all(&self.enemies)?;
         renderer.render_all(&self.stars)?;
-
-        self.explosions
-            .iter()
-            .map(|a| a.asset)
-            .map(|a| a.draw(renderer))
-            .fold(Ok(()), |res, x| if res.is_err() { res } else { x })
+        renderer.render_all(&self.explosions)
     }
 }

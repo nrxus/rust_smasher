@@ -1,8 +1,12 @@
+use super::{Drawable, GameRenderer};
 use super::asset::Asset;
 use super::animation_data::AnimationData;
+use errors::*;
 
 use glm;
 use moho::frame_animator::FrameAnimator;
+use moho::renderer::Renderer;
+use moho::resource_manager::ResourceManager;
 use moho::tile_sheet::TileSheet;
 
 use std::time::Duration;
@@ -47,5 +51,11 @@ impl Animation {
 
     pub fn is_active(&self) -> bool {
         self.active && self.animator.frame().is_some()
+    }
+}
+
+impl<R: Renderer> Drawable<ResourceManager<R>> for Animation {
+    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.render(&self.asset)
     }
 }

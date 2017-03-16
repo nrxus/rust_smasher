@@ -1,4 +1,4 @@
-use master_smasher::drawable::Asset;
+use master_smasher::drawable::{Asset, GameRenderer};
 use super::MeteorState;
 use super::interpolate::State;
 use super::launched_meteor::LaunchedMeteor;
@@ -34,7 +34,7 @@ impl UnlaunchedMeteor {
         let center = glm::to_dvec2(self.asset.center());
         let rects = self.target_rects(target, center);
 
-        self.asset.draw(renderer)?;
+        renderer.render(&self.asset)?;
         renderer.fill_rects(&rects).map_err(Into::into)
     }
 

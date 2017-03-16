@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, Asset};
+use master_smasher::drawable::{Animation, Asset, GameRenderer};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
@@ -91,7 +91,7 @@ impl Player {
         match self.state {
             MeteorState::LAUNCHED(ref m) => m.draw(interpolation, renderer),
             MeteorState::UNLAUNCHED(ref m) => m.draw(interpolation, renderer),
-            MeteorState::EXPLODED(ref a) => a.asset.draw(renderer),
+            MeteorState::EXPLODED(ref a) => renderer.render(a),
         }
     }
 }
