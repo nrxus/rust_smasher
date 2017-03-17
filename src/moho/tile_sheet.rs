@@ -5,8 +5,8 @@ use glm;
 #[derive(Clone)]
 pub struct TileSheet {
     id: usize,
-    dimensions: glm::UVec2,
     tiles: glm::UVec2,
+    pub dimensions: glm::UVec2,
 }
 
 pub struct Tile {

@@ -1,5 +1,4 @@
 use super::{GameRenderer, Scene};
-use super::asset::Asset;
 use super::animation_data::AnimationData;
 use errors::*;
 
@@ -13,7 +12,7 @@ use std::time::Duration;
 
 #[derive(Clone)]
 pub struct Animation {
-    pub asset: Asset,
+    pub dst_rect: glm::IVec4,
     sheet: TileSheet,
     animator: FrameAnimator,
     active: bool,
@@ -21,14 +20,14 @@ pub struct Animation {
 
 impl Animation {
     pub fn from_data(data: AnimationData, center: glm::IVec2, scale: glm::DVec2) -> Animation {
-        let scale = glm::dvec2(1. / data.animator.num_frames() as f64, 1.) * scale;
-        let asset = Asset::scaled_texture(&data.texture, center, scale);
-        Self::new(asset, data.sheet.clone(), data.animator)
+        let dims = glm::to_ivec2(glm::to_dvec2(data.sheet.dimensions) * scale);
+        let dst_rect = glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y);
+        Self::new(dst_rect, data.sheet.clone(), data.animator)
     }
 
-    pub fn new(asset: Asset, sheet: TileSheet, animator: FrameAnimator) -> Self {
+    pub fn new(dst_rect: glm::IVec4, sheet: TileSheet, animator: FrameAnimator) -> Self {
         Animation {
-            asset: asset,
+            dst_rect: dst_rect,
             sheet: sheet,
             animator: animator,
             active: true,
@@ -53,7 +52,7 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Animation {
     fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         if let Some(frame) = self.animator.frame() {
             let tile = self.sheet.tile(frame);
-            renderer.render(&tile, self.asset.dst_rect)
+            renderer.render(&tile, self.dst_rect)
         } else {
             Ok(())
         }

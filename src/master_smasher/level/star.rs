@@ -16,10 +16,12 @@ pub struct Star {
 
 impl Star {
     pub fn new(animation: Animation) -> Self {
-        let dims = glm::to_dvec2(animation.asset.dims());
+        let rect = animation.dst_rect;
+        let dims = glm::dvec2(rect.z as f64, rect.w as f64);
+        let center = glm::dvec2((rect.x + rect.z / 2) as f64, (rect.y + rect.w / 2) as f64);
 
         let body = Rectangle {
-            center: glm::to_dvec2(animation.asset.center()),
+            center: center,
             dims: dims,
         };
 
