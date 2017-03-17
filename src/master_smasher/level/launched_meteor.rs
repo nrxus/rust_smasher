@@ -56,7 +56,7 @@ impl LaunchedMeteor {
         let center = glm::to_ivec2(body.center);
         let dims = glm::UVec2::from_s(diameter);
         let asset = Asset::centered_on(self.texture, center, dims);
-        renderer.render(&asset)
+        renderer.show(&asset)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

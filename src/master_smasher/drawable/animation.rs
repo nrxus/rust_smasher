@@ -1,4 +1,4 @@
-use super::{Drawable, GameRenderer};
+use super::{Scene, GameRenderer};
 use super::asset::Asset;
 use super::animation_data::AnimationData;
 use errors::*;
@@ -54,8 +54,8 @@ impl Animation {
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for Animation {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.render(&self.asset)
+impl<R: Renderer> Scene<ResourceManager<R>> for Animation {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.show(&self.asset)
     }
 }

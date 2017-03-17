@@ -1,5 +1,5 @@
 use errors::*;
-use super::Drawable;
+use super::Scene;
 
 use glm;
 use moho::resource_manager::{ResourceManager, Texture};
@@ -55,8 +55,8 @@ impl Asset {
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for Asset {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl<R: Renderer> Scene<ResourceManager<R>> for Asset {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         renderer.draw(self.texture_id, Some(self.dst_rect), self.src_rect).map_err(Into::into)
     }
 }

@@ -29,16 +29,16 @@ impl<'a, T> TryIterator for Iter<'a, T> {
     }
 }
 
-pub trait Drawable<R: GameRenderer> {
-    fn draw(&self, renderer: &mut R) -> Result<()>;
+pub trait Scene<R: GameRenderer> {
+    fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
 pub trait GameRenderer: Sized {
-    fn render<D: Drawable<Self>>(&mut self, drawable: &D) -> Result<()>;
+    fn show<D: Scene<Self>>(&mut self, drawable: &D) -> Result<()>;
 }
 
 impl<R: Renderer> GameRenderer for ResourceManager<R> {
-    fn render<D: Drawable<ResourceManager<R>>>(&mut self, drawable: &D) -> Result<()> {
-        drawable.draw(self)
+    fn show<D: Scene<ResourceManager<R>>>(&mut self, drawable: &D) -> Result<()> {
+        drawable.show(self)
     }
 }

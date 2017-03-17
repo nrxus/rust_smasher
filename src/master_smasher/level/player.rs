@@ -91,7 +91,7 @@ impl Player {
         match self.state {
             MeteorState::LAUNCHED(ref m) => m.draw(interpolation, renderer),
             MeteorState::UNLAUNCHED(ref m) => m.draw(interpolation, renderer),
-            MeteorState::EXPLODED(ref a) => renderer.render(a),
+            MeteorState::EXPLODED(ref a) => renderer.show(a),
         }
     }
 }

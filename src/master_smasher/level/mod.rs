@@ -73,7 +73,7 @@ impl Level {
     pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        renderer.render(&self.world)?;
+        renderer.show(&self.world)?;
         self.player.draw(interpolation, renderer)
     }
 }

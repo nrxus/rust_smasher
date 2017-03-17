@@ -34,7 +34,7 @@ impl UnlaunchedMeteor {
         let center = glm::to_dvec2(self.asset.center());
         let rects = self.target_rects(target, center);
 
-        renderer.render(&self.asset)?;
+        renderer.show(&self.asset)?;
         renderer.fill_rects(&rects).map_err(Into::into)
     }
 

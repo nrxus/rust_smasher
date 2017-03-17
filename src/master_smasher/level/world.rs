@@ -3,7 +3,7 @@ use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
 use super::star::Star;
 use super::world_assets::WorldAssets;
-use master_smasher::drawable::{Animation, AnimationData, Drawable, GameRenderer, TryIterator};
+use master_smasher::drawable::{Animation, AnimationData, Scene, GameRenderer, TryIterator};
 use errors::*;
 
 use glm;
@@ -89,17 +89,17 @@ impl World {
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for World {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl<R: Renderer> Scene<ResourceManager<R>> for World {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         self.planets
             .iter()
-            .try(|d| renderer.render(d))?;
+            .try(|d| renderer.show(d))?;
         self.enemies
             .iter()
-            .try(|d| renderer.render(d))?;
+            .try(|d| renderer.show(d))?;
         self.stars
             .iter()
-            .try(|d| renderer.render(d))?;
-        self.explosions.iter().try(|d| renderer.render(d))
+            .try(|d| renderer.show(d))?;
+        self.explosions.iter().try(|d| renderer.show(d))
     }
 }

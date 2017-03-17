@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Asset, Drawable, GameRenderer};
+use master_smasher::drawable::{Asset, Scene, GameRenderer};
 use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
@@ -121,20 +121,20 @@ impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for Planet {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         if let Some(ref r) = self.ring {
-            renderer.render(r)?;
+            renderer.show(r)?;
         }
-        renderer.render(&self.asset)
+        renderer.show(&self.asset)
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for Ring {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl<R: Renderer> Scene<ResourceManager<R>> for Ring {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         let mut moving = self.asset;
         moving.zoom(glm::DVec2::from_s(self.zoom));
-        renderer.render(&self.asset)?;
-        renderer.render(&moving)
+        renderer.show(&self.asset)?;
+        renderer.show(&moving)
     }
 }

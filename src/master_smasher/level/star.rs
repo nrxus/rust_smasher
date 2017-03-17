@@ -1,5 +1,5 @@
 use super::collidable::Collidable;
-use master_smasher::drawable::{Animation, Drawable, GameRenderer};
+use master_smasher::drawable::{Animation, Scene, GameRenderer};
 use master_smasher::shape::{Intersect, Rectangle};
 use errors::*;
 
@@ -44,8 +44,8 @@ impl<I: Intersect<Rectangle>> Collidable<Rectangle, I> for Star {
     }
 }
 
-impl<R: Renderer> Drawable<ResourceManager<R>> for Star {
-    fn draw(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.render(&self.animation)
+impl<R: Renderer> Scene<ResourceManager<R>> for Star {
+    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.show(&self.animation)
     }
 }
