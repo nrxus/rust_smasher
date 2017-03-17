@@ -1,9 +1,5 @@
-use errors::*;
-use super::{GameRenderer, Scene};
-
 use glm;
-use moho::resource_manager::{ResourceManager, Texture};
-use moho::renderer::Renderer;
+use moho::resource_manager::Texture;
 
 #[derive(Clone, Copy)]
 pub struct Asset {
@@ -27,11 +23,5 @@ impl Asset {
 
     pub fn dims(&self) -> glm::UVec2 {
         glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
-    }
-}
-
-impl<R: Renderer> Scene<ResourceManager<R>> for Asset {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.render(&self.texture, self.dst_rect)
     }
 }

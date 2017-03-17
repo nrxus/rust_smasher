@@ -14,6 +14,13 @@ use num_traits::Zero;
 use std::cmp;
 use std::time::Duration;
 
+fn rectify(circle: &Circle) -> glm::IVec4 {
+    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
+                             circle.center.y - circle.radius,
+                             circle.radius * 2.,
+                             circle.radius * 2.))
+}
+
 fn square(side: i32, center: glm::IVec2) -> glm::IVec4 {
     glm::ivec4(center.x - side / 2, center.y - side / 2, side, side)
 }
@@ -128,7 +135,7 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
         if let Some(ref r) = self.ring {
             renderer.show(r)?;
         }
-        renderer.show(&self.asset)
+        renderer.render(&self.asset.texture, rectify(&self.body))
     }
 }
 
