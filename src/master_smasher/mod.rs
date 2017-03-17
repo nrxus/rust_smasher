@@ -3,6 +3,7 @@ mod level;
 mod shape;
 
 use self::level::Level;
+use self::drawable::GameRenderer;
 
 use errors::*;
 use moho::input_manager::InputManager;
@@ -71,7 +72,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
 
     fn draw(&mut self, interpolation: f64) -> Result<()> {
         self.renderer.clear();
-        self.renderer.draw(self.background.id, None, None)?;
+        self.renderer.show(&self.background)?;
         self.level.draw(interpolation, &mut self.renderer)?;
         self.renderer.present();
         Ok(())
