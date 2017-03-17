@@ -5,36 +5,42 @@ use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
 use errors::*;
 
-use glm::{self, GenNum};
+use glm;
 use glm::ext::normalize_to;
 use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{ResourceManager, Texture};
 use num_traits::Zero;
 
 use std::cmp;
 use std::time::Duration;
 
+fn square(side: i32, center: glm::IVec2) -> glm::IVec4 {
+    glm::ivec4(center.x - side / 2, center.y - side / 2, side, side)
+}
+
 struct Ring {
     radius: f64,
     strength: f64,
-    asset: Asset,
     zoom: f64,
+    center: glm::IVec2,
+    texture: Texture,
 }
 
 impl Ring {
-    pub fn new(radius: f64, strength: f64, asset: Asset) -> Self {
+    pub fn new(radius: f64, strength: f64, center: glm::IVec2, texture: Texture) -> Self {
         Ring {
             radius: radius,
             strength: strength,
-            asset: asset,
             zoom: 1.,
+            center: center,
+            texture: texture,
         }
     }
 
     pub fn animate(&mut self, delta: Duration) {
         const K: f64 = 0.166;
         const NANO_IN_SEC: f64 = 1000000000.;
-        let moving_radius = self.asset.dims().x as f64 * self.zoom / 2.;
+        let moving_radius = self.radius * self.zoom;
         let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
         let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / NANO_IN_SEC;
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
@@ -77,7 +83,7 @@ impl Planet {
 
     pub fn animate(&mut self, delta: Duration) {
         if let Some(ref mut r) = self.ring {
-            if r.asset.dims().x as f64 * r.zoom / 2. < self.body.radius {
+            if r.radius * r.zoom < self.body.radius {
                 r.zoom = 1.;
             }
             r.animate(delta)
@@ -105,11 +111,7 @@ impl Planet {
         };
 
         let planet = Asset::from_texture(planet, center);
-        let ring = ring.map(|(t, r, s)| {
-                                let dims = glm::UVec2::from_s((r * 2.) as u32);
-                                let asset = Asset::centered_on(t, center, dims);
-                                Ring::new(r, s, asset)
-                            });
+        let ring = ring.map(|(t, r, s)| Ring::new(r, s, center, t));
 
         (planet, ring)
     }
@@ -132,9 +134,10 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
 
 impl<R: Renderer> Scene<ResourceManager<R>> for Ring {
     fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let mut moving = self.asset;
-        moving.zoom(glm::DVec2::from_s(self.zoom));
-        renderer.show(&self.asset)?;
-        renderer.show(&moving)
+        let diameter = self.radius * 2.;
+        let dst_rect = square(diameter as i32, self.center);
+        let moving_rect = square((diameter * self.zoom) as i32, self.center);
+        renderer.render(&self.texture, dst_rect)?;
+        renderer.render(&self.texture, moving_rect)
     }
 }
