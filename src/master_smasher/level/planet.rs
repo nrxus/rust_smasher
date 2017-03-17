@@ -66,7 +66,7 @@ impl Ring {
 
 pub struct Planet {
     body: Circle,
-    asset: Asset,
+    texture: Texture,
     ring: Option<Ring>,
 }
 
@@ -83,7 +83,7 @@ impl Planet {
 
         Planet {
             body: body,
-            asset: asset,
+            texture: asset.texture,
             ring: ring,
         }
     }
@@ -135,7 +135,7 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
         if let Some(ref r) = self.ring {
             renderer.show(r)?;
         }
-        renderer.render(&self.asset.texture, rectify(&self.body))
+        renderer.render(&self.texture, rectify(&self.body))
     }
 }
 
