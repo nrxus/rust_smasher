@@ -1,5 +1,6 @@
-use master_smasher::drawable::{Asset, GameRenderer};
+use master_smasher::drawable::GameRenderer;
 use master_smasher::shape::Circle;
+use super::player_assets::PlayerAssets;
 use super::MeteorState;
 use super::interpolate::State;
 use super::launched_meteor::LaunchedMeteor;
@@ -8,20 +9,41 @@ use errors::*;
 use glm;
 use glm::ext::normalize_to;
 use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{ResourceManager, Texture};
 use sdl2::rect;
 
 use std::cmp;
 
+fn rectify(circle: &Circle) -> glm::IVec4 {
+    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
+                             circle.center.y - circle.radius,
+                             circle.radius * 2.,
+                             circle.radius * 2.))
+}
+
 pub struct UnlaunchedMeteor {
-    asset: Asset,
+    body: Circle,
+    texture: Texture,
     target: State<glm::IVec2>,
 }
 
 impl UnlaunchedMeteor {
-    pub fn new(asset: Asset) -> Self {
+    pub fn load(assets: &PlayerAssets, center: glm::IVec2) -> Self {
+        let texture = assets.meteor;
+        let center = glm::to_dvec2(center);
+        let radius = cmp::min(texture.dims.x, texture.dims.y) as f64 / 2.;
+        let body = Circle {
+            center: center,
+            radius: radius,
+        };
+
+        Self::new(body, texture)
+    }
+
+    pub fn new(body: Circle, texture: Texture) -> Self {
         UnlaunchedMeteor {
-            asset: asset,
+            body: body,
+            texture: texture,
             target: State::new(glm::ivec2(0, 0)),
         }
     }
@@ -34,10 +56,8 @@ impl UnlaunchedMeteor {
         where R: Renderer
     {
         let target = glm::to_dvec2(self.target.interpolated(interpolation));
-        let center = glm::to_dvec2(self.asset.center());
-        let rects = self.target_rects(target, center);
-
-        renderer.show(&self.asset)?;
+        let rects = self.target_rects(target, self.body.center);
+        renderer.render(&self.texture, rectify(&self.body))?;
         renderer.fill_rects(&rects).map_err(Into::into)
     }
 
@@ -46,8 +66,8 @@ impl UnlaunchedMeteor {
         const SIDE_LEN: u32 = 5;
 
         let distance = target - center;
-        let offset = self.asset.dst_rect.z / 2 + 10;
-        let offset_vector = normalize_to(distance, offset as f64);
+        let offset = self.body.radius + 10.;
+        let offset_vector = normalize_to(distance, offset);
         let anchor_point = center + offset_vector;
         let step = (target - anchor_point) / NUM_RECTS as f64;
 
@@ -60,15 +80,8 @@ impl UnlaunchedMeteor {
 
     pub fn launch(&self, max_coords: glm::UVec2) -> MeteorState {
         const FACTOR: f64 = 50.;
-        let offset = self.target.current - glm::to_ivec2(self.asset.center());
+        let offset = self.target.current - glm::to_ivec2(self.body.center);
         let velocity = glm::to_dvec2(offset) / FACTOR;
-        let center = glm::to_dvec2(self.asset.center());
-        let dims = glm::to_ivec2(self.asset.dims());
-        let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let circle = Circle {
-            center: center,
-            radius: radius,
-        };
-        MeteorState::LAUNCHED(LaunchedMeteor::new(circle, self.asset.texture, max_coords, velocity))
+        MeteorState::LAUNCHED(LaunchedMeteor::new(self.body, self.texture, max_coords, velocity))
     }
 }

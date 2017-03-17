@@ -25,11 +25,6 @@ impl Asset {
         }
     }
 
-    pub fn center(&self) -> glm::IVec2 {
-        glm::ivec2(self.dst_rect.x + self.dst_rect.z / 2,
-                   self.dst_rect.y + self.dst_rect.w / 2)
-    }
-
     pub fn dims(&self) -> glm::UVec2 {
         glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
     }

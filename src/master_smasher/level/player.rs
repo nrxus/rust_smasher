@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, Asset, GameRenderer};
+use master_smasher::drawable::{Animation, GameRenderer};
 use super::unlaunched_meteor::UnlaunchedMeteor;
 use super::launched_meteor::LaunchedMeteor;
 use super::planet::Planet;
@@ -29,8 +29,7 @@ pub struct Player {
 
 impl Player {
     pub fn new(assets: PlayerAssets, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
-        let asset = Asset::from_texture(assets.meteor, center);
-        let meteor = UnlaunchedMeteor::new(asset);
+        let meteor = UnlaunchedMeteor::load(&assets, center);
         let state = MeteorState::UNLAUNCHED(meteor);
         Player {
             state: state,
@@ -66,8 +65,7 @@ impl Player {
                 if a.is_active() {
                     None
                 } else {
-                    let asset = Asset::from_texture(self.assets.meteor, self.initial_center);
-                    let mut meteor = UnlaunchedMeteor::new(asset);
+                    let mut meteor = UnlaunchedMeteor::load(&self.assets, self.initial_center);
                     meteor.update(target);
                     Some(MeteorState::UNLAUNCHED(meteor))
                 }
