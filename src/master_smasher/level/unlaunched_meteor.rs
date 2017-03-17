@@ -1,4 +1,5 @@
 use master_smasher::drawable::{Asset, GameRenderer};
+use master_smasher::shape::Circle;
 use super::MeteorState;
 use super::interpolate::State;
 use super::launched_meteor::LaunchedMeteor;
@@ -9,6 +10,8 @@ use glm::ext::normalize_to;
 use moho::renderer::Renderer;
 use moho::resource_manager::ResourceManager;
 use sdl2::rect;
+
+use std::cmp;
 
 pub struct UnlaunchedMeteor {
     asset: Asset,
@@ -59,6 +62,13 @@ impl UnlaunchedMeteor {
         const FACTOR: f64 = 50.;
         let offset = self.target.current - glm::to_ivec2(self.asset.center());
         let velocity = glm::to_dvec2(offset) / FACTOR;
-        MeteorState::LAUNCHED(LaunchedMeteor::new(self.asset, max_coords, velocity))
+        let center = glm::to_dvec2(self.asset.center());
+        let dims = glm::to_ivec2(self.asset.dims());
+        let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
+        let circle = Circle {
+            center: center,
+            radius: radius,
+        };
+        MeteorState::LAUNCHED(LaunchedMeteor::new(circle, self.asset.texture, max_coords, velocity))
     }
 }

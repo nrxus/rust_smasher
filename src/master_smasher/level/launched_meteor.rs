@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, Asset, GameRenderer};
+use master_smasher::drawable::{Animation, AnimationData, GameRenderer};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::interpolate::*;
@@ -6,12 +6,17 @@ use super::planet::Planet;
 use super::MeteorState;
 use errors::*;
 
-use glm::{self, GenNum};
+use glm;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 use num_traits::One;
 
-use std::cmp;
+fn rectify(circle: &Circle) -> glm::IVec4 {
+    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
+                             circle.center.y - circle.radius,
+                             circle.radius * 2.,
+                             circle.radius * 2.))
+}
 
 pub struct LaunchedMeteor {
     body: State<Wrapped<Circle>>,
@@ -20,16 +25,9 @@ pub struct LaunchedMeteor {
 }
 
 impl LaunchedMeteor {
-    pub fn new(asset: Asset, max_coords: glm::UVec2, velocity: glm::DVec2) -> Self {
-        let center = glm::to_dvec2(asset.center());
-        let dims = glm::to_ivec2(asset.dims());
-        let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
-        let circle = Circle {
-            center: center,
-            radius: radius,
-        };
+    pub fn new(body: Circle, texture: Texture, max_coords: glm::UVec2, velocity: glm::DVec2) -> Self {
         let wrapped = Wrapped {
-            actual: circle,
+            actual: body,
             unwrapped: None,
             wrapping: glm::to_dvec2(max_coords),
         };
@@ -37,7 +35,7 @@ impl LaunchedMeteor {
         let body = State::new(wrapped);
 
         LaunchedMeteor {
-            texture: asset.texture,
+            texture: texture,
             body: body,
             velocity: velocity,
         }
@@ -52,11 +50,7 @@ impl LaunchedMeteor {
         where R: Renderer
     {
         let body = self.body.interpolated(interpolation).actual;
-        let diameter = (body.radius * 2.) as u32;
-        let center = glm::to_ivec2(body.center);
-        let dims = glm::UVec2::from_s(diameter);
-        let asset = Asset::centered_on(self.texture, center, dims);
-        renderer.show(&asset)
+        renderer.render(&self.texture, rectify(&body))
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

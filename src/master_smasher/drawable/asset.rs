@@ -13,11 +13,8 @@ pub struct Asset {
 
 impl Asset {
     pub fn from_texture(texture: Texture, center: glm::IVec2) -> Asset {
-        Asset::centered_on(texture, center, texture.dims)
-    }
-
-    pub fn centered_on(texture: Texture, center: glm::IVec2, dims: glm::UVec2) -> Asset {
-        let rect = Self::rectify(center, dims);
+        let dims = glm::to_ivec2(texture.dims);
+        let rect = glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y);
         Asset::new(texture, rect)
     }
 
@@ -35,11 +32,6 @@ impl Asset {
 
     pub fn dims(&self) -> glm::UVec2 {
         glm::uvec2(self.dst_rect.z as u32, self.dst_rect.w as u32)
-    }
-
-    fn rectify(center: glm::IVec2, dims: glm::UVec2) -> glm::IVec4 {
-        let dims = glm::to_ivec2(dims);
-        glm::ivec4(center.x - dims.x / 2, center.y - dims.y / 2, dims.x, dims.y)
     }
 }
 
