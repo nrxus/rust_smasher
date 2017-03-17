@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Asset, Scene, GameRenderer};
+use master_smasher::drawable::{Scene, GameRenderer};
 use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
@@ -72,9 +72,8 @@ pub struct Planet {
 
 impl Planet {
     pub fn new(data: &PlanetData, textures: &WorldAssets) -> Self {
-        let (asset, ring) = Self::load_assets(data, textures);
-        let dims = asset.dims();
-        let radius = cmp::min(dims.x, dims.y) as f64 / 2.;
+        let (texture, ring) = Self::load_assets(data, textures);
+        let radius = cmp::min(texture.dims.x, texture.dims.y) as f64 / 2.;
         let center = glm::dvec2(data.x as f64, data.y as f64);
         let body = Circle {
             center: center,
@@ -83,7 +82,7 @@ impl Planet {
 
         Planet {
             body: body,
-            texture: asset.texture,
+            texture: texture,
             ring: ring,
         }
     }
@@ -102,7 +101,7 @@ impl Planet {
                                   |r| r.pull_vector(self.body.center - point, radius))
     }
 
-    fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Asset, Option<Ring>) {
+    fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Texture, Option<Ring>) {
         let center = glm::ivec2(data.x, data.y);
         let (planet, ring) = match data.kind {
             PlanetKind::RED { ring, strength } => {
@@ -117,7 +116,6 @@ impl Planet {
             PlanetKind::DEAD => (textures.dead_planet, None),
         };
 
-        let planet = Asset::from_texture(planet, center);
         let ring = ring.map(|(t, r, s)| Ring::new(r, s, center, t));
 
         (planet, ring)
