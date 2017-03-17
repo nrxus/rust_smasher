@@ -45,7 +45,7 @@ pub trait GameRenderer: Sized {
         scene.show(self)
     }
 
-    fn draw<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
+    fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
         drawable.draw(dst_rect, self)
     }
 }

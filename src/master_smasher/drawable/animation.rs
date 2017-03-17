@@ -1,4 +1,4 @@
-use super::{Scene, GameRenderer};
+use super::{GameRenderer, Scene};
 use super::asset::Asset;
 use super::animation_data::AnimationData;
 use errors::*;
@@ -38,14 +38,9 @@ impl Animation {
     pub fn update(&mut self, delta: Duration) {
         if self.is_active() {
             self.animator.animate(delta);
+            self.active = self.animator.frame() != None;
         } else if self.active {
             self.animator.start();
-        }
-        if let Some(frame) = self.animator.frame() {
-            let src_rect = self.sheet.tile(frame).src;
-            self.asset.src_rect = Some(src_rect);
-        } else {
-            self.active = false;
         }
     }
 
@@ -56,6 +51,11 @@ impl Animation {
 
 impl<R: Renderer> Scene<ResourceManager<R>> for Animation {
     fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.show(&self.asset)
+        if let Some(frame) = self.animator.frame() {
+            let tile = self.sheet.tile(frame);
+            renderer.render(&tile, self.asset.dst_rect)
+        } else {
+            Ok(())
+        }
     }
 }
