@@ -8,14 +8,14 @@ use errors::*;
 
 use glm::{self, GenNum};
 use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{ResourceManager, Texture};
 use num_traits::One;
 
 use std::cmp;
 
 pub struct LaunchedMeteor {
     body: State<Wrapped<Circle>>,
-    texture: usize,
+    texture: Texture,
     velocity: glm::DVec2,
 }
 
@@ -37,7 +37,7 @@ impl LaunchedMeteor {
         let body = State::new(wrapped);
 
         LaunchedMeteor {
-            texture: asset.texture_id,
+            texture: asset.texture,
             body: body,
             velocity: velocity,
         }

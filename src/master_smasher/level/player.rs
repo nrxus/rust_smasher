@@ -29,7 +29,7 @@ pub struct Player {
 
 impl Player {
     pub fn new(assets: PlayerAssets, center: glm::IVec2, max_coords: glm::UVec2) -> Self {
-        let asset = Asset::from_texture(&assets.meteor, center);
+        let asset = Asset::from_texture(assets.meteor, center);
         let meteor = UnlaunchedMeteor::new(asset);
         let state = MeteorState::UNLAUNCHED(meteor);
         Player {
@@ -66,7 +66,7 @@ impl Player {
                 if a.is_active() {
                     None
                 } else {
-                    let asset = Asset::from_texture(&self.assets.meteor, self.initial_center);
+                    let asset = Asset::from_texture(self.assets.meteor, self.initial_center);
                     let mut meteor = UnlaunchedMeteor::new(asset);
                     meteor.update(target);
                     Some(MeteorState::UNLAUNCHED(meteor))

@@ -104,10 +104,10 @@ impl Planet {
             PlanetKind::DEAD => (textures.dead_planet, None),
         };
 
-        let planet = Asset::from_texture(&planet, center);
+        let planet = Asset::from_texture(planet, center);
         let ring = ring.map(|(t, r, s)| {
                                 let dims = glm::UVec2::from_s((r * 2.) as u32);
-                                let asset = Asset::centered_on(t.id, center, dims);
+                                let asset = Asset::centered_on(t, center, dims);
                                 Ring::new(r, s, asset)
                             });
 

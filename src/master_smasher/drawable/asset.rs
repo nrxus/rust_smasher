@@ -1,5 +1,5 @@
 use errors::*;
-use super::Scene;
+use super::{GameRenderer, Scene};
 
 use glm;
 use moho::resource_manager::{ResourceManager, Texture};
@@ -7,26 +7,24 @@ use moho::renderer::Renderer;
 
 #[derive(Clone, Copy)]
 pub struct Asset {
-    pub texture_id: usize,
+    pub texture: Texture,
     pub dst_rect: glm::IVec4,
-    pub src_rect: Option<glm::UVec4>,
 }
 
 impl Asset {
-    pub fn from_texture(texture: &Texture, center: glm::IVec2) -> Asset {
-        Asset::centered_on(texture.id, center, texture.dims)
+    pub fn from_texture(texture: Texture, center: glm::IVec2) -> Asset {
+        Asset::centered_on(texture, center, texture.dims)
     }
 
-    pub fn centered_on(texture_id: usize, center: glm::IVec2, dims: glm::UVec2) -> Asset {
+    pub fn centered_on(texture: Texture, center: glm::IVec2, dims: glm::UVec2) -> Asset {
         let rect = Self::rectify(center, dims);
-        Asset::new(texture_id, rect)
+        Asset::new(texture, rect)
     }
 
-    pub fn new(texture_id: usize, dst_rect: glm::IVec4) -> Asset {
+    pub fn new(texture: Texture, dst_rect: glm::IVec4) -> Asset {
         Asset {
-            texture_id: texture_id,
+            texture: texture,
             dst_rect: dst_rect,
-            src_rect: None,
         }
     }
 
@@ -52,6 +50,6 @@ impl Asset {
 
 impl<R: Renderer> Scene<ResourceManager<R>> for Asset {
     fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.texture_id, Some(self.dst_rect), self.src_rect).map_err(Into::into)
+        renderer.render(&self.texture, self.dst_rect)
     }
 }
