@@ -2,14 +2,13 @@ use glm;
 use moho::errors::*;
 use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::ResourceManager;
 use moho::tile_sheet::TileSheet;
 
 use std::time::Duration;
 
 #[derive(Clone)]
 pub struct AnimationData {
-    pub texture: Texture,
     pub animator: FrameAnimator,
     pub sheet: TileSheet,
 }
@@ -28,7 +27,6 @@ impl AnimationData {
         let sheet = TileSheet::new(glm::uvec2(frames, 1), texture);
         let animator = FrameAnimator::new(frames, duration, repeat);
         let data = AnimationData {
-            texture: texture,
             sheet: sheet,
             animator: animator,
         };
