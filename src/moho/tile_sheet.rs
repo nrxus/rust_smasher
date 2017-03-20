@@ -1,16 +1,16 @@
-use resource_manager::Texture;
+use resource_manager::{Texture, TextureId};
 
 use glm;
 
 #[derive(Clone)]
 pub struct TileSheet {
-    id: usize,
+    id: TextureId,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
 pub struct Tile {
-    pub id: usize,
+    pub id: TextureId,
     pub src: glm::UVec4,
 }
 

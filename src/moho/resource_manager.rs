@@ -9,16 +9,19 @@ use renderer::{ImageDims, Renderer};
 use window_wrapper::*;
 use errors::*;
 
+#[derive(Copy,Clone,Hash,PartialEq,Eq)]
+pub struct TextureId(usize);
+
 #[derive(Copy,Clone)]
 pub struct Texture {
-    pub id: usize,
+    pub id: TextureId,
     pub dims: glm::UVec2,
 }
 
 pub struct ResourceManager<R: Renderer> {
     pub wrap_coords: Option<glm::UVec2>,
     texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    data_cache: RefCell<HashMap<usize, R::Texture>>,
+    data_cache: RefCell<HashMap<TextureId, R::Texture>>,
     renderer: R,
 }
 
@@ -37,7 +40,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     pub fn draw(&mut self,
-                id: usize,
+                id: TextureId,
                 dst: Option<glm::IVec4>,
                 src: Option<glm::UVec4>)
                 -> Result<()> {
@@ -72,7 +75,7 @@ impl<R: Renderer> ResourceManager<R> {
     fn load_new_texture(&self, path: &'static str) -> Result<Texture> {
         let mut cache = self.texture_cache.borrow_mut();
         let mut data_cache = self.data_cache.borrow_mut();
-        let id = data_cache.len();
+        let id = TextureId(data_cache.len());
         let texture_path = Path::new(path);
         let texture_data = self.renderer.load_texture(texture_path)?;
         let texture = Texture {
@@ -85,7 +88,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     fn draw_and_wrap(&mut self,
-                     id: usize,
+                     id: TextureId,
                      dst: glm::IVec4,
                      src: Option<glm::UVec4>,
                      wrapping_coords: glm::UVec2)
@@ -98,7 +101,7 @@ impl<R: Renderer> ResourceManager<R> {
     }
 
     fn draw_raw(&mut self,
-                id: usize,
+                id: TextureId,
                 dst: Option<glm::IVec4>,
                 src: Option<glm::UVec4>)
                 -> Result<()> {
