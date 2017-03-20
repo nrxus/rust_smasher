@@ -1,4 +1,4 @@
-use master_smasher::drawable::GameRenderer;
+use master_smasher::drawable::{GameRenderer, Rectifiable};
 use master_smasher::shape::Circle;
 use super::player_assets::PlayerAssets;
 use super::MeteorState;
@@ -13,13 +13,6 @@ use moho::resource_manager::{ResourceManager, Texture};
 use sdl2::rect;
 
 use std::cmp;
-
-fn rectify(circle: &Circle) -> glm::IVec4 {
-    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
-                             circle.center.y - circle.radius,
-                             circle.radius * 2.,
-                             circle.radius * 2.))
-}
 
 pub struct UnlaunchedMeteor {
     body: Circle,
@@ -57,7 +50,7 @@ impl UnlaunchedMeteor {
     {
         let target = glm::to_dvec2(self.target.interpolated(interpolation));
         let rects = self.target_rects(target, self.body.center);
-        renderer.render(&self.texture, rectify(&self.body))?;
+        renderer.render(&self.texture, self.body.rectify())?;
         renderer.fill_rects(&rects).map_err(Into::into)
     }
 

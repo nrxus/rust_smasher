@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, GameRenderer};
+use master_smasher::drawable::{Animation, AnimationData, GameRenderer, Rectifiable};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::interpolate::*;
@@ -11,13 +11,6 @@ use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
 use num_traits::One;
 
-fn rectify(circle: &Circle) -> glm::IVec4 {
-    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
-                             circle.center.y - circle.radius,
-                             circle.radius * 2.,
-                             circle.radius * 2.))
-}
-
 pub struct LaunchedMeteor {
     body: State<Wrapped<Circle>>,
     texture: Texture,
@@ -25,7 +18,11 @@ pub struct LaunchedMeteor {
 }
 
 impl LaunchedMeteor {
-    pub fn new(body: Circle, texture: Texture, max_coords: glm::UVec2, velocity: glm::DVec2) -> Self {
+    pub fn new(body: Circle,
+               texture: Texture,
+               max_coords: glm::UVec2,
+               velocity: glm::DVec2)
+               -> Self {
         let wrapped = Wrapped {
             actual: body,
             unwrapped: None,
@@ -50,7 +47,7 @@ impl LaunchedMeteor {
         where R: Renderer
     {
         let body = self.body.interpolated(interpolation).actual;
-        renderer.render(&self.texture, rectify(&body))
+        renderer.render(&self.texture, body.rectify())
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool
