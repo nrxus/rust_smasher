@@ -6,8 +6,6 @@ pub use self::animation::Animation;
 
 use master_smasher::shape::Circle;
 
-use moho::errors as moho_errors;
-
 use std::slice::Iter;
 
 use glm;
@@ -27,14 +25,13 @@ impl Rectifiable for Circle {
 
 pub trait TryIterator {
     type Item;
-    fn try<F>(self, action: F) -> moho_errors::Result<()>
-        where F: FnMut(&Self::Item) -> moho_errors::Result<()>;
+    fn try<F, E>(self, action: F) -> Result<(), E> where F: FnMut(&Self::Item) -> Result<(), E>;
 }
 
 impl<'a, T> TryIterator for Iter<'a, T> {
     type Item = T;
-    fn try<F>(self, action: F) -> moho_errors::Result<()>
-        where F: FnMut(&T) -> moho_errors::Result<()>
+    fn try<F, E>(self, action: F) -> Result<(), E>
+        where F: FnMut(&T) -> Result<(), E>
     {
         self.map(action)
             .take_while(Result::is_ok)
