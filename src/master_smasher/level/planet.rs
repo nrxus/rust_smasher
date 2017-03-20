@@ -1,14 +1,14 @@
-use master_smasher::drawable::{Scene, GameRenderer, Rectifiable};
+use master_smasher::drawable::Rectifiable;
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
-use errors::*;
 
 use glm;
 use glm::ext::normalize_to;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::{ResourceManager, Scene, Texture};
+use moho::errors as moho_errors;
 use num_traits::Zero;
 
 use std::cmp;
@@ -130,8 +130,8 @@ impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
     }
 }
 
-impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl Scene for Planet {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
         if let Some(ref r) = self.ring {
             renderer.show(r)?;
         }
@@ -139,8 +139,8 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
     }
 }
 
-impl<R: Renderer> Scene<ResourceManager<R>> for Ring {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl Scene for Ring {
+    fn show<R :Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
         let dst_rect = self.body.rectify();
         let moving_rect = self.animated_body().rectify();
         renderer.render(&self.texture, dst_rect)?;

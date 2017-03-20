@@ -6,10 +6,7 @@ pub use self::animation::Animation;
 
 use master_smasher::shape::Circle;
 
-use errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
-use moho::tile_sheet::Tile;
+use moho::errors as moho_errors;
 
 use std::slice::Iter;
 
@@ -30,61 +27,18 @@ impl Rectifiable for Circle {
 
 pub trait TryIterator {
     type Item;
-    fn try<F>(self, action: F) -> Result<()> where F: FnMut(&Self::Item) -> Result<()>;
+    fn try<F>(self, action: F) -> moho_errors::Result<()>
+        where F: FnMut(&Self::Item) -> moho_errors::Result<()>;
 }
 
 impl<'a, T> TryIterator for Iter<'a, T> {
     type Item = T;
-    fn try<F>(self, action: F) -> Result<()>
-        where F: FnMut(&T) -> Result<()>
+    fn try<F>(self, action: F) -> moho_errors::Result<()>
+        where F: FnMut(&T) -> moho_errors::Result<()>
     {
         self.map(action)
             .take_while(Result::is_ok)
             .last()
             .unwrap_or(Ok(()))
-    }
-}
-
-pub trait Drawable<R: GameRenderer> {
-    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
-}
-
-pub trait Scene<R: GameRenderer> {
-    fn show(&self, renderer: &mut R) -> Result<()>;
-}
-
-pub trait GameRenderer: Sized {
-    fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()> {
-        scene.show(self)
-    }
-
-    fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
-        drawable.draw(dst_rect, self)
-    }
-}
-
-impl<R: Renderer> GameRenderer for ResourceManager<R> {}
-
-impl<R: Renderer> Scene<ResourceManager<R>> for Texture {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.id, None, None).map_err(Into::into)
-    }
-}
-
-impl<R: Renderer> Drawable<ResourceManager<R>> for Texture {
-    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.id, Some(dst_rect), None).map_err(Into::into)
-    }
-}
-
-impl<R: Renderer> Scene<ResourceManager<R>> for Tile {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.id, None, Some(self.src)).map_err(Into::into)
-    }
-}
-
-impl<R: Renderer> Drawable<ResourceManager<R>> for Tile {
-    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.id, Some(dst_rect), Some(self.src)).map_err(Into::into)
     }
 }

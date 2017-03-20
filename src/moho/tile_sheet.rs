@@ -1,4 +1,6 @@
-use resource_manager::{Texture, TextureId};
+use renderer::Renderer;
+use resource_manager::{Drawable, ResourceManager, Scene, Texture, TextureId};
+use errors::*;
 
 use glm;
 
@@ -33,6 +35,20 @@ impl TileSheet {
             id: self.id,
             src: src,
         }
+    }
+}
+
+impl Scene for Tile {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.draw(self.id, None, Some(self.src))
+    }
+}
+
+impl Drawable for Tile {
+    fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        renderer.draw(self.id, Some(dst_rect), Some(self.src))
     }
 }
 

@@ -1,12 +1,11 @@
-use super::{GameRenderer, Scene};
 use super::animation_data::AnimationData;
-use errors::*;
 
 use glm;
 use moho::frame_animator::FrameAnimator;
 use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{ResourceManager, Scene};
 use moho::tile_sheet::TileSheet;
+use moho::errors as moho_errors;
 
 use std::time::Duration;
 
@@ -48,8 +47,8 @@ impl Animation {
     }
 }
 
-impl<R: Renderer> Scene<ResourceManager<R>> for Animation {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl Scene for Animation {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
         if let Some(frame) = self.animator.frame() {
             let tile = self.sheet.tile(frame);
             renderer.render(&tile, self.dst_rect)

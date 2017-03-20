@@ -1,4 +1,4 @@
-use master_smasher::drawable::{GameRenderer, Rectifiable};
+use master_smasher::drawable::Rectifiable;
 use master_smasher::shape::Circle;
 use super::player_assets::PlayerAssets;
 use super::MeteorState;

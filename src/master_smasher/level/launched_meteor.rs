@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Animation, AnimationData, GameRenderer, Rectifiable};
+use master_smasher::drawable::{Animation, AnimationData, Rectifiable};
 use master_smasher::shape::{Circle, Intersect, Shape};
 use super::collidable::Collidable;
 use super::interpolate::*;
@@ -47,7 +47,7 @@ impl LaunchedMeteor {
         where R: Renderer
     {
         let body = self.body.interpolated(interpolation).actual;
-        renderer.render(&self.texture, body.rectify())
+        renderer.render(&self.texture, body.rectify()).map_err(Into::into)
     }
 
     pub fn collides<S, C>(&self, collidable: &C) -> bool

@@ -3,7 +3,6 @@ mod level;
 mod shape;
 
 use self::level::Level;
-use self::drawable::GameRenderer;
 
 use errors::*;
 use moho::input_manager::InputManager;

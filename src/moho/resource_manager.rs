@@ -9,6 +9,17 @@ use renderer::{ImageDims, Renderer};
 use window_wrapper::*;
 use errors::*;
 
+pub trait Drawable {
+    fn draw<R: Renderer>(&self,
+                         dst_rect: glm::IVec4,
+                         renderer: &mut ResourceManager<R>)
+                         -> Result<()>;
+}
+
+pub trait Scene {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()>;
+}
+
 #[derive(Copy,Clone,Hash,PartialEq,Eq)]
 pub struct TextureId(usize);
 
@@ -60,6 +71,14 @@ impl<R: Renderer> ResourceManager<R> {
 
     pub fn present(&mut self) {
         self.renderer.present();
+    }
+
+    pub fn show<S: Scene>(&mut self, scene: &S) -> Result<()> {
+        scene.show(self)
+    }
+
+    pub fn render<D: Drawable>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
+        drawable.draw(dst_rect, self)
     }
 
     pub fn output_size(&self) -> Result<glm::UVec2> {
@@ -114,5 +133,19 @@ impl<R: Renderer> ResourceManager<R> {
 
     fn get_rect(rect: glm::IVec4) -> rect::Rect {
         rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
+    }
+}
+
+impl Scene for Texture {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+        renderer.draw(self.id, None, None).map_err(Into::into)
+    }
+}
+
+impl Drawable for Texture {
+    fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer
+    {
+        renderer.draw(self.id, Some(dst_rect), None).map_err(Into::into)
     }
 }

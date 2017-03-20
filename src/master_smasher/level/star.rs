@@ -1,11 +1,11 @@
 use super::collidable::Collidable;
-use master_smasher::drawable::{Animation, Scene, GameRenderer};
+use master_smasher::drawable::Animation;
 use master_smasher::shape::{Intersect, Rectangle};
-use errors::*;
 
 use glm;
 use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{ResourceManager, Scene};
+use moho::errors as moho_errors;
 
 use std::time::Duration;
 
@@ -46,8 +46,8 @@ impl<I: Intersect<Rectangle>> Collidable<Rectangle, I> for Star {
     }
 }
 
-impl<R: Renderer> Scene<ResourceManager<R>> for Star {
-    fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+impl Scene for Star {
+    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
         renderer.show(&self.animation)
     }
 }

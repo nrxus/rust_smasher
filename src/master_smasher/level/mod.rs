@@ -16,7 +16,6 @@ use self::player_assets::PlayerAssets;
 use self::world::World;
 use self::world_assets::WorldAssets;
 use errors::*;
-use master_smasher::drawable::GameRenderer;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
