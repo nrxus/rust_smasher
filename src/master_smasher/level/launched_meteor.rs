@@ -69,9 +69,7 @@ impl LaunchedMeteor {
 
     fn acceleration(&self, planets: &[Planet]) -> glm::DVec2 {
         let body = self.body.current.actual;
-        planets.iter().map(|p| p.pull_vector(body.center, body.radius)).fold(glm::dvec2(0., 0.),
-                                                                             |c, a| c + a) /
-        50.
+        planets.iter().map(|p| p.pull_vector(&body)).fold(glm::dvec2(0., 0.), |c, a| c + a) / 50.
     }
 
     fn displace(&mut self) {

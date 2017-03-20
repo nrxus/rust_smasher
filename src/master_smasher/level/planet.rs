@@ -1,5 +1,5 @@
 use master_smasher::drawable::{Scene, GameRenderer, Rectifiable};
-use master_smasher::shape::{Circle, Intersect};
+use master_smasher::shape::{Circle, Intersect, Shape};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
 use super::level_data::{PlanetData, PlanetKind};
@@ -40,19 +40,23 @@ impl Ring {
         const NANO_IN_SEC: f64 = 1000000000.;
 
         let animated = self.animated_body();
-        let pull = glm::length(self.pull_vector(glm::dvec2(animated.radius, 0.), 0.));
+        let pull = self.pull(animated.radius);
         let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / NANO_IN_SEC;
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
     }
 
-    pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
-        let len = glm::length(dist);
-        if len > (self.body.radius + radius) {
-            glm::DVec2::zero()
-        } else {
-            let force = self.strength / (len.powf(0.8));
+    pub fn pull_vector<B: Intersect<Circle> + Shape>(&self, body: &B) -> glm::DVec2 {
+        if body.intersects(&self.body) {
+            let dist = self.body.center - body.get_center();
+            let force = self.pull(glm::length(dist));
             normalize_to(dist, force)
+        } else {
+            glm::DVec2::zero()
         }
+    }
+
+    fn pull(&self, distance: f64) -> f64 {
+        self.strength / (distance.powf(0.8))
     }
 
     fn animated_body(&self) -> Circle {
@@ -95,9 +99,9 @@ impl Planet {
         }
     }
 
-    pub fn pull_vector(&self, point: glm::DVec2, radius: f64) -> glm::DVec2 {
-        self.ring.as_ref().map_or(glm::DVec2::zero(),
-                                  |r| r.pull_vector(self.body.center - point, radius))
+    //TODO: make generic to any Intersect
+    pub fn pull_vector(&self, body: &Circle) -> glm::DVec2 {
+        self.ring.as_ref().map_or(glm::DVec2::zero(), |r| r.pull_vector(body))
     }
 
     fn load_assets(data: &PlanetData, textures: &WorldAssets) -> (Texture, Option<Ring>) {
