@@ -1,4 +1,4 @@
-use master_smasher::drawable::{Scene, GameRenderer};
+use master_smasher::drawable::{Scene, GameRenderer, Rectifiable};
 use master_smasher::shape::{Circle, Intersect};
 use super::world_assets::WorldAssets;
 use super::collidable::Collidable;
@@ -14,32 +14,23 @@ use num_traits::Zero;
 use std::cmp;
 use std::time::Duration;
 
-fn rectify(circle: &Circle) -> glm::IVec4 {
-    glm::to_ivec4(glm::dvec4(circle.center.x - circle.radius,
-                             circle.center.y - circle.radius,
-                             circle.radius * 2.,
-                             circle.radius * 2.))
-}
-
-fn square(side: i32, center: glm::IVec2) -> glm::IVec4 {
-    glm::ivec4(center.x - side / 2, center.y - side / 2, side, side)
-}
-
 struct Ring {
-    radius: f64,
+    body: Circle,
     strength: f64,
     zoom: f64,
-    center: glm::IVec2,
     texture: Texture,
 }
 
 impl Ring {
     pub fn new(radius: f64, strength: f64, center: glm::IVec2, texture: Texture) -> Self {
-        Ring {
+        let body = Circle {
             radius: radius,
+            center: glm::to_dvec2(center),
+        };
+        Ring {
+            body: body,
             strength: strength,
             zoom: 1.,
-            center: center,
             texture: texture,
         }
     }
@@ -47,19 +38,27 @@ impl Ring {
     pub fn animate(&mut self, delta: Duration) {
         const K: f64 = 0.166;
         const NANO_IN_SEC: f64 = 1000000000.;
-        let moving_radius = self.radius * self.zoom;
-        let pull = glm::length(self.pull_vector(glm::dvec2(moving_radius, 0.), 0.));
+
+        let animated = self.animated_body();
+        let pull = glm::length(self.pull_vector(glm::dvec2(animated.radius, 0.), 0.));
         let time = delta.as_secs() as f64 + delta.subsec_nanos() as f64 / NANO_IN_SEC;
         self.zoom *= 1. / 2_f64.powf(K * pull * time);
     }
 
     pub fn pull_vector(&self, dist: glm::DVec2, radius: f64) -> glm::DVec2 {
         let len = glm::length(dist);
-        if len > (self.radius + radius) {
+        if len > (self.body.radius + radius) {
             glm::DVec2::zero()
         } else {
             let force = self.strength / (len.powf(0.8));
             normalize_to(dist, force)
+        }
+    }
+
+    fn animated_body(&self) -> Circle {
+        Circle {
+            radius: self.body.radius * self.zoom,
+            center: self.body.center,
         }
     }
 }
@@ -89,7 +88,7 @@ impl Planet {
 
     pub fn animate(&mut self, delta: Duration) {
         if let Some(ref mut r) = self.ring {
-            if r.radius * r.zoom < self.body.radius {
+            if r.body.radius * r.zoom < self.body.radius {
                 r.zoom = 1.;
             }
             r.animate(delta)
@@ -133,15 +132,14 @@ impl<R: Renderer> Scene<ResourceManager<R>> for Planet {
         if let Some(ref r) = self.ring {
             renderer.show(r)?;
         }
-        renderer.render(&self.texture, rectify(&self.body))
+        renderer.render(&self.texture, self.body.rectify())
     }
 }
 
 impl<R: Renderer> Scene<ResourceManager<R>> for Ring {
     fn show(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        let diameter = self.radius * 2.;
-        let dst_rect = square(diameter as i32, self.center);
-        let moving_rect = square((diameter * self.zoom) as i32, self.center);
+        let dst_rect = self.body.rectify();
+        let moving_rect = self.animated_body().rectify();
         renderer.render(&self.texture, dst_rect)?;
         renderer.render(&self.texture, moving_rect)
     }

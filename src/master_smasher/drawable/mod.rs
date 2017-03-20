@@ -4,6 +4,8 @@ pub mod animation_data;
 pub use self::animation_data::AnimationData;
 pub use self::animation::Animation;
 
+use master_smasher::shape::Circle;
+
 use errors::*;
 use moho::renderer::Renderer;
 use moho::resource_manager::{ResourceManager, Texture};
@@ -12,6 +14,19 @@ use moho::tile_sheet::Tile;
 use std::slice::Iter;
 
 use glm;
+
+pub trait Rectifiable {
+    fn rectify(&self) -> glm::IVec4;
+}
+
+impl Rectifiable for Circle {
+    fn rectify(&self) -> glm::IVec4 {
+        glm::to_ivec4(glm::dvec4(self.center.x - self.radius,
+                                 self.center.y - self.radius,
+                                 self.radius * 2.,
+                                 self.radius * 2.))
+    }
+}
 
 pub trait TryIterator {
     type Item;
