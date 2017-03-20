@@ -10,10 +10,8 @@ use window_wrapper::*;
 use errors::*;
 
 pub trait Drawable {
-    fn draw<R: Renderer>(&self,
-                         dst_rect: glm::IVec4,
-                         renderer: &mut ResourceManager<R>)
-                         -> Result<()>;
+    fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
+        where R: Renderer;
 }
 
 pub trait Scene {
