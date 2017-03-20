@@ -134,16 +134,16 @@ impl<R: Renderer> ResourceManager<R> {
     }
 }
 
-impl Scene for Texture {
+impl Scene for TextureId {
     fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(self.id, None, None).map_err(Into::into)
+        renderer.draw(*self, None, None).map_err(Into::into)
     }
 }
 
-impl Drawable for Texture {
+impl Drawable for TextureId {
     fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
         where R: Renderer
     {
-        renderer.draw(self.id, Some(dst_rect), None).map_err(Into::into)
+        renderer.draw(*self, Some(dst_rect), None).map_err(Into::into)
     }
 }

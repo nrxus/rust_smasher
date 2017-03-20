@@ -9,14 +9,14 @@ use errors::*;
 use glm;
 use glm::ext::normalize_to;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::{ResourceManager, TextureId};
 use sdl2::rect;
 
 use std::cmp;
 
 pub struct UnlaunchedMeteor {
     body: Circle,
-    texture: Texture,
+    texture: TextureId,
     target: State<glm::IVec2>,
 }
 
@@ -30,10 +30,10 @@ impl UnlaunchedMeteor {
             radius: radius,
         };
 
-        Self::new(body, texture)
+        Self::new(body, texture.id)
     }
 
-    pub fn new(body: Circle, texture: Texture) -> Self {
+    pub fn new(body: Circle, texture: TextureId) -> Self {
         UnlaunchedMeteor {
             body: body,
             texture: texture,

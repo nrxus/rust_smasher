@@ -7,7 +7,7 @@ use super::level_data::{PlanetData, PlanetKind};
 use glm;
 use glm::ext::normalize_to;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Scene, Texture};
+use moho::resource_manager::{ResourceManager, Scene, Texture, TextureId};
 use moho::errors as moho_errors;
 use num_traits::Zero;
 
@@ -18,11 +18,11 @@ struct Ring {
     body: Circle,
     strength: f64,
     zoom: f64,
-    texture: Texture,
+    texture: TextureId,
 }
 
 impl Ring {
-    pub fn new(radius: f64, strength: f64, center: glm::IVec2, texture: Texture) -> Self {
+    pub fn new(radius: f64, strength: f64, center: glm::IVec2, texture: TextureId) -> Self {
         let body = Circle {
             radius: radius,
             center: glm::to_dvec2(center),
@@ -69,7 +69,7 @@ impl Ring {
 
 pub struct Planet {
     body: Circle,
-    texture: Texture,
+    texture: TextureId,
     ring: Option<Ring>,
 }
 
@@ -85,7 +85,7 @@ impl Planet {
 
         Planet {
             body: body,
-            texture: texture,
+            texture: texture.id,
             ring: ring,
         }
     }
@@ -118,7 +118,7 @@ impl Planet {
             PlanetKind::DEAD => (textures.dead_planet, None),
         };
 
-        let ring = ring.map(|(t, r, s)| Ring::new(r, s, center, t));
+        let ring = ring.map(|(t, r, s)| Ring::new(r, s, center, t.id));
 
         (planet, ring)
     }

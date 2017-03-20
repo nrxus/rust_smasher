@@ -6,7 +6,7 @@ use self::level::Level;
 
 use errors::*;
 use moho::input_manager::InputManager;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::{ResourceManager, TextureId};
 use moho::timer::Timer;
 use moho::MohoEngine;
 use sdl2::keyboard::Keycode;
@@ -15,7 +15,7 @@ use std::time::Duration;
 
 pub struct MasterSmasher<E: MohoEngine> {
     level: Level,
-    background: Texture,
+    background: TextureId,
     input_manager: InputManager<E::EventPump>,
     renderer: ResourceManager<E::Renderer>,
 }
@@ -30,7 +30,7 @@ impl<E: MohoEngine> MasterSmasher<E> {
         let level = Level::load("levels/level_1.lvl", window_size, &renderer)?;
         Ok(MasterSmasher {
                level: level,
-               background: background,
+               background: background.id,
                input_manager: input_manager,
                renderer: renderer,
            })

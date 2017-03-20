@@ -8,18 +8,18 @@ use errors::*;
 
 use glm;
 use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::{ResourceManager, TextureId};
 use num_traits::One;
 
 pub struct LaunchedMeteor {
     body: State<Wrapped<Circle>>,
-    texture: Texture,
+    texture: TextureId,
     velocity: glm::DVec2,
 }
 
 impl LaunchedMeteor {
     pub fn new(body: Circle,
-               texture: Texture,
+               texture: TextureId,
                max_coords: glm::UVec2,
                velocity: glm::DVec2)
                -> Self {
