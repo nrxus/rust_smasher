@@ -15,7 +15,7 @@ pub struct Animation {
     pub dst_rect: glm::IVec4,
     sheet: TileSheet,
     animator: FrameAnimator,
-    active: bool,
+    started: bool,
 }
 
 impl Animation {
@@ -30,21 +30,21 @@ impl Animation {
             dst_rect: dst_rect,
             sheet: sheet,
             animator: animator,
-            active: true,
+            started: false,
         }
     }
 
     pub fn update(&mut self, delta: Duration) {
-        if self.is_active() {
-            self.animator.animate(delta);
-            self.active = self.animator.frame() != None;
-        } else if self.active {
+        if !self.started {
             self.animator.start();
+            self.started = true;
+        } else if self.animator.frame().is_some() {
+            self.animator.animate(delta);
         }
     }
 
     pub fn is_active(&self) -> bool {
-        self.active && self.animator.frame().is_some()
+        self.animator.frame().is_some()
     }
 }
 
