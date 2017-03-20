@@ -99,8 +99,7 @@ impl Planet {
         }
     }
 
-    //TODO: make generic to any Intersect
-    pub fn pull_vector(&self, body: &Circle) -> glm::DVec2 {
+    pub fn pull_vector<B: Intersect<Circle> + Shape>(&self, body: &B) -> glm::DVec2 {
         self.ring.as_ref().map_or(glm::DVec2::zero(), |r| r.pull_vector(body))
     }
 
