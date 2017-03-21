@@ -1,10 +1,7 @@
 use super::animation_data::AnimationData;
 
 use glm;
-use moho::frame_animator::FrameAnimator;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Scene};
-use moho::tile_sheet::TileSheet;
+use moho::resource_manager::{FrameAnimator, Renderer, Scene, TileSheet};
 use moho::errors as moho_errors;
 
 use std::time::Duration;
@@ -48,7 +45,7 @@ impl Animation {
 }
 
 impl Scene for Animation {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
+    fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
         if let Some(frame) = self.animator.frame() {
             let tile = self.sheet.tile(frame);
             renderer.render(&tile, self.dst_rect)

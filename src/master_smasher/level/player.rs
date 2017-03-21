@@ -7,8 +7,7 @@ use errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::Renderer;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 
@@ -83,7 +82,7 @@ impl Player {
         }
     }
 
-    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut R) -> Result<()>
         where R: Renderer
     {
         match self.state {

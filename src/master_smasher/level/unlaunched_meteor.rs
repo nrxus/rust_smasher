@@ -8,8 +8,7 @@ use errors::*;
 
 use glm;
 use glm::ext::normalize_to;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, TextureId};
+use moho::resource_manager::{Renderer, TextureId};
 use sdl2::rect;
 
 use std::cmp;
@@ -45,9 +44,7 @@ impl UnlaunchedMeteor {
         self.target.update(target);
     }
 
-    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
+    pub fn draw<R: Renderer>(&self, interpolation: f64, renderer: &mut R) -> Result<()> {
         let target = glm::to_dvec2(self.target.interpolated(interpolation));
         let rects = self.target_rects(target, self.body.center);
         renderer.render(&self.texture, self.body.rectify())?;

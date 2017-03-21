@@ -6,8 +6,7 @@ use super::world_assets::WorldAssets;
 use master_smasher::drawable::{Animation, AnimationData, TryIterator};
 
 use glm;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Scene};
+use moho::resource_manager::{Renderer, Scene};
 use moho::errors as moho_errors;
 use num_traits::One;
 
@@ -90,7 +89,7 @@ impl World {
 }
 
 impl Scene for World {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
+    fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
         self.planets
             .iter()
             .try(|d| renderer.show(d))?;

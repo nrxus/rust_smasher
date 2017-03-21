@@ -6,8 +6,7 @@ use super::level_data::{PlanetData, PlanetKind};
 
 use glm;
 use glm::ext::normalize_to;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Scene, Texture, TextureId};
+use moho::resource_manager::{Renderer, Scene, Texture, TextureId};
 use moho::errors as moho_errors;
 use num_traits::Zero;
 
@@ -131,7 +130,7 @@ impl<I: Intersect<Circle>> Collidable<Circle, I> for Planet {
 }
 
 impl Scene for Planet {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
+    fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
         if let Some(ref r) = self.ring {
             renderer.show(r)?;
         }
@@ -140,7 +139,7 @@ impl Scene for Planet {
 }
 
 impl Scene for Ring {
-    fn show<R :Renderer>(&self, renderer: &mut ResourceManager<R>) -> moho_errors::Result<()> {
+    fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = self.body.rectify();
         let moving_rect = self.animated_body().rectify();
         renderer.render(&self.texture, dst_rect)?;

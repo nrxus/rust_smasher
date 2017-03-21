@@ -19,8 +19,7 @@ use errors::*;
 
 use glm;
 use moho::input_manager::{EventPump, InputManager};
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
+use moho::resource_manager::{Renderer, ResourceLoader};
 
 use std::time::Duration;
 
@@ -30,15 +29,12 @@ pub struct Level {
 }
 
 impl Level {
-    pub fn load<R>(path: &'static str,
-                   size: glm::UVec2,
-                   resource_manager: &ResourceManager<R>)
-                   -> Result<Level>
-        where R: Renderer
+    pub fn load<L>(path: &'static str, size: glm::UVec2, resource_loader: &L) -> Result<Level>
+        where L: ResourceLoader
     {
         let data = LevelData::load(path)?;
-        let player_assets = PlayerAssets::new(resource_manager)?;
-        let world_assets = WorldAssets::new(resource_manager)?;
+        let player_assets = PlayerAssets::new(resource_loader)?;
+        let world_assets = WorldAssets::new(resource_loader)?;
         Ok(Level::new(data, size, player_assets, world_assets))
     }
 
@@ -69,7 +65,7 @@ impl Level {
         self.world.animate(delta);
     }
 
-    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
+    pub fn draw<R>(&self, interpolation: f64, renderer: &mut R) -> Result<()>
         where R: Renderer
     {
         renderer.show(&self.world)?;

@@ -6,7 +6,7 @@ use self::level::Level;
 
 use errors::*;
 use moho::input_manager::InputManager;
-use moho::resource_manager::{ResourceManager, TextureId};
+use moho::resource_manager::{Renderer, ResourceLoader, ResourceManager, TextureId};
 use moho::timer::Timer;
 use moho::MohoEngine;
 use sdl2::keyboard::Keycode;

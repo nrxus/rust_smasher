@@ -2,8 +2,7 @@ use master_smasher::drawable::{Animation, AnimationData};
 
 use glm::{self, GenNum};
 use moho::errors::*;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, Texture};
+use moho::resource_manager::{ResourceLoader, Texture};
 use num_traits::One;
 
 #[derive(Clone)]
@@ -22,21 +21,21 @@ pub struct WorldAssets {
 }
 
 impl WorldAssets {
-    pub fn new<R: Renderer>(resource_manager: &ResourceManager<R>) -> Result<Self> {
-        let red_planet = resource_manager.load_texture("resources/red_planet.png")?;
-        let white_planet = resource_manager.load_texture("resources/white_planet.png")?;
-        let blue_planet = resource_manager.load_texture("resources/blue_planet.png")?;
-        let dead_planet = resource_manager.load_texture("resources/dead_planet.png")?;
-        let red_ring = resource_manager.load_texture("resources/red_ring.png")?;
-        let white_ring = resource_manager.load_texture("resources/white_ring.png")?;
-        let blue_ring = resource_manager.load_texture("resources/blue_ring.png")?;
+    pub fn new<L: ResourceLoader>(resource_loader: &L) -> Result<Self> {
+        let red_planet = resource_loader.load_texture("resources/red_planet.png")?;
+        let white_planet = resource_loader.load_texture("resources/white_planet.png")?;
+        let blue_planet = resource_loader.load_texture("resources/blue_planet.png")?;
+        let dead_planet = resource_loader.load_texture("resources/dead_planet.png")?;
+        let red_ring = resource_loader.load_texture("resources/red_ring.png")?;
+        let white_ring = resource_loader.load_texture("resources/white_ring.png")?;
+        let blue_ring = resource_loader.load_texture("resources/blue_ring.png")?;
 
         let star_path = "resources/star.png";
         let enemy_path = "resources/spaceship.png";
         let explosion_path = "resources/explosion_small.png";
-        let star = AnimationData::new(star_path, 2, 150, true, resource_manager)?;
-        let enemy = AnimationData::new(enemy_path, 2, 100, true, resource_manager)?;
-        let explosion = AnimationData::new(explosion_path, 10, 100, false, resource_manager)?;
+        let star = AnimationData::new(star_path, 2, 150, true, resource_loader)?;
+        let enemy = AnimationData::new(enemy_path, 2, 100, true, resource_loader)?;
+        let explosion = AnimationData::new(explosion_path, 10, 100, false, resource_loader)?;
         let assets = WorldAssets {
             red_planet: red_planet,
             white_planet: white_planet,

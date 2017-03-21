@@ -1,9 +1,6 @@
 use glm;
 use moho::errors::*;
-use moho::frame_animator::FrameAnimator;
-use moho::renderer::Renderer;
-use moho::resource_manager::ResourceManager;
-use moho::tile_sheet::TileSheet;
+use moho::resource_manager::{FrameAnimator, ResourceLoader, TileSheet};
 
 use std::time::Duration;
 
@@ -18,9 +15,9 @@ impl AnimationData {
                   frames: u32,
                   duration_ms: u64,
                   repeat: bool,
-                  resource_manager: &ResourceManager<R>)
+                  resource_manager: &R)
                   -> Result<AnimationData>
-        where R: Renderer
+        where R: ResourceLoader
     {
         let texture = resource_manager.load_texture(path)?;
         let duration = Duration::from_millis(duration_ms);

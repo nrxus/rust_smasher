@@ -7,8 +7,7 @@ use super::MeteorState;
 use errors::*;
 
 use glm;
-use moho::renderer::Renderer;
-use moho::resource_manager::{ResourceManager, TextureId};
+use moho::resource_manager::{Renderer, TextureId};
 use num_traits::One;
 
 pub struct LaunchedMeteor {
@@ -43,9 +42,7 @@ impl LaunchedMeteor {
         self.displace();
     }
 
-    pub fn draw<R>(&self, interpolation: f64, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
-    {
+    pub fn draw<R: Renderer>(&self, interpolation: f64, renderer: &mut R) -> Result<()> {
         let body = self.body.interpolated(interpolation).actual;
         renderer.render(&self.texture, body.rectify()).map_err(Into::into)
     }
